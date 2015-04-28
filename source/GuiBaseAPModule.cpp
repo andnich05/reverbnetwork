@@ -37,9 +37,9 @@ GuiBaseAPModule::GuiBaseAPModule (const CRect &rect, CControlListener* listener)
 	// Holds the allpass controls (delay and decay)
 	allpassView = new CViewContainer(CRect(0, 0, 100, 300));
 	delayKnob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(42, 42)), listener, 0 + PARAM_ALLPASSDELAY_FIRST, 80, 42, knobBackground);
-	//allpassView->addView(delayKnob);
+	allpassView->addView(delayKnob);
 	decayKnob = new CAnimKnob(CRect(CPoint(0, 50), CPoint(42, 42)), listener, 0 + PARAM_ALLPASSDECAY_FIRST, 80, 42, knobBackground);
-	//allpassView->addView(decayKnob);
+	allpassView->addView(decayKnob);
 
 	// Holds the output gain control
 	gainView = new CViewContainer(CRect(0, 0, 100, 300));
@@ -56,38 +56,5 @@ GuiBaseAPModule::GuiBaseAPModule (const CRect &rect, CControlListener* listener)
 	this->addView(baseModuleView);
 }
 
-GuiBaseAPModule::~GuiBaseAPModule() {
-	/*if (controlView) {
-		delete controlView;
-		controlView = nullptr;
-	}*/
-	/*if (baseModuleView) {
-		delete baseModuleView;
-		baseModuleView = nullptr;
-	}*/
-	/*if (knobBackground) {
-		delete knobBackground;
-		knobBackground = nullptr;
-	}*/
-	/*CBitmap* knobBackground;
-	CRowColumnView* baseModuleView;
-	CViewContainer* handleView;
-	CRowColumnView* controlView;
-	CViewContainer* mixerView;
-	CViewContainer* equalizerView;
-	CViewContainer* allpassView;
-	CAnimKnob* delayKnob;
-	CAnimKnob* decayKnob;
-	CViewContainer* gainView;*/
-	gainView->removeAll();
-	allpassView->removeAll();
-	equalizerView->removeAll();
-	mixerView->removeAll();
-	controlView->removeAll();
-	handleView->removeAll();
-	baseModuleView->removeAll();
-	delete knobBackground;
-	
-}
 
 }

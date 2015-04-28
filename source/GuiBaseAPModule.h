@@ -14,7 +14,6 @@ class GuiBaseAPModule :
 {
 public:
 	GuiBaseAPModule(const CRect& size, CControlListener* listener);
-	~GuiBaseAPModule();
 
 protected:
 	CRect  size;

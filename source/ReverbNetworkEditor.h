@@ -4,8 +4,12 @@
 #include "public.sdk/source/vst/vstguieditor.h"
 #include <memory>
 
+#include "GuiBaseAPModule.h"
+
 namespace Steinberg {
 namespace Vst {
+
+	
 
 class ReverbNetworkEditor :
 	public VSTGUIEditor,
@@ -34,7 +38,10 @@ public:
 
 private:
 	// Holds pointer to the module GUIs
-	std::vector<CRowColumnView*> apGuiModules;
+	std::vector<GuiBaseAPModule*> apGuiModules;
+
+	CScrollView* workspaceView;
+	unsigned short numberOfAPModules;
 
 	CBitmap* knobBackground;
 };

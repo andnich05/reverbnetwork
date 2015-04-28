@@ -25,9 +25,7 @@ GuiBaseModuleFrame::GuiBaseModuleFrame (const CRect &rect)
 // ANFASSER OBEN HINMACHEN AN DEM MAN DAS MODUL VERSCHIEBEN KANN
 CMouseEventResult GuiBaseModuleFrame::onMouseDown (CPoint &where, const CButtonState& buttons)
 {
-	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", "Mouse down");
-	fclose(pFile);
+	
 
 	mousePressed = true;
 	mousePressedX = where.x;
