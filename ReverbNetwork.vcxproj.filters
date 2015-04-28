@@ -139,10 +139,13 @@
     <ClCompile Include="source\ValueConversion.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiBaseModuleFrame.cpp">
+    <ClCompile Include="source\GuiBaseAPModule.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiBaseAPModule.cpp">
+    <ClCompile Include="source\GuiKnobGroup.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiModuleHandle.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -300,10 +303,13 @@
     <ClInclude Include="source\ValueConversion.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiBaseModuleFrame.h">
+    <ClInclude Include="source\GuiBaseAPModule.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiBaseAPModule.h">
+    <ClInclude Include="source\GuiKnobGroup.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiModuleHandle.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>

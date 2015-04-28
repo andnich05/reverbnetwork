@@ -218,8 +218,9 @@
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_uidescription_win32.cpp" />
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
     <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
+    <ClCompile Include="source\GuiKnobGroup.cpp" />
     <ClCompile Include="source\GuiBaseAPModule.cpp" />
-    <ClCompile Include="source\GuiBaseModuleFrame.cpp" />
+    <ClCompile Include="source\GuiModuleHandle.cpp" />
     <ClCompile Include="source\ValueConversion.cpp" />
     <ClCompile Include="source\GainModule.cpp" />
     <ClCompile Include="source\EqualizerModule.cpp" />
@@ -255,8 +256,9 @@
     <ClInclude Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstguieditor.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
+    <ClInclude Include="source\GuiKnobGroup.h" />
     <ClInclude Include="source\GuiBaseAPModule.h" />
-    <ClInclude Include="source\GuiBaseModuleFrame.h" />
+    <ClInclude Include="source\GuiModuleHandle.h" />
     <ClInclude Include="source\ValueConversion.h" />
     <ClInclude Include="source\GainModule.h" />
     <ClInclude Include="source\EqualizerModule.h" />
