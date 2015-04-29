@@ -36,6 +36,10 @@ public:
 	// Remove the GUI for a specified Allpass module
 	void removeAPModule(uint16 moduleNumber);
 
+	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
+	// Returns the group view
+	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr groupName, const int32_t& knobTag, const int32_t& valueEditTag);
+
 private:
 	// Holds pointer to the module GUIs
 	std::vector<GuiBaseAPModule*> apGuiModules;

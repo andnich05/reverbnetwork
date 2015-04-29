@@ -2,43 +2,32 @@
 #define GUIBASEAPMODULE_H
 
 #include "../vstgui4/vstgui/lib/cviewcontainer.h"
-#include "../vstgui4/vstgui/lib/controls/ccontrol.h"
+
 
 namespace VSTGUI {
 
-class CRowColumnView;
-class CAnimKnob;
+#ifndef FOREACHSUBVIEW_REVERSE
+#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
+#endif
 
 class GuiBaseAPModule :
 	public CViewContainer
 {
 public:
-	GuiBaseAPModule(const CRect& size, CControlListener* listener);
+	// Handle region is the region where the user can drag the module by pressing and holding the mouse button
+	GuiBaseAPModule(const CRect& size, const CRect& handleRegion);
 
-protected:
-	CRect  size;
-	CRect  mouseableArea;
+	virtual CMouseEventResult onMouseDown(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseMoved(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
+	virtual CMouseEventResult onMouseUp(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
+	virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 
-private: 
-	CControlListener* listener;
-
-	CBitmap* knobBackground;
-	CRowColumnView* baseModuleView;
-	// Handle view to grab and move the module with the mouse
-	CViewContainer* handleView;
-	// Control view which holds the individual processing modules
-	CRowColumnView* controlView;
-	// Holds the input mixer controls (input gain for each channel)
-	CViewContainer* mixerView;
-	// Holds the equalizer controls
-	CViewContainer* equalizerView;
-	// Holds the allpass controls (delay and decay)
-	CViewContainer* allpassView;
-	CAnimKnob* delayKnob;
-	CAnimKnob* decayKnob;
-	// Holds the output gain control
-	CViewContainer* gainView;
+private:
+	int mousePressedX;
+	int mousePressedY;
+	bool mousePressed;
+	CRect handleRegion;
 };
 
 }

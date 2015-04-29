@@ -142,10 +142,7 @@
     <ClCompile Include="source\GuiBaseAPModule.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiKnobGroup.cpp">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClCompile>
-    <ClCompile Include="source\GuiModuleHandle.cpp">
+    <ClCompile Include="source\GuiHandleView.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -306,10 +303,7 @@
     <ClInclude Include="source\GuiBaseAPModule.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiKnobGroup.h">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClInclude>
-    <ClInclude Include="source\GuiModuleHandle.h">
+    <ClInclude Include="source\GuiHandleView.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>
