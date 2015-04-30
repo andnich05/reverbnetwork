@@ -11,9 +11,10 @@
 
 namespace VSTGUI {
 
-GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion)
+GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int id)
 : CViewContainer(rect)
 , handleRegion(handleRegion)
+, id(id)
 {
 	backgroundOffset (0, 0);
 	backgroundColor = kBlackCColor;

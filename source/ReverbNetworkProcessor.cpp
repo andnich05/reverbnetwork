@@ -257,10 +257,13 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		uint32 numberOfSamples = data.numSamples;
 
 		// Get the input buffers for all inputs
+		// Sample format is -1.0 to +1.0
 		float* inputSamples[MAXVSTINPUTS];
 		float* outputSamples[MAXVSTOUTPUTS];
+
 		for (uint32 input = 0; input < MAXVSTINPUTS; ++input) {
 			inputSamples[input] = data.inputs[input].channelBuffers32[0];
+			
 		}
 		for (uint32 output = 0; output < MAXVSTOUTPUTS; ++output) {
 			outputSamples[output] = data.outputs[output].channelBuffers32[0];

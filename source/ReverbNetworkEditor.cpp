@@ -7,13 +7,19 @@
 namespace Steinberg {
 namespace Vst {
 
+	const int32_t id_addModule = 0;
+	const int32_t id_removeModule = 1;
+	const int32_t id_apDelayFirst = 2;
+	const int32_t id_apDelayLast = id_apDelayFirst + MAXMODULENUMBER - 1;
+	const int32_t id_apDecayFirst = id_apDelayLast + 1;
+	const int32_t id_apDecayLast = id_apDecayFirst + MAXMODULENUMBER - 1;
+
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
-, numberOfAPModules(0)
+, totalNumberOfCreatedModules(0)
 {
 
-
-	
+	allpassModuleIdPool.resize(MAXMODULENUMBER, false);
 }
 
 ReverbNetworkEditor::~ReverbNetworkEditor() {
@@ -38,8 +44,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(750, 200), CPoint(100, 20)), this, 'AddM', "Add Module");
 	frame->addView(buttonAddModule);
-	CTextButton* buttonRemoveModule = new CTextButton(CRect(CPoint(750, 230), CPoint(100, 20)), this, 'RmvM', "Remove Module");
-	frame->addView(buttonRemoveModule);
+	//CTextButton* buttonRemoveModule = new CTextButton(CRect(CPoint(750, 230), CPoint(100, 20)), this, 'RmvM', "Remove Module");
+	//frame->addView(buttonRemoveModule);
 	frame->addView(workspaceView);
 	return true;
 }
@@ -53,6 +59,18 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 }
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
+
+	int32_t tag = pControl->getTag();
+	// Delay tag id
+	if (tag >= id_apDelayFirst && tag <= id_apDelayLast) {
+		// Set value in the controller
+		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
+		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
+		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(tag - id_apDelayFirst).c_str());
+		fclose(pFile);
+	}
+
 	switch (pControl->getTag()) {
 	case 0: {
 		controller->setParamNormalized(1, pControl->getValue());
@@ -63,29 +81,64 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		// Make sure create function is called only one time (without it would be two times)
 		if (pControl->isDirty()) {
 			createAPModule();
+			
 			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 			fprintf(pFile, "y(n): %s\n", "Create");
 			fclose(pFile);*/
 		}
 		break;
 	}
-	case 'RmvM': {
+	case 'ClsM': {	// Close button of AP module pressed
 		if (pControl->isDirty()) {
-			removeAPModule(2);
+			// Remove the module view, the parent-child hierarchy is: baseModuleView(handleView(closeViewButton
+			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
+				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
+					workspaceView->removeView(pControl->getParentView()->getParentView());
+					//allpassModules[i] = false;
+					break;
+				}
+			}
+
+			//workspaceView->removeView(pControl->getParentView()->getParentView());
+			// Update the workspace view
+			workspaceView->setDirty();
 		}
 		break;
 	}
+	/*case 'kDel': {
+		if (pControl->isDirty()) {
+			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
+				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
+					controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
+					controller->performEdit(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
+					break;
+				}
+			}
+		}
+		break;
+	}*/
 	}
+
 }
 
 void ReverbNetworkEditor::createAPModule() {
 
+	if (workspaceView->getNbViews() >= MAXMODULENUMBER || workspaceView->getNbViews() > 999) {
+		return;
+	}
+
 	// Handle view to grab and move the module with the mouse
 	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 400, 20));
 	handleView->setBackgroundColor(CColor(0, 0, 0, 0));
+	// Button um View "einzuklappen" => Platz sparen
+
+	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, 'ClsM', "X");
+	handleView->addView(closeViewButton);
 
 	//CRowColumnView* baseModuleView = new CRowColumnView(CRect(0, 0, 300, 250), CRowColumnView::kRowStyle);
-	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + numberOfAPModules * 20, 0 + numberOfAPModules * 20), CPoint(0, 0)), handleView->getViewSize());
+	CRect handleViewSize = handleView->getViewSize();
+	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + 8));
+	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30), CPoint(0, 0)), handleViewSize, workspaceView->getNbViews());
 	baseModuleView->setBackgroundColor(CColor(55, 55, 55, 255));
 
 	// Control view which holds the individual processing modules
@@ -104,10 +157,35 @@ void ReverbNetworkEditor::createAPModule() {
 	// Holds the allpass controls (delay and decay)
 	CRowColumnView* allpassView = new CRowColumnView(CRect(0, 0, 100, 300), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 10.0);
 	allpassView->setBackgroundColor(CColor(0, 0, 0, 0));
-	// ID-Tag of the main control is the same as the parameter ID
+	
+	uint16 idOffset = 0;
+	bool pushBack = true;
+	// Check if a view has been removed, if so the new created module should take the removed one's place and also take his ids for the gui components
+	// E.g. module0, module1, module2 => remove(module1) => module0, module2 => createModule() => module0, module1, module2
+	//for (uint16 i = 0; i < allpassModules.size(); ++i) {
+	//	// false means there was already a module at this vector index position
+	//	if (allpassModules[i] == false) {
+	//		allpassModules[i] = true;
+	//		idOffset = i;
+	//		pushBack = false;
+	//		break;
+	//	}
+	//}
 
-	allpassView->addView(createKnobGroup("Delay", 0, 1));
-	allpassView->addView(createKnobGroup("Decay", 2, 3));
+	// If the offset is still zero then there were no views removed
+	//if (pushBack) {
+	//	// In this case add another view to the list
+	//	allpassModules.push_back(true);
+	//	// and set the id offset
+	//	idOffset = allpassModules.size() - 1;
+	//}
+
+	allpassView->addView(createKnobGroup("Delay", id_apDelayFirst + idOffset, 'eDel'));
+	allpassView->addView(createKnobGroup("Decay", id_apDecayFirst + idOffset, 'eDec'));
+
+	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
+	fclose(pFile);
 
 	// Holds the output gain control
 	CViewContainer* gainView = new CViewContainer(CRect(0, 0, 100, 300));
@@ -125,8 +203,7 @@ void ReverbNetworkEditor::createAPModule() {
 
 	workspaceView->addView(baseModuleView);
 
-	++numberOfAPModules;
-
+	++totalNumberOfCreatedModules;
 }
 
 CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr groupName, const int32_t& knobTag, const int32_t& valueEditTag) {
@@ -151,9 +228,9 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 
 void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
 	// Remove the view and delete it (=> true)
-	workspaceView->removeView(frame->getView(moduleNumber));
+	// the view container fills gaps out by moving the views' index e.g.  workspaceView[0][1][2] => removeView(1) => workspaceView[0][1] (2 is now 1) => like a std::vector
+	workspaceView->removeView(workspaceView->getView(moduleNumber), true);
 	workspaceView->setDirty();
-	
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

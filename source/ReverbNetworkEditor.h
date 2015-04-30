@@ -42,10 +42,17 @@ public:
 
 private:
 	// Holds pointer to the module GUIs
-	std::vector<GuiBaseAPModule*> apGuiModules;
+	//std::vector<GuiBaseAPModule*> apGuiModules;
 
+	// View where the modules are placed and where they can be moved around and stuff
 	CScrollView* workspaceView;
-	unsigned short numberOfAPModules;
+
+	//// True if the GUI for the module is present (= created and not removed yet)
+
+	// True if the id (= the index of the vector) is already taken
+	std::vector<bool> allpassModuleIdPool;
+	// Total number of created modules = total number of times the function createModule() has been called
+	uint32 totalNumberOfCreatedModules;
 
 	CBitmap* knobBackground;
 };
