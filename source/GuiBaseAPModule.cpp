@@ -11,10 +11,10 @@
 
 namespace VSTGUI {
 
-GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int id)
+GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int moduleId)
 : CViewContainer(rect)
 , handleRegion(handleRegion)
-, id(id)
+, moduleId(moduleId)
 {
 	backgroundOffset (0, 0);
 	backgroundColor = kBlackCColor;
@@ -22,6 +22,10 @@ GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, c
 	mousePressed = false;
 	mousePressedX = 0;
 	mousePressedY = 0;
+}
+
+unsigned int GuiBaseAPModule::getModuleId() {
+	return moduleId;
 }
 
 // ANFASSER OBEN HINMACHEN AN DEM MAN DAS MODUL VERSCHIEBEN KANN

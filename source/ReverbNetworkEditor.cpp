@@ -7,6 +7,7 @@
 namespace Steinberg {
 namespace Vst {
 
+	// GUI id mapping
 	const int32_t id_addModule = 0;
 	const int32_t id_removeModule = 1;
 	const int32_t id_apDelayFirst = 2;
@@ -60,16 +61,29 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 
-	int32_t tag = pControl->getTag();
-	// Delay tag id
-	if (tag >= id_apDelayFirst && tag <= id_apDelayLast) {
-		// Set value in the controller
-		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
-		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
-		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(tag - id_apDelayFirst).c_str());
-		fclose(pFile);
+	// Delay id range
+	if (pControl->getTag() >= id_apDelayFirst && pControl->getTag() <= id_apDelayLast) {
+		// Calculate which allpass module is the parent
+		uint32 moduleId = pControl->getTag() - id_apDelayFirst;
+		// Update parameters
+		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
+		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(moduleId).c_str());
+		fclose(pFile);*/
 	}
+
+
+	//int32_t tag = pControl->getTag();
+	//// Delay tag id
+	//if (tag >= id_apDelayFirst && tag <= id_apDelayLast) {
+	//	// Set value in the controller
+	//	controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
+	//	controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
+	//	FILE* pFile = fopen("E:\\ogVst.txt", "a");
+	//	fprintf(pFile, "y(n): %s\n", std::to_string(tag - id_apDelayFirst).c_str());
+	//	fclose(pFile);
+	//}
 
 	switch (pControl->getTag()) {
 	case 0: {
@@ -93,8 +107,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			// Remove the module view, the parent-child hierarchy is: baseModuleView(handleView(closeViewButton
 			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
 				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
+					allpassModuleIdPool[dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->getModuleId()] = false;
 					workspaceView->removeView(pControl->getParentView()->getParentView());
-					//allpassModules[i] = false;
 					break;
 				}
 			}
@@ -105,18 +119,27 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 		break;
 	}
-	/*case 'kDel': {
-		if (pControl->isDirty()) {
-			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
-				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
-					controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
-					controller->performEdit(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
-					break;
-				}
-			}
-		}
-		break;
-	}*/
+	//case 'kDel': {
+	//	if (pControl->isDirty()) {
+	//		/*for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
+	//			if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
+	//				controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
+	//				controller->performEdit(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
+	//				break;
+	//			}
+	//		}*/
+
+
+	//		uint32 moduleId = dynamic_cast<GuiBaseAPModule*>(pControl->getParentView()->getParentView()->getParentView()->getParentView())->getModuleId();
+	//		//uint32 moduleId = pControl->getTag();
+	//		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
+	//		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
+	//		FILE* pFile = fopen("E:\\logVst.txt", "a");
+	//		fprintf(pFile, "y(n): %s\n", std::to_string(moduleId).c_str());
+	//		fclose(pFile);
+	//	}
+	//	break;
+	//}
 	}
 
 }
@@ -135,11 +158,31 @@ void ReverbNetworkEditor::createAPModule() {
 	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, 'ClsM', "X");
 	handleView->addView(closeViewButton);
 
+	CTextEdit* moduleTitle = new CTextEdit(CRect(CPoint(4, handleView->getHeight() / 2 - 8), CPoint(handleView->getWidth() - 30, 16)), this, -1);
+	moduleTitle->setBackColor(CColor(0, 0, 0, 0));
+	moduleTitle->setFrameColor(CColor(0, 0, 0, 0));
+	handleView->addView(moduleTitle);
+
 	//CRowColumnView* baseModuleView = new CRowColumnView(CRect(0, 0, 300, 250), CRowColumnView::kRowStyle);
 	CRect handleViewSize = handleView->getViewSize();
 	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + 8));
-	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30), CPoint(0, 0)), handleViewSize, workspaceView->getNbViews());
+	// Id in order to identify the module in the valueChanged() function
+	uint32 moduleId = 0;
+	// Find the lowest id number which is not already taken
+	for (uint32 i = 0; i < allpassModuleIdPool.size(); ++i) {
+		// False means it's not taken yet
+		if (allpassModuleIdPool[i] == false) {
+			moduleId = i;
+			allpassModuleIdPool[i] = true;
+			break;
+		}
+	}
+	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30), CPoint(0, 0)), handleViewSize, moduleId);
 	baseModuleView->setBackgroundColor(CColor(55, 55, 55, 255));
+
+	std::string temp = "Allpass Module ";
+	temp.append(std::to_string(moduleId));
+	moduleTitle->setText(temp.c_str());
 
 	// Control view which holds the individual processing modules
 	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), 400, 300), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy);
@@ -158,8 +201,8 @@ void ReverbNetworkEditor::createAPModule() {
 	CRowColumnView* allpassView = new CRowColumnView(CRect(0, 0, 100, 300), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 10.0);
 	allpassView->setBackgroundColor(CColor(0, 0, 0, 0));
 	
-	uint16 idOffset = 0;
-	bool pushBack = true;
+	//uint16 idOffset = 0;
+	//bool pushBack = true;
 	// Check if a view has been removed, if so the new created module should take the removed one's place and also take his ids for the gui components
 	// E.g. module0, module1, module2 => remove(module1) => module0, module2 => createModule() => module0, module1, module2
 	//for (uint16 i = 0; i < allpassModules.size(); ++i) {
@@ -180,12 +223,12 @@ void ReverbNetworkEditor::createAPModule() {
 	//	idOffset = allpassModules.size() - 1;
 	//}
 
-	allpassView->addView(createKnobGroup("Delay", id_apDelayFirst + idOffset, 'eDel'));
-	allpassView->addView(createKnobGroup("Decay", id_apDecayFirst + idOffset, 'eDec'));
+	allpassView->addView(createKnobGroup("Delay", id_apDelayFirst + moduleId, 'eDel'));
+	allpassView->addView(createKnobGroup("Decay", 'KDec', 'eDec'));
 
-	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
-	fclose(pFile);
+	fclose(pFile);*/
 
 	// Holds the output gain control
 	CViewContainer* gainView = new CViewContainer(CRect(0, 0, 100, 300));
@@ -202,6 +245,8 @@ void ReverbNetworkEditor::createAPModule() {
 	baseModuleView->sizeToFit();
 
 	workspaceView->addView(baseModuleView);
+
+	//dynamic_cast<GuiBaseAPModule*>(controlView->getParentView())->getModuleId();
 
 	++totalNumberOfCreatedModules;
 }
