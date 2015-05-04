@@ -31,6 +31,7 @@ unsigned int GuiBaseAPModule::getModuleId() {
 // ANFASSER OBEN HINMACHEN AN DEM MAN DAS MODUL VERSCHIEBEN KANN
 CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 {
+	this->invalid();
 	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "mouse down");
 	fclose(pFile);*/
