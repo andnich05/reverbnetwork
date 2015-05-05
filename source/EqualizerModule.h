@@ -16,29 +16,30 @@ public:
 		highShelf
 	};
 
-	EqualizerModule(unsigned int samplingFreq, unsigned int centerFreq, double qFactor, double gain);
+	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double dBgain);
 	~EqualizerModule();
 
-	inline void setSamplingFreq(const unsigned int& fs) { samplingFreq = fs; }
-	inline void setCenterFreq(const unsigned int& f0) { centerFreq = f0; }
+	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; }
+	inline void setCenterFreq(const double& f0) { centerFreq = f0; }
 	inline void setQFactor(const double& q) { qFactor = q; }
-	inline void setGain(const double& g) { gain = g; }
+	void setGainInDB(const double& g);
 	inline void setFilterType(const FilterType& type) { filterType = type; }
 
-	void process(double& sample);
+	void processSample(double& sample);
 
 private:
 
 	void calculateK();
-	void calculateCoefficients();
+	void calculateCoefficients(FilterType filterType);
 
 	// Sampling frequency
-	unsigned int samplingFreq;
+	double samplingFreq;
 	// Center frequency f0 ("Mittenfrequenz")
-	unsigned int centerFreq;
+	double centerFreq;
 	// Q factor or quality factor ("Güte")
 	double qFactor;
 	// Gain
+	double dBgain;
 	double gain;
 	// Filter type to use (see enum)
 	FilterType filterType;

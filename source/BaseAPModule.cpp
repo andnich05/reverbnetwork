@@ -7,11 +7,12 @@
 #include "ValueConversion.h"
 
 #include <cmath>
+#include <string>
 
 BaseAPModule::BaseAPModule(unsigned int sampleRate)
 	: sampleRate(sampleRate)
 	, mixer(new MixerModule())
-	, equalizer(new EqualizerModule())
+	, equalizer(new EqualizerModule(EqualizerModule::lowPass, sampleRate, sampleRate / 4, 1.0, 1.0))
 	, allpass(new SchroederAllpass(sampleRate, 0, 0.0))
 	, gain(new GainModule()) 
 {
@@ -41,14 +42,17 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 	double outputSample = 0.0;
 	// Mix channels
 	outputSample = mixer->mixChannels(channelSamples);
-
 	// Saving processing time => if the sample is zero there is no need in processing it (doesn't work for allpass)
 	//if (outputSample == 0.0) {
 		//return 0.0;
 	//}
 
-	// Do equalizing
+	equalizer->processSample(outputSample);
 	// ...
+
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", "mouse down");
+	fclose(pFile);*/
 
 	// Send through the allpass
 	allpass->doProcessing(outputSample);
@@ -59,6 +63,9 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 	}
 
 	// Return output sample of the whole module
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(outputSample).c_str());
+	fclose(pFile);*/
 	return outputSample;
 }
 

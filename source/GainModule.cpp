@@ -2,7 +2,7 @@
 #include "ReverbNetworkDefines.h"
 
 GainModule::GainModule() 
-	: gain(0) {
+	: gain(1.0) {
 
 }
 

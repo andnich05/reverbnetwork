@@ -2,10 +2,10 @@
 #define REVERBNETWORKDEFINES_H
 
 // Maximum number of AP modules
-#define MAXMODULENUMBER 4
+#define MAXMODULENUMBER 2
 
 // Maximum number of AP inputs
-#define MAXMODULEINPUTS 3
+#define MAXMODULEINPUTS 2
 
 // Maximum number of AP outputs (should be 1 for now)
 //#define MAXMODULEOUTPUTS 1
@@ -17,10 +17,10 @@
 #define MAXDECAY 10
 
 // Maximum number of VST inputs
-#define MAXVSTINPUTS 6
+#define MAXVSTINPUTS 2
 
 // Maximum number of VST outputs
-#define MAXVSTOUTPUTS 4
+#define MAXVSTOUTPUTS 2
 
 // Limit values to 1.0, prevent clipping
 #define LIMITER

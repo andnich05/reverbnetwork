@@ -281,11 +281,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		// VST inputs to module inputs
 		// Sample interval
 		for (uint32 sample = 0; sample < numberOfSamples; ++sample) {
-
 			// Module input processing
 			for (uint16 module = 0; module < MAXMODULENUMBER; ++module) {
 				samplesToProcess.clear();
-				// For each input of module: cheack if the input is connected to a VST input
+				// For each module input: check if the input is connected to a VST input
 				for (uint16 moduleInput = 0; moduleInput < MAXMODULEINPUTS; ++moduleInput) {
 					if (moduleToModuleConnections[module][moduleInput] != -1) {
 						// Input is connected to another module's output => take sample from module input buffer
@@ -303,7 +302,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				// Process the vector and write the output sample into the correct module output buffer
 				moduleOutputBuffer[module] = apModules[module]->processModuleSamples(samplesToProcess);
 			}
-
+			
 			// !!! Swap input and output buffers
 			double* temp = moduleInputBuffer;
 			moduleInputBuffer = moduleOutputBuffer;
