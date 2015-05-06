@@ -81,6 +81,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	}
 
 	knobBackground = new CBitmap("knob.png");
+	knobBackgroundSmall = new CBitmap("knob2.png");
+	groupFrame = new CBitmap("groupframe.png");
 
 	CRect editorSize(0, 0, 1000, 700);
 	frame = new CFrame(editorSize, parent, this);
@@ -202,7 +204,7 @@ void ReverbNetworkEditor::createAPModule() {
 	}
 
 	// Handle view to grab and move the module with the mouse
-	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 400, 20));
+	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 500, 20));
 	handleView->setBackgroundColor(CColor(0, 0, 0, 0));
 	// Button um View "einzuklappen" => Platz sparen
 
@@ -235,60 +237,69 @@ void ReverbNetworkEditor::createAPModule() {
 	moduleTitle->setText(temp.c_str());
 
 	// Control view which holds the individual processing modules
-	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), 400, 300), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy);
+	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 250), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy);
 	controlView->setBackgroundColor(CColor(0, 0, 0, 0));
 	//controlView->addView(knob);
 
 	// Holds the input mixer controls (input gain for each channel)
-	CViewContainer* mixerView = new CViewContainer(CRect(0, 0, 100, 300));
+	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(200, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	mixerView->setBackgroundColor(CColor(0, 0, 0, 0));
+	mixerView->addView(createGroupTitle("MIXER", mixerView->getWidth()));
+	for (uint32 i = 0; i < MAXMODULEINPUTS; ++i) {
+		temp = "IN ";
+		temp.append(std::to_string(i));
+		temp.append(":");
+		mixerView->addView(createMixerRow(temp.c_str(), mixerView->getWidth(), id_mixer_optionMenu_inputSelectFirst + moduleId * MAXMODULEINPUTS, id_mixer_knob_gainFirst + moduleId * MAXMODULEINPUTS, id_mixer_textEdit_gainFirst + moduleId * MAXMODULEINPUTS));
+	}
 
-	CRowColumnView* mixerRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(mixerView->getWidth(), 20)), CRowColumnView::kRowStyle);
-	CTextLabel* inputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(30, 15)), "IN 0");
-	mixerRow->addView(inputTitle);
-	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(50, 15)), this, 0);
 
 	// Holds the equalizer controls
-	CViewContainer* equalizerView = new CViewContainer(CRect(0, 0, 100, 300));
+	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(140, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	equalizerView->setBackgroundColor(CColor(0, 0, 0, 0));
+	CRowColumnView* filterTypeView = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
+	filterTypeView->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* filterTypeTextLabel = new CTextLabel(CRect(0, 0, 70, 20), "Filter Type: ");
+	filterTypeTextLabel->setFont(CFontRef(kNormalFontSmall));
+	filterTypeTextLabel->setBackColor(CColor(0, 0, 0, 0));
+	filterTypeTextLabel->setFrameColor(CColor(0, 0, 0, 0));
+	COptionMenu* filterTypeMenu = new COptionMenu(CRect(0, 0, 70, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
+	filterTypeMenu->setFont(CFontRef(kNormalFontSmall));
+	filterTypeMenu->addEntry("Low Pass");
+	filterTypeMenu->addEntry("High Pass");
+	filterTypeMenu->addEntry("Band Pass");
+	filterTypeMenu->addEntry("Band Stop");
+	filterTypeMenu->addEntry("Low Shelf");
+	filterTypeMenu->addEntry("High Shelf");
+	filterTypeMenu->setCurrent(0);
+	filterTypeView->addView(filterTypeTextLabel);
+	filterTypeView->addView(filterTypeMenu);
+	filterTypeView->sizeToFit();
+	CRowColumnView* paramFirstRow = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
+	paramFirstRow->setBackgroundColor(CColor(0, 0, 0, 0));
+	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId));
+	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId));
+	paramFirstRow->sizeToFit();
+	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
+	equalizerView->addView(filterTypeView);
+	equalizerView->addView(paramFirstRow);
+	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId));
+
 
 	// Holds the allpass controls (delay and decay)
-	CRowColumnView* allpassView = new CRowColumnView(CRect(0, 0, 100, 300), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 10.0);
+	CRowColumnView* allpassView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	allpassView->setBackgroundColor(CColor(0, 0, 0, 0));
-	
-	//uint16 idOffset = 0;
-	//bool pushBack = true;
-	// Check if a view has been removed, if so the new created module should take the removed one's place and also take his ids for the gui components
-	// E.g. module0, module1, module2 => remove(module1) => module0, module2 => createModule() => module0, module1, module2
-	//for (uint16 i = 0; i < allpassModules.size(); ++i) {
-	//	// false means there was already a module at this vector index position
-	//	if (allpassModules[i] == false) {
-	//		allpassModules[i] = true;
-	//		idOffset = i;
-	//		pushBack = false;
-	//		break;
-	//	}
-	//}
-
-	// If the offset is still zero then there were no views removed
-	//if (pushBack) {
-	//	// In this case add another view to the list
-	//	allpassModules.push_back(true);
-	//	// and set the id offset
-	//	idOffset = allpassModules.size() - 1;
-	//}
-
-	
-	allpassView->addView(createGroupTitle("SCHROEDER \n ALLPASS", allpassView->getWidth()));
-	allpassView->addView(createKnobGroup("Delay", id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId));
-	allpassView->addView(createKnobGroup("Decay", id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId));
+	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
+	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId));
+	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId));
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
 	fclose(pFile);*/
 
 	// Holds the output gain control
-	CViewContainer* gainView = new CViewContainer(CRect(0, 0, 100, 300));
+	CRowColumnView* gainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
+	gainView->addView(createKnobGroup("Gain", gainView->getWidth(), id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId));
 	gainView->setBackgroundColor(CColor(0, 0, 0, 0));
 
 	// Add process views to the control view
@@ -303,16 +314,18 @@ void ReverbNetworkEditor::createAPModule() {
 
 	workspaceView->addView(baseModuleView);
 
-	//dynamic_cast<GuiBaseAPModule*>(controlView->getParentView())->getModuleId();
+	/*mixerView->setBackground(groupFrame);
+	equalizerView->setBackground(groupFrame);
+	allpassView->setBackground(groupFrame);
+	gainView->setBackground(groupFrame);*/
 
 	++totalNumberOfCreatedModules;
 }
 
-CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr groupName, const int32_t& knobTag, const int32_t& valueEditTag) {
-	CViewContainer* groupView = new CViewContainer(CRect(0, 0, 50, 0));
-	// 55,55,55
+CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag) {
+	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* groupNameLabel = new CTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), groupName);
+	CTextLabel* groupNameLabel = new CTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), title);
 	groupNameLabel->setFont(kNormalFontSmall);
 	groupNameLabel->setBackColor(CColor(0, 0, 0, 0));
 	groupNameLabel->setFrameColor(CColor(0, 0, 0, 0));
@@ -329,11 +342,55 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 }
 
 CTextLabel* ReverbNetworkEditor::createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) {
-	CTextLabel* label = new CTextLabel(CRect(CPoint(0, 0), CPoint(width, 50)), title);
+	CTextLabel* label = new CTextLabel(CRect(CPoint(0, 0), CPoint(width, 30)), title);
 	label->setFont(kNormalFontBig);
 	label->setBackColor(CColor(0, 0, 0, 0));
 	label->setFrameColor(CColor(0, 0, 0, 0));
 	return label;
+}
+
+CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& optionMenuTag, const int32_t& knobTag, const int32_t& valueEditTag) {
+	CRowColumnView* mixerRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(width, 20)), CRowColumnView::kColumnStyle);
+	mixerRow->setSpacing(2);
+	mixerRow->setBackgroundColor(CColor(0, 0, 0, 0));
+
+	CTextLabel* inputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(40, 20)), title);
+	inputTitle->setFont(CFontRef(kNormalFontSmall));
+	inputTitle->setBackColor(CColor(0, 0, 0, 0));
+	inputTitle->setFrameColor(CColor(0, 0, 0, 0));
+
+	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(0, 0)), this, optionMenuTag);
+	inputSelect->setFont(CFontRef(kNormalFontSmall));
+	inputSelect->setViewSize(CRect(CPoint(0, 0), CPoint(90, 20)));
+	inputSelect->addEntry("<Not Connected>");
+	inputSelect->setCurrent(0);
+	std::string temp = "";
+	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+		temp = "APM";
+		temp.append(std::to_string(i));
+		temp.append(" OUT");
+		inputSelect->addEntry((temp).c_str());
+	}
+	for (uint32 i = 0; i < MAXVSTINPUTS; ++i) {
+		temp = "VST";
+		temp.append(std::to_string(i));
+		temp.append(" IN");
+		inputSelect->addEntry((temp).c_str());
+	}
+
+	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth())), this, knobTag, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
+
+	CTextEdit* valueEdit = new CTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, valueEditTag, "0.0");
+	valueEdit->setFont(CFontRef(kNormalFontSmall));
+	valueEdit->setBackColor(CColor(0, 0, 0, 0));
+	valueEdit->setFrameColor(CColor(0, 0, 0, 0));
+
+	mixerRow->addView(inputTitle);
+	mixerRow->addView(inputSelect);
+	mixerRow->addView(knob);
+	mixerRow->addView(valueEdit);
+
+	return mixerRow;
 }
 
 void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {

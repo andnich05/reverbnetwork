@@ -38,10 +38,12 @@ public:
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
-	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr groupName, const int32_t& knobTag, const int32_t& valueEditTag);
+	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag);
 
 	// Create a text label with a title for a group
 	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width);
+
+	CRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& optionMenuTag, const int32_t& knobTag, const int32_t& valueEditTag);
 
 
 
@@ -60,6 +62,8 @@ private:
 	uint32 totalNumberOfCreatedModules;
 
 	CBitmap* knobBackground;
+	CBitmap* knobBackgroundSmall;
+	CBitmap* groupFrame;
 };
 
 }} // namespaces
