@@ -40,6 +40,11 @@ public:
 	// Returns the group view
 	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr groupName, const int32_t& knobTag, const int32_t& valueEditTag);
 
+	// Create a text label with a title for a group
+	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width);
+
+
+
 private:
 	// Holds pointer to the module GUIs
 	//std::vector<GuiBaseAPModule*> apGuiModules;

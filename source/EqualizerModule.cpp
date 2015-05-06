@@ -40,7 +40,7 @@ void EqualizerModule::calculateK() {
 void EqualizerModule::calculateCoefficients(FilterType filterType) {
 	switch (filterType) {
 	case lowPass: {
-		// Lowpass coeffecients
+		// Lowpass
 		double denominator = 1 + sqrt(2) * K + pow(K, 2);
 		a0 = (pow(K, 2)) / denominator;
 		a1 = (2 * pow(K, 2)) / denominator;
@@ -124,7 +124,7 @@ void EqualizerModule::calculateCoefficients(FilterType filterType) {
 }
 
 void EqualizerModule::processSample(double& sample) {
-	// Temp sample
+	// Save current input sample
 	xn0 = sample;
 
 	// Difference Equation

@@ -7,13 +7,59 @@
 namespace Steinberg {
 namespace Vst {
 
-	// GUI id mapping
+	// Title bar GUI ids (identification through dynamic_cast)
 	const int32_t id_addModule = 0;
-	const int32_t id_removeModule = 1;
-	const int32_t id_apDelayFirst = 2;
-	const int32_t id_apDelayLast = id_apDelayFirst + MAXMODULENUMBER - 1;
-	const int32_t id_apDecayFirst = id_apDelayLast + 1;
-	const int32_t id_apDecayLast = id_apDecayFirst + MAXMODULENUMBER - 1;
+	const int32_t id_hideModule = id_addModule + 1;
+	const int32_t id_removeModule = id_hideModule + 1;
+
+	// Mixer GUI ids
+	const int32_t id_mixer_optionMenu_inputSelectFirst = id_removeModule + 1;
+	const int32_t id_mixer_optionMenu_inputSelectLast = id_mixer_optionMenu_inputSelectFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
+	const int32_t id_mixer_knob_gainFirst = id_mixer_optionMenu_inputSelectLast + 1;
+	const int32_t id_mixer_knob_gainLast = id_mixer_knob_gainFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
+	const int32_t id_mixer_textEdit_gainFirst = id_mixer_knob_gainLast + 1;
+	const int32_t id_mixer_textEdit_gainLast = id_mixer_textEdit_gainFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
+	const int32_t id_mixer_switch_bypassFirst = id_mixer_textEdit_gainLast + 1;
+	const int32_t id_mixer_switch_bypassLast = id_mixer_switch_bypassFirst + MAXMODULENUMBER - 1;
+
+	// Equalizer GUI ids
+	const int32_t id_equalizer_optionMenu_filterTypeFirst = id_mixer_switch_bypassLast + 1;
+	const int32_t id_equalizer_optionMenu_filterTypeLast = id_equalizer_optionMenu_filterTypeFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_knob_centerFreqFirst = id_equalizer_optionMenu_filterTypeLast + 1;
+	const int32_t id_equalizer_knob_centerFreqLast = id_equalizer_knob_centerFreqFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_centerFreqFirst = id_equalizer_knob_centerFreqLast + 1;
+	const int32_t id_equalizer_textEdit_centerFreqLast = id_equalizer_textEdit_centerFreqFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_knob_qFactorFirst = id_equalizer_textEdit_centerFreqLast + 1;
+	const int32_t id_equalizer_knob_qFactorLast = id_equalizer_knob_qFactorFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_qFactorFirst = id_equalizer_knob_qFactorLast + 1;
+	const int32_t id_equalizer_textEdit_qFactorLast = id_equalizer_textEdit_qFactorFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_knob_gainFirst = id_equalizer_textEdit_qFactorLast + 1;
+	const int32_t id_equalizer_knob_gainLast = id_equalizer_knob_gainFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_gainFirst = id_equalizer_knob_gainLast + 1;
+	const int32_t id_equalizer_textEdit_gainLast = id_equalizer_textEdit_gainFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_switch_bypassFirst = id_equalizer_textEdit_gainLast + 1;
+	const int32_t id_equalizer_switch_bypassLast = id_equalizer_switch_bypassFirst + MAXMODULENUMBER - 1;
+
+	// Schroeder allpass GUI ids
+	const int32_t id_allpass_knob_delayFirst = id_equalizer_switch_bypassLast + 1;
+	const int32_t id_allpass_knob_delayLast = id_allpass_knob_delayFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_textEdit_delayFirst = id_allpass_knob_delayLast + 1;
+	const int32_t id_allpass_textEdit_delayLast = id_allpass_textEdit_delayFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_knob_decayFirst = id_allpass_textEdit_delayLast + 1;
+	const int32_t id_allpass_knob_decayLast = id_allpass_knob_decayFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_textEdit_decayFirst = id_allpass_knob_decayLast + 1;
+	const int32_t id_allpass_textEdit_decayLast = id_allpass_textEdit_decayFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_switch_bypassFirst = id_allpass_textEdit_decayLast + 1;
+	const int32_t id_allpass_switch_bypassLast = id_allpass_switch_bypassFirst + MAXMODULENUMBER - 1;
+
+	// Output gain GUI ids
+	const int32_t id_output_knob_gainFirst = id_allpass_switch_bypassLast + 1;
+	const int32_t id_output_knob_gainLast = id_output_knob_gainFirst + MAXMODULENUMBER - 1;
+	const int32_t id_output_textEdit_gainFirst = id_output_knob_gainLast + 1;
+	const int32_t id_output_textEdit_gainLast = id_output_textEdit_gainFirst + MAXMODULENUMBER - 1;
+	const int32_t id_output_switch_bypassFirst = id_output_textEdit_gainLast + 1;
+	const int32_t id_output_switch_bypassLast = id_output_switch_bypassFirst + MAXMODULENUMBER - 1;
+
 
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
@@ -61,16 +107,21 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 
-	// Delay id range
-	if (pControl->getTag() >= id_apDelayFirst && pControl->getTag() <= id_apDelayLast) {
+	// Knob delay id range
+	if (pControl->getTag() >= id_allpass_knob_delayFirst && pControl->getTag() <= id_allpass_knob_delayLast) {
 		// Calculate which allpass module is the parent
-		uint32 moduleId = pControl->getTag() - id_apDelayFirst;
+		uint32 moduleId = pControl->getTag() - id_allpass_knob_delayFirst;
 		// Update parameters
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
 		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
 		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(moduleId).c_str());
 		fclose(pFile);*/
+		/*if (dynamic_cast<CTextEdit*>(pControl) != 0) {
+			FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(666).c_str());
+			fclose(pFile);
+		}*/
 	}
 
 
@@ -163,7 +214,6 @@ void ReverbNetworkEditor::createAPModule() {
 	moduleTitle->setFrameColor(CColor(0, 0, 0, 0));
 	handleView->addView(moduleTitle);
 
-	//CRowColumnView* baseModuleView = new CRowColumnView(CRect(0, 0, 300, 250), CRowColumnView::kRowStyle);
 	CRect handleViewSize = handleView->getViewSize();
 	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + 8));
 	// Id in order to identify the module in the valueChanged() function
@@ -192,6 +242,11 @@ void ReverbNetworkEditor::createAPModule() {
 	// Holds the input mixer controls (input gain for each channel)
 	CViewContainer* mixerView = new CViewContainer(CRect(0, 0, 100, 300));
 	mixerView->setBackgroundColor(CColor(0, 0, 0, 0));
+
+	CRowColumnView* mixerRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(mixerView->getWidth(), 20)), CRowColumnView::kRowStyle);
+	CTextLabel* inputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(30, 15)), "IN 0");
+	mixerRow->addView(inputTitle);
+	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(50, 15)), this, 0);
 
 	// Holds the equalizer controls
 	CViewContainer* equalizerView = new CViewContainer(CRect(0, 0, 100, 300));
@@ -223,8 +278,10 @@ void ReverbNetworkEditor::createAPModule() {
 	//	idOffset = allpassModules.size() - 1;
 	//}
 
-	allpassView->addView(createKnobGroup("Delay", id_apDelayFirst + moduleId, 'eDel'));
-	allpassView->addView(createKnobGroup("Decay", 'KDec', 'eDec'));
+	
+	allpassView->addView(createGroupTitle("SCHROEDER \n ALLPASS", allpassView->getWidth()));
+	allpassView->addView(createKnobGroup("Delay", id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId));
+	allpassView->addView(createKnobGroup("Decay", id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId));
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
@@ -256,7 +313,7 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	// 55,55,55
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CTextLabel* groupNameLabel = new CTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), groupName);
-	groupNameLabel->setFont(CFontRef(kNormalFontSmall));
+	groupNameLabel->setFont(kNormalFontSmall);
 	groupNameLabel->setBackColor(CColor(0, 0, 0, 0));
 	groupNameLabel->setFrameColor(CColor(0, 0, 0, 0));
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0 + (groupView->getWidth() - knobBackground->getWidth()) / 2, groupNameLabel->getViewSize().bottom + 3), CPoint(knobBackground->getWidth(), knobBackground->getWidth())), this, knobTag, knobBackground->getHeight() / knobBackground->getWidth(), knobBackground->getWidth(), knobBackground);
@@ -269,6 +326,14 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	groupView->addView(groupTextEdit);
 	groupView->sizeToFit();
 	return groupView;
+}
+
+CTextLabel* ReverbNetworkEditor::createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) {
+	CTextLabel* label = new CTextLabel(CRect(CPoint(0, 0), CPoint(width, 50)), title);
+	label->setFont(kNormalFontBig);
+	label->setBackColor(CColor(0, 0, 0, 0));
+	label->setFrameColor(CColor(0, 0, 0, 0));
+	return label;
 }
 
 void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
