@@ -108,23 +108,20 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 }
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
-
-	// Knob delay id range
-	if (pControl->getTag() >= id_allpass_knob_delayFirst && pControl->getTag() <= id_allpass_knob_delayLast) {
-		// Calculate which allpass module is the parent
-		uint32 moduleId = pControl->getTag() - id_allpass_knob_delayFirst;
+	int32_t tag = pControl->getTag();
+	if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
+		uint32 moduleNumber = (uint32)((tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS); // Calculate module number
+		uint32 inputNumber = (uint32)((tag - id_mixer_optionMenu_inputSelectFirst) % MAXMODULEINPUTS); // Calculate input number of that module
 		// Update parameters
-		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
-		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(moduleId).c_str());
-		fclose(pFile);*/
-		/*if (dynamic_cast<CTextEdit*>(pControl) != 0) {
-			FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(666).c_str());
-			fclose(pFile);
-		}*/
+		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber, pControl->getValue());
+		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber, pControl->getValue());
+		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		//fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
+		//fprintf(pFile, "y(n): %s\n", std::to_string(inputNumber).c_str());
+		//fprintf(pFile, "y(n): %s\n", std::to_string(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber).c_str());
+		fclose(pFile);
 	}
+
 
 
 	//int32_t tag = pControl->getTag();
@@ -139,11 +136,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	//}
 
 	switch (pControl->getTag()) {
-	case 0: {
-		controller->setParamNormalized(1, pControl->getValue());
-		controller->performEdit(1, pControl->getValue());
-		break;
-	}
 	case 'AddM': {
 		// Make sure create function is called only one time (without it would be two times)
 		if (pControl->isDirty()) {
@@ -249,7 +241,7 @@ void ReverbNetworkEditor::createAPModule() {
 		temp = "IN ";
 		temp.append(std::to_string(i));
 		temp.append(":");
-		mixerView->addView(createMixerRow(temp.c_str(), mixerView->getWidth(), id_mixer_optionMenu_inputSelectFirst + moduleId * MAXMODULEINPUTS, id_mixer_knob_gainFirst + moduleId * MAXMODULEINPUTS, id_mixer_textEdit_gainFirst + moduleId * MAXMODULEINPUTS));
+		mixerView->addView(createMixerRow(temp.c_str(), mixerView->getWidth(), id_mixer_optionMenu_inputSelectFirst + i + moduleId * MAXMODULEINPUTS, id_mixer_knob_gainFirst + i + moduleId * MAXMODULEINPUTS, id_mixer_textEdit_gainFirst + i + moduleId * MAXMODULEINPUTS));
 	}
 
 

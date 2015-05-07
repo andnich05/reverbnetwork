@@ -2,6 +2,7 @@
 #include "ReverbNetworkDefines.h"
 #include <string>
 
+
 ConnectionMatrix::ConnectionMatrix() {
 
 	// Initialize with fixed size

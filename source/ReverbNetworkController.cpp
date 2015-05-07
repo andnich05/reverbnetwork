@@ -63,54 +63,172 @@ namespace Vst {
 		// M*I+M to M*I+2*M-1 => Allpass Decay
 		// M*I+2*M-1 to M*I+3*M-1 => Module output gain
 
-		Parameter* parameter;
 
-		// Parameter creation: Must be in the same exact order as in ReverbNetworkDefines.h!
-		// Mixer parameters
+
+		// Parameter creation
+		//------
+		// MIXER parameters
+		// Mixer input selection
 		uint32 pidCounter = 0;
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
 			for (uint16 j = 0; j < MAXMODULEINPUTS; ++j) {
 				std::string temp = "";
-				temp.append("Allpass ");
+				temp.append("Module ");
 				temp.append(std::to_string(i));
-				temp.append(" - Channel Gain ");
+				temp.append(" - Mixer Input");
 				temp.append(std::to_string(j));
-				parameter = new RangeParameter(USTRING(temp.c_str()), pidCounter, USTRING(""), 0.0, 1.0, 0.0);
+				temp.append("Select");
+				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTSELECT_FIRST + pidCounter);
+				// Module outputs come first
+				for (uint16 k = 0; k < MAXMODULENUMBER; ++k) {
+					std::string temp2 = "APM";
+					temp2.append(std::to_string(j));
+					temp2.append(" Output");
+					parameter->appendString(USTRING(temp2.c_str()));
+				}
+				// Then the VST inputs
+				for (uint16 k = 0; k < MAXVSTINPUTS; ++k) {
+					std::string temp2 = "VST";
+					temp2.append(std::to_string(j));
+					temp2.append(" Input");
+					parameter->appendString(USTRING(temp2.c_str()));
+				}
+				parameters.addParameter(parameter);
+				++pidCounter;
+			}
+		}
+		// Mixer input gain 
+		pidCounter = 0;
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			for (uint16 j = 0; j < MAXMODULEINPUTS; ++j) {
+				std::string temp = "";
+				temp.append("Module ");
+				temp.append(std::to_string(i));
+				temp.append(" - Mixer Channel Input ");
+				temp.append(std::to_string(j));
+				temp.append(" Gain");
+				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING(""), 0.0, 1.0, 0.0);
 				parameter->setPrecision(2);
 				parameters.addParameter(parameter);
 				++pidCounter;
 			}
 		}
-
-		// Allpass parameters: delay and decay
+		// Mixer bypass switch
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "";
-			temp.append("Allpass Delay ");
+			std::string temp = "Module ";
 			temp.append(std::to_string(i));
-			parameter = new RangeParameter(USTRING(temp.c_str()), pidCounter, USTRING("sec"), 0.0, 1.0, 0.0); // ms?
-			parameter->setPrecision(2);
+			temp.append("Mixer Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERBYPASS_FIRST + i);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
 			parameters.addParameter(parameter);
-			++pidCounter;
-		}
-		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "";
-			temp.append("Allpass Decay ");
-			temp.append(std::to_string(i));
-			parameter = new RangeParameter(USTRING(temp.c_str()), pidCounter, USTRING("sec"), 0.0, 1.0, 0.0);
-			parameter->setPrecision(2);
-			parameters.addParameter(parameter);
-			++pidCounter;
 		}
 
-		// Module output gain parameter
+		// -----
+		// EQUALIZER parameters
+		// Equalizer Filter Type
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "";
-			temp.append("Module Output Gain ");
+			std::string temp = "Module ";
 			temp.append(std::to_string(i));
-			parameter = new RangeParameter(USTRING(temp.c_str()), pidCounter, USTRING(""), 0.0, 1.0, 0.0);
+			temp.append("Equalizer Filter Type");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQFILTERTYPE_FIRST + i);
+			parameter->appendString(USTRING("Low Pass"));
+			parameter->appendString(USTRING("High Pass"));
+			parameter->appendString(USTRING("Band Pass"));
+			parameter->appendString(USTRING("Band Stop"));
+			parameter->appendString(USTRING("Low Shelf"));
+			parameter->appendString(USTRING("High Shelf"));
+			parameters.addParameter(parameter);
+		}
+		// Equalizer Center Frequency
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Equalizer Center Frequency");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING("Hz"), 0.0, 1.0, 0.0);
+			parameter->setPrecision(0);
+			parameters.addParameter(parameter);
+		}
+		// Equalizer Q Factor
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Equalizer Q Factor");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(""), 0.0, 1.0, 0.0);
+			parameter->setPrecision(1);
+			parameters.addParameter(parameter);
+		}
+		// Equalizer Gain
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Equalizer Gain");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(""), 0.0, 1.0, 0.0);
 			parameter->setPrecision(2);
 			parameters.addParameter(parameter);
-			++pidCounter;
+		}
+		// Equalizer Bypass
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append("Equalizer Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQBYPASS_FIRST + i);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
+			parameters.addParameter(parameter);
+		}
+
+		//-----
+		// ALLPASS paramters
+		// Allpass delay
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Allpass Delay");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("sec"), 0.0, 1.0, 0.0);
+			parameter->setPrecision(2);
+			parameters.addParameter(parameter);
+		}
+		// Allpass decay
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Allpass Decay");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING("sec"), 0.0, 1.0, 0.0);
+			parameter->setPrecision(2);
+			parameters.addParameter(parameter);
+		}
+		// Allpass Bypass
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append("Allpass Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSBYPASS_FIRST + i);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
+			parameters.addParameter(parameter);
+		}
+
+		//-----
+		// OUTPUT parameters
+		// Gain
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Output Gain");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(""), 0.0, 1.0, 0.0);
+			parameter->setPrecision(2);
+			parameters.addParameter(parameter);
+		}
+		// Bypass
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append("Output Gain Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_OUTBYPASS_FIRST + i);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
+			parameters.addParameter(parameter);
 		}
 	}
 	return kResultTrue;

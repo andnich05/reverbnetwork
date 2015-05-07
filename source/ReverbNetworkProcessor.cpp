@@ -46,6 +46,9 @@
 #include "BaseAPModule.h"
 #include "ConnectionMatrix.h"
 
+#include <mutex>
+std::mutex mtx;
+
 namespace Steinberg {
 namespace Vst {
 
@@ -69,10 +72,10 @@ ReverbNetworkProcessor::~ReverbNetworkProcessor() {
 		delete[] moduleOutputBuffer;
 		moduleOutputBuffer = nullptr;
 	}
-	if (connectionMatrix) {
+	/*if (connectionMatrix) {
 		delete connectionMatrix;
 		connectionMatrix = nullptr;
-	}
+	}*/
 }
 
 //-----------------------------------------------------------------------------
@@ -99,10 +102,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 			apModules.push_back(module);
 		}
 
-		connectionMatrix->setVstToModuleConnection(0, 0, 0);
+		/*connectionMatrix->setVstToModuleConnection(0, 0, 0);
 		connectionMatrix->setVstToModuleConnection(0, 1, 0);
 		connectionMatrix->setModuleToVstConnection(0, 0);
-		connectionMatrix->setModuleToVstConnection(1, 1);
+		connectionMatrix->setModuleToVstConnection(1, 1);*/
 	}
 	return result;
 }
@@ -217,7 +220,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 	if (data.inputParameterChanges)
 	{
 		// Hier nix anlegen weil totale Verschwendung (wird aufgerufen auch wenn nix geändert wurde)
-		int32 pid = 0;
+		
 		// Number of changed parameters in the parameter list
 		int32 paramChangeCount = data.inputParameterChanges->getParameterCount ();
 		// For each parameter change
@@ -225,27 +228,44 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		{
 			IParamValueQueue* queue = data.inputParameterChanges->getParameterData (index);
 			if (queue) {
+				int32 pid = 0;
 				int32 valueChangeCount = queue->getPointCount();
 				ParamValue value = 0.0;
 				int32 sampleOffset = 0.0;
 				pid = queue->getParameterId();
-				if (pid <= PARAM_MODULEINGAIN_LAST) { // Mixer channel gain 
+
+				if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						// Value ist normalized (0.0...1.0)
-						uint16 moduleNumber = (int)(pid / MAXMODULEINPUTS);	// Calculate the module number
-						apModules[moduleNumber]->updateParameter(pid, value);
+						--value; // Don't forget <Not connected>!
+						// Value is normalized (0.0...1.0)
+						uint16 moduleNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
+						uint16 channelNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
+						uint16 source = 0;
+						if (value < MAXMODULEINPUTS) { // Another module output as input source selected
+							connectionMatrix->setModuleToModuleConnection(value, moduleNumber, channelNumber);
+						}
+						else { // VST input as input source selected
+							connectionMatrix->setVstToModuleConnection(value - MAXMODULEINPUTS - 1, moduleNumber, channelNumber);
+						}
+						FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(value).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(channelNumber).c_str());
+						fclose(pFile);
+						//apModules[moduleNumber]->updateParameter(pid, value);
 					}
 				}
-				else if (pid <= PARAM_ALLPASSDELAY_LAST) { // Allpass delay
-					apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateParameter(pid, value);
-				}
-				else if (pid <= PARAM_ALLPASSDECAY_LAST) { // Allpass decay
-					apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateParameter(pid, value);
-				}
-				else if (pid <= PARAM_MODULEOUTGAIN_LAST) { // Module output gain
-					apModules[pid - PARAM_MODULEOUTGAIN_FIRST]->updateParameter(pid, value);
-				}
+				/*
+				else if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
+					// Get only the last change of the value
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						// Value is normalized (0.0...1.0)
+						uint16 moduleNumber = pid - PARAM_MIXERINPUTSELECT_FIRST;	// Calculate the module number
+						apModules[moduleNumber]->updateParameter(pid, value);
+					}
+				}*/
+
 			}
 		}
 	}
@@ -253,7 +273,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 	// Process the audio samples
 	if (data.numSamples > 0)
 	{
-		
 		uint32 numberOfSamples = data.numSamples;
 
 		// Get the input buffers for all inputs
@@ -270,10 +289,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		}
 
 		// Get the connection matrix
-		moduleToModuleConnections = connectionMatrix->getModuleToModuleConnections();
-		vstToModuleConnections = connectionMatrix->getVstToModuleConnections();
-		moduleToVstConnections = connectionMatrix->getModuleToVstConnections();
-		vstToVstConnections = connectionMatrix->getVstToVstConnections();
+		const std::vector<std::vector<short>>& moduleToModuleConnections = connectionMatrix->getModuleToModuleConnections();
+		const std::vector<std::vector<short>>& vstToModuleConnections = connectionMatrix->getVstToModuleConnections();
+		const std::vector<short>& moduleToVstConnections = connectionMatrix->getModuleToVstConnections();
+		const std::vector<short>& vstToVstConnections = connectionMatrix->getVstToVstConnections();
 
 		// Vector with all samples for all inputs which are connected to a module input
 		std::vector<double> samplesToProcess;
@@ -320,6 +339,8 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 			}
 		}
+		// Unlock mutex for connection matrix
+		mtx.unlock();
 
 		/*FILE* pFile = fopen("C:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", "TEST");

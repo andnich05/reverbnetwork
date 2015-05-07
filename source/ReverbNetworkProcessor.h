@@ -77,10 +77,7 @@ private:
 
 	ConnectionMatrix* connectionMatrix;
 
-	std::vector<std::vector<short>> moduleToModuleConnections;
-	std::vector<std::vector<short>> vstToModuleConnections;
-	std::vector<short> moduleToVstConnections;
-	std::vector<short> vstToVstConnections;
+	
 
 };
 
