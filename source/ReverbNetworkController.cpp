@@ -79,17 +79,19 @@ namespace Vst {
 				temp.append(std::to_string(j));
 				temp.append("Select");
 				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTSELECT_FIRST + pidCounter);
+				// Not connected is the first entry
+				parameter->appendString(USTRING("<Not Connected>"));
 				// Module outputs come first
 				for (uint16 k = 0; k < MAXMODULENUMBER; ++k) {
 					std::string temp2 = "APM";
-					temp2.append(std::to_string(j));
+					temp2.append(std::to_string(k));
 					temp2.append(" Output");
 					parameter->appendString(USTRING(temp2.c_str()));
 				}
 				// Then the VST inputs
 				for (uint16 k = 0; k < MAXVSTINPUTS; ++k) {
 					std::string temp2 = "VST";
-					temp2.append(std::to_string(j));
+					temp2.append(std::to_string(k));
 					temp2.append(" Input");
 					parameter->appendString(USTRING(temp2.c_str()));
 				}
@@ -230,6 +232,34 @@ namespace Vst {
 			parameter->appendString(USTRING("True"));
 			parameters.addParameter(parameter);
 		}
+
+		//-----
+		// VST output select
+		pidCounter = 0;
+		for (uint16 i = 0; i < MAXVSTOUTPUTS; ++i) {
+			std::string temp = "VST Output ";
+			temp.append(std::to_string(i));
+			temp.append(" Select");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_GENERALVSTOUTPUTSELECT_FIRST + i);
+			// Not connected is the first entry
+			parameter->appendString(USTRING("<Not Connected>"));
+			// Module outputs come first
+			for (uint16 k = 0; k < MAXMODULENUMBER; ++k) {
+				std::string temp2 = "APM";
+				temp2.append(std::to_string(k));
+				temp2.append(" Output");
+				parameter->appendString(USTRING(temp2.c_str()));
+			}
+			// Then the VST inputs
+			for (uint16 k = 0; k < MAXVSTINPUTS; ++k) {
+				std::string temp2 = "VST";
+				temp2.append(std::to_string(k));
+				temp2.append(" Input");
+				parameter->appendString(USTRING(temp2.c_str()));
+			}
+			parameters.addParameter(parameter);
+		}
+
 	}
 	return kResultTrue;
 }

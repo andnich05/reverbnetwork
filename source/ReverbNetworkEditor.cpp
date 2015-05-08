@@ -60,6 +60,16 @@ namespace Vst {
 	const int32_t id_output_switch_bypassFirst = id_output_textEdit_gainLast + 1;
 	const int32_t id_output_switch_bypassLast = id_output_switch_bypassFirst + MAXMODULENUMBER - 1;
 
+	//------
+
+	// VST output select
+	const int32_t id_general_optionMenu_vstOutputFirst = id_output_switch_bypassLast + 1;
+	const int32_t id_general_optionMenu_vstOutputLast = id_general_optionMenu_vstOutputFirst + MAXVSTOUTPUTS - 1;
+
+
+
+	// Last used id of a GUI element!
+	const int32_t id_last = id_general_optionMenu_vstOutputLast;
 
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
@@ -73,12 +83,30 @@ ReverbNetworkEditor::~ReverbNetworkEditor() {
 
 }
 
+void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32_t& guiId) {
+	uint32 vectorSize = guiElements.size();
+	// Check for out of bounds
+	if (guiId < vectorSize) {
+		guiElements[guiId] = guiElement;
+	}
+	// If false: pushBack elements until the guiId is a valid index
+	else {
+		for (uint32 i = 0; i < (guiId - vectorSize + 1); ++i) {
+			guiElements.push_back(nullptr);
+		}
+		guiElements[guiId] = guiElement;
+	}
+}
+
 bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& platformType) {
 	
 	if (frame) // already attached!
 	{
 		return false;
 	}
+
+	// Initialize the vector
+	//guiElements.resize(id_last, nullptr);
 
 	knobBackground = new CBitmap("knob.png");
 	knobBackgroundSmall = new CBitmap("knob2.png");
@@ -95,7 +123,31 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	frame->addView(buttonAddModule);
 	//CTextButton* buttonRemoveModule = new CTextButton(CRect(CPoint(750, 230), CPoint(100, 20)), this, 'RmvM', "Remove Module");
 	//frame->addView(buttonRemoveModule);
+
+	CRowColumnView* vstOuputSelect = new CRowColumnView(CRect(CPoint(800, 0), CPoint(0, 0)));
+	std::string temp = "";
+	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
+		COptionMenu* menu = new COptionMenu(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_optionMenu_vstOutputFirst + i);
+		addGuiElementPointer(menu, id_general_optionMenu_vstOutputFirst + i);
+		menu->addEntry("<Not Connected>");
+		for (uint32 j = 0; j < MAXMODULENUMBER; ++j) {
+			temp = "APM";
+			temp.append(std::to_string(j));
+			temp.append(" OUT");
+			menu->addEntry((temp).c_str());
+		}
+		for (uint32 j = 0; j < MAXVSTINPUTS; ++j) {
+			temp = "VST";
+			temp.append(std::to_string(j));
+			temp.append(" IN");
+			menu->addEntry((temp).c_str());
+		}
+		vstOuputSelect->addView(menu);
+	}
+	vstOuputSelect->sizeToFit();
+
 	frame->addView(workspaceView);
+	frame->addView(vstOuputSelect);
 	return true;
 }
 
@@ -109,45 +161,24 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	int32_t tag = pControl->getTag();
-	if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
-		uint32 moduleNumber = (uint32)((tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS); // Calculate module number
-		uint32 inputNumber = (uint32)((tag - id_mixer_optionMenu_inputSelectFirst) % MAXMODULEINPUTS); // Calculate input number of that module
-		// Update parameters
-		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber, pControl->getValue());
-		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber, pControl->getValue());
-		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		//fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
-		//fprintf(pFile, "y(n): %s\n", std::to_string(inputNumber).c_str());
-		//fprintf(pFile, "y(n): %s\n", std::to_string(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber).c_str());
-		fclose(pFile);
-	}
 
-
-
-	//int32_t tag = pControl->getTag();
-	//// Delay tag id
-	//if (tag >= id_apDelayFirst && tag <= id_apDelayLast) {
-	//	// Set value in the controller
-	//	controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
-	//	controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_apDelayFirst), pControl->getValue());
-	//	FILE* pFile = fopen("E:\\ogVst.txt", "a");
-	//	fprintf(pFile, "y(n): %s\n", std::to_string(tag - id_apDelayFirst).c_str());
-	//	fclose(pFile);
-	//}
-
-	switch (pControl->getTag()) {
-	case 'AddM': {
+	if(tag == 'AddM') {
 		// Make sure create function is called only one time (without it would be two times)
 		if (pControl->isDirty()) {
 			createAPModule();
-			
+
 			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 			fprintf(pFile, "y(n): %s\n", "Create");
 			fclose(pFile);*/
 		}
-		break;
 	}
-	case 'ClsM': {	// Close button of AP module pressed
+	else if (tag == 'HidM') {
+		// Make sure create function is called only one time (without it would be two times)
+		if (pControl->isDirty()) {
+			// Hide...
+		}
+	}
+	else if (tag == 'ClsM') {	// Close button of AP module pressed
 		if (pControl->isDirty()) {
 			// Remove the module view, the parent-child hierarchy is: baseModuleView(handleView(closeViewButton
 			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
@@ -162,31 +193,33 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			// Update the workspace view
 			workspaceView->setDirty();
 		}
-		break;
 	}
-	//case 'kDel': {
-	//	if (pControl->isDirty()) {
-	//		/*for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
-	//			if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
-	//				controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
-	//				controller->performEdit(PARAM_ALLPASSDELAY_FIRST + i, pControl->getValue());
-	//				break;
-	//			}
-	//		}*/
-
-
-	//		uint32 moduleId = dynamic_cast<GuiBaseAPModule*>(pControl->getParentView()->getParentView()->getParentView()->getParentView())->getModuleId();
-	//		//uint32 moduleId = pControl->getTag();
-	//		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
-	//		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + moduleId, pControl->getValue());
-	//		FILE* pFile = fopen("E:\\logVst.txt", "a");
-	//		fprintf(pFile, "y(n): %s\n", std::to_string(moduleId).c_str());
-	//		fclose(pFile);
-	//	}
-	//	break;
-	//}
+	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
+		/*uint32 moduleNumber = (uint32)((tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS); // Calculate module number
+		uint32 inputNumber = (uint32)((tag - id_mixer_optionMenu_inputSelectFirst) % MAXMODULEINPUTS); // Calculate input number of that module
+		// Update parameters
+		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber, pControl->getValue());
+		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + moduleNumber * MAXMODULEINPUTS + inputNumber, pControl->getValue());*/
+		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), pControl->getValue());
+		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), pControl->getValue());
+	}
+	else if (tag >= id_mixer_knob_gainFirst && tag <= id_mixer_knob_gainLast)  {
+		controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_knob_gainFirst), pControl->getValue());
+		controller->performEdit(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_knob_gainFirst), pControl->getValue());
+		// Update the text edit box under the knob
+		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(pControl->getValue());
+		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
 	}
 
+
+
+
+
+
+	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
+		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), pControl->getValue());
+		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), pControl->getValue());
+	}
 }
 
 void ReverbNetworkEditor::createAPModule() {
@@ -255,6 +288,7 @@ void ReverbNetworkEditor::createAPModule() {
 	filterTypeTextLabel->setBackColor(CColor(0, 0, 0, 0));
 	filterTypeTextLabel->setFrameColor(CColor(0, 0, 0, 0));
 	COptionMenu* filterTypeMenu = new COptionMenu(CRect(0, 0, 70, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
+	addGuiElementPointer(filterTypeMenu, id_equalizer_optionMenu_filterTypeFirst + moduleId);
 	filterTypeMenu->setFont(CFontRef(kNormalFontSmall));
 	filterTypeMenu->addEntry("Low Pass");
 	filterTypeMenu->addEntry("High Pass");
@@ -322,7 +356,9 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	groupNameLabel->setBackColor(CColor(0, 0, 0, 0));
 	groupNameLabel->setFrameColor(CColor(0, 0, 0, 0));
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0 + (groupView->getWidth() - knobBackground->getWidth()) / 2, groupNameLabel->getViewSize().bottom + 3), CPoint(knobBackground->getWidth(), knobBackground->getWidth())), this, knobTag, knobBackground->getHeight() / knobBackground->getWidth(), knobBackground->getWidth(), knobBackground);
+	addGuiElementPointer(knob, knobTag);
 	CTextEdit* groupTextEdit = new CTextEdit(CRect(CPoint(0, knob->getViewSize().bottom + 3), CPoint(groupView->getWidth(), 15)), this, valueEditTag, "0.0");
+	addGuiElementPointer(groupTextEdit, valueEditTag);
 	groupTextEdit->setFont(CFontRef(kNormalFontSmall));
 	groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
 	groupTextEdit->setFrameColor(CColor(0, 0, 0, 0));
@@ -352,6 +388,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	inputTitle->setFrameColor(CColor(0, 0, 0, 0));
 
 	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(0, 0)), this, optionMenuTag);
+	addGuiElementPointer(inputSelect, optionMenuTag);
 	inputSelect->setFont(CFontRef(kNormalFontSmall));
 	inputSelect->setViewSize(CRect(CPoint(0, 0), CPoint(90, 20)));
 	inputSelect->addEntry("<Not Connected>");
@@ -371,8 +408,10 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	}
 
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth())), this, knobTag, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
+	addGuiElementPointer(knob, knobTag);
 
 	CTextEdit* valueEdit = new CTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, valueEditTag, "0.0");
+	addGuiElementPointer(valueEdit, valueEditTag);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
 	valueEdit->setBackColor(CColor(0, 0, 0, 0));
 	valueEdit->setFrameColor(CColor(0, 0, 0, 0));

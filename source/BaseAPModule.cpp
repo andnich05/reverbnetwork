@@ -73,9 +73,9 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 
 void BaseAPModule::updateParameter(const unsigned int& pid, const double& normalizedValue) {
 	if (pid <= PARAM_MIXERINPUTSELECT_LAST) {
-		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(pid % MAXMODULEINPUTS).c_str());
-		fclose(pFile);
+		fclose(pFile);*/
 		//mixer->setChannelGain(pid % MAXMODULEINPUTS, normalizedValue); // Calculate channel
 	}
 	else if (pid <= PARAM_ALLPASSDELAY_LAST) { // Allpass delay

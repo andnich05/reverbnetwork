@@ -64,6 +64,13 @@ private:
 	CBitmap* knobBackground;
 	CBitmap* knobBackgroundSmall;
 	CBitmap* groupFrame;
+
+	// Holds pointers to all GUI elements which have their own GUI id; the index itself is the GUI id
+	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!
+	// Remove the pointers out of this vector manually?
+	std::vector<CControl*> guiElements;
+
+	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
 };
 
 }} // namespaces

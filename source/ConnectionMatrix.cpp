@@ -32,36 +32,45 @@ ConnectionMatrix::~ConnectionMatrix() {
 
 void ConnectionMatrix::setModuleToModuleConnection(const unsigned short& sourceModule, const unsigned short& destModule, const unsigned short& destModuleInput) {
 	// Check if the input is already connected to a VST input; if so then disconnect it first
-	if (vstToModuleConnections[destModule][destModuleInput] != -1) {
+	/*if (vstToModuleConnections[destModule][destModuleInput] != -1) {
 		vstToModuleConnections[destModule][destModuleInput] = -1;
-	}
+	}*/
 	moduleToModuleConnections[destModule][destModuleInput] = sourceModule;
 }
 
 void ConnectionMatrix::setVstToModuleConnection(const unsigned short& vstInput, const unsigned short& destModule, const unsigned short& destModuleInput) {
 	// Check if the input is already connected to a module output; if so then disconnect it first
-	if (moduleToModuleConnections[destModule][destModuleInput] != -1) {
+	/*if (moduleToModuleConnections[destModule][destModuleInput] != -1) {
 		moduleToModuleConnections[destModule][destModuleInput] = -1;
-	}
+	}*/
 	vstToModuleConnections[destModule][destModuleInput] = vstInput;
 }
 
 void ConnectionMatrix::setModuleToVstConnection(const unsigned short& sourceModule, const unsigned short& vstOutput) {
 	// Check if the VST output is already connected to a VST input; if so then disconnect it first
-	if (vstToVstConnections[vstOutput] != -1) {
+	/*if (vstToVstConnections[vstOutput] != -1) {
 		vstToVstConnections[vstOutput] = -1;
-	}
+	}*/
 	moduleToVstConnections[vstOutput] = sourceModule;
 }
 
 void ConnectionMatrix::setVstToVstConnection(const unsigned short& vstInput, const unsigned short& vstOutput) {
 	// Check if the VST output is already connected to a module output; if so then disconnect it first
-	if (moduleToVstConnections[vstOutput] != -1) {
+	/*if (moduleToVstConnections[vstOutput] != -1) {
 		moduleToVstConnections[vstOutput] = -1;
-	}
+	}*/
 	vstToVstConnections[vstOutput] = vstInput;
 }
 
+void ConnectionMatrix::disconnectModuleInput(const unsigned short& moduleNumber, const unsigned short& moduleInput) {
+	moduleToModuleConnections[moduleNumber][moduleInput] = -1;
+	vstToModuleConnections[moduleNumber][moduleInput] = -1;
+}
+
+void ConnectionMatrix::disconnectVstOutput(const unsigned short& vstOutput) {
+	moduleToVstConnections[vstOutput] = -1;
+	vstToVstConnections[vstOutput] = -1;
+}
 
 void ConnectionMatrix::resetAllConnections() {
 	// -1 means there is no connection at this input

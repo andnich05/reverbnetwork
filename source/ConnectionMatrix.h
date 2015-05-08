@@ -28,6 +28,12 @@ public:
 	// Establish a connection between a VST input and a VST output
 	void setVstToVstConnection(const unsigned short& vstInput, const unsigned short& vstOutput);
 
+	// Disconnect a module input
+	void disconnectModuleInput(const unsigned short& moduleNumber, const unsigned short& moduleInput);
+
+	// Disconnect a VST output
+	void disconnectVstOutput(const unsigned short& vstOutput);
+
 	// Reset all connections, all vector elements are set to -1
 	void resetAllConnections();
 

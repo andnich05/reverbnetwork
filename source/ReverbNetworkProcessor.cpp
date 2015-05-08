@@ -46,9 +46,6 @@
 #include "BaseAPModule.h"
 #include "ConnectionMatrix.h"
 
-#include <mutex>
-std::mutex mtx;
-
 namespace Steinberg {
 namespace Vst {
 
@@ -237,23 +234,44 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						--value; // Don't forget <Not connected>!
-						// Value is normalized (0.0...1.0)
 						uint16 moduleNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
-						uint16 channelNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
-						uint16 source = 0;
-						if (value < MAXMODULEINPUTS) { // Another module output as input source selected
-							connectionMatrix->setModuleToModuleConnection(value, moduleNumber, channelNumber);
+						uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
+
+						FILE* pFile = fopen("E:\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(value - MAXMODULENUMBER).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(moduleInput).c_str());
+						fclose(pFile);
+
+						if (value == 0) { // <Not Connected> selected
+							connectionMatrix->disconnectModuleInput(moduleNumber, moduleInput);
+						}
+						else if (value - 1 < MAXMODULENUMBER) { // Another module output as input source selected
+							connectionMatrix->setModuleToModuleConnection(value - 1, moduleNumber, moduleInput);
 						}
 						else { // VST input as input source selected
-							connectionMatrix->setVstToModuleConnection(value - MAXMODULEINPUTS - 1, moduleNumber, channelNumber);
+							connectionMatrix->setVstToModuleConnection(value - 1 - MAXMODULENUMBER, moduleNumber, moduleInput);
 						}
-						FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-						fprintf(pFile, "y(n): %s\n", std::to_string(value).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(channelNumber).c_str());
+					}
+				}
+				else if (pid >= PARAM_GENERALVSTOUTPUTSELECT_FIRST && pid <= PARAM_GENERALVSTOUTPUTSELECT_LAST) {
+					// Get only the last change of the value
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+
+						FILE* pFile = fopen("E:\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(value - MAXMODULENUMBER).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST).c_str());
 						fclose(pFile);
-						//apModules[moduleNumber]->updateParameter(pid, value);
+
+						if (value == 0) { // <Not Connected> selected
+							connectionMatrix->disconnectVstOutput(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
+						}
+						else if (value - 1 < MAXMODULENUMBER) { // Another module output as input source selected
+							connectionMatrix->setModuleToVstConnection(value - 1, pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
+						}
+						else { // VST input as input source selected
+							connectionMatrix->setVstToVstConnection(value - 1 - MAXMODULENUMBER, pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
+						}
 					}
 				}
 				/*
@@ -339,8 +357,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 			}
 		}
-		// Unlock mutex for connection matrix
-		mtx.unlock();
 
 		/*FILE* pFile = fopen("C:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", "TEST");
