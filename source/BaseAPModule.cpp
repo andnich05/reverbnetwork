@@ -15,6 +15,10 @@ BaseAPModule::BaseAPModule(unsigned int sampleRate)
 	, equalizer(new EqualizerModule(EqualizerModule::lowPass, sampleRate, sampleRate / 4, 1.0, 1.0))
 	, allpass(new SchroederAllpass(sampleRate, 0, 0.0))
 	, gain(new GainModule()) 
+	, bypassMixer(false)
+	, bypassEqualizer(false)
+	, bypassAllpass(false)
+	, bypassGain(false)
 {
 	
 }
@@ -69,22 +73,10 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 	return outputSample;
 }
 
-#include <string>
-
-void BaseAPModule::updateParameter(const unsigned int& pid, const double& normalizedValue) {
-	if (pid <= PARAM_MIXERINPUTSELECT_LAST) {
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(pid % MAXMODULEINPUTS).c_str());
-		fclose(pFile);*/
-		//mixer->setChannelGain(pid % MAXMODULEINPUTS, normalizedValue); // Calculate channel
-	}
-	else if (pid <= PARAM_ALLPASSDELAY_LAST) { // Allpass delay
-		allpass->setDelayTime(ValueConversion::normToValueDelay(normalizedValue, sampleRate));
-	}
-	else if (pid <= PARAM_ALLPASSDECAY_LAST) { // Allpass decay
-		allpass->setDecayTime(ValueConversion::normToValueDecay(normalizedValue));
-	}
-	else if (pid <= PARAM_OUTGAIN_LAST) { // Module output gain
-		gain->setGain(normalizedValue);
-	}
-}
+//#include <string>
+//
+//void BaseAPModule::updateParameter(const unsigned int& pid, const double& normalizedValue) {
+//	if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
+//		mixer->setChannelGain((pid - PARAM_MIXERGAIN_FIRST) % MAXMODULEINPUTS, normalizedValue); // Calculate channel
+//	}
+//}

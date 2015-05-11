@@ -230,18 +230,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				ParamValue value = 0.0;
 				int32 sampleOffset = 0.0;
 				pid = queue->getParameterId();
-
+				
 				if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
-
-						FILE* pFile = fopen("E:\\logVst.txt", "a");
-						fprintf(pFile, "y(n): %s\n", std::to_string(value - MAXMODULENUMBER).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleInput).c_str());
-						fclose(pFile);
 
 						if (value == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectModuleInput(moduleNumber, moduleInput);
@@ -254,14 +248,32 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						}
 					}
 				}
+				else if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
+						//uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
+						//apModules[moduleNumber]->updateParameter(pid, value);
+					}
+				}
+				else if (pid >= PARAM_MIXERBYPASS_FIRST && pid <= PARAM_MIXERBYPASS_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						//apModules[pid - PARAM_MIXERBYPASS_FIRST]->updateParameter(pid, value);
+					}
+				}
+				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						//apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateParameter(pid, value);
+					}
+				}
+			
 				else if (pid >= PARAM_GENERALVSTOUTPUTSELECT_FIRST && pid <= PARAM_GENERALVSTOUTPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 
-						FILE* pFile = fopen("E:\\logVst.txt", "a");
+						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 						fprintf(pFile, "y(n): %s\n", std::to_string(value - MAXMODULENUMBER).c_str());
 						fprintf(pFile, "y(n): %s\n", std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST).c_str());
-						fclose(pFile);
+						fclose(pFile);*/
 
 						if (value == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectVstOutput(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);

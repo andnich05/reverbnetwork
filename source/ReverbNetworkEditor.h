@@ -71,6 +71,11 @@ private:
 	std::vector<CControl*> guiElements;
 
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
+
+	// http://www.kvraudio.com/forum/viewtopic.php?p=5432847
+	//typedef bool(*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
+	
+	
 };
 
 }} // namespaces

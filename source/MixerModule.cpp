@@ -2,9 +2,8 @@
 #include "ReverbNetworkDefines.h"
 
 MixerModule::MixerModule() {
-	// At initialization only the first input has a signal
+	// Initialisation
 	channelGain.resize(MAXMODULEINPUTS, 0.0);
-	channelGain[0] = 1.0;
 }
 
 MixerModule::~MixerModule() {
@@ -13,7 +12,7 @@ MixerModule::~MixerModule() {
 double MixerModule::mixChannels(std::vector<double>& channelSamples) {
 	double output = 0.0;
 	for (int i = 0; i < MAXMODULEINPUTS; ++i) {
-		if (channelGain[i] != 0) {
+		if (channelGain[i] != 0.0) {
 			output += channelSamples[i] * channelGain[i];
 		}
 	}
@@ -27,6 +26,7 @@ double MixerModule::mixChannels(std::vector<double>& channelSamples) {
 	return output;
 }
 
+#include <string>
 void MixerModule::setChannelGain(const unsigned short& channel, const double& gain) {
-	channelGain[channel] = gain;
+	channelGain[channel] = gain;	
 }

@@ -6,7 +6,7 @@ class EqualizerModule
 public:
 
 	// Possible filter types
-	enum FilterType
+	enum FilterType : unsigned int
 	{
 		lowPass,
 		highPass,
