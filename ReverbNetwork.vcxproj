@@ -257,6 +257,7 @@
     <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
     <ClInclude Include="source\GuiHandleView.h" />
     <ClInclude Include="source\GuiBaseAPModule.h" />
+    <ClInclude Include="source\ReverbNetworkEnums.h" />
     <ClInclude Include="source\ValueConversion.h" />
     <ClInclude Include="source\GainModule.h" />
     <ClInclude Include="source\EqualizerModule.h" />

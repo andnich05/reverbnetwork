@@ -45,6 +45,7 @@
 #include "ReverbNetworkDefines.h"
 #include "BaseAPModule.h"
 #include "ConnectionMatrix.h"
+#include "ValueConversion.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -98,6 +99,8 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 			std::shared_ptr<BaseAPModule> module(new BaseAPModule(processSetup.sampleRate));
 			apModules.push_back(module);
 		}
+
+		ValueConversion::setSampleRate(processSetup.sampleRate);
 
 		/*connectionMatrix->setVstToModuleConnection(0, 0, 0);
 		connectionMatrix->setVstToModuleConnection(0, 1, 0);
@@ -251,21 +254,66 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				else if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
-						//uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
-						//apModules[moduleNumber]->updateParameter(pid, value);
+						uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
+						apModules[moduleNumber]->updateMixerGain(moduleInput, value);
 					}
 				}
 				else if (pid >= PARAM_MIXERBYPASS_FIRST && pid <= PARAM_MIXERBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						//apModules[pid - PARAM_MIXERBYPASS_FIRST]->updateParameter(pid, value);
+						apModules[pid - PARAM_MIXERBYPASS_FIRST]->switchMixerBypass(value);
 					}
 				}
 				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						//apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateParameter(pid, value);
+						apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateEqualizerFilterType(value);
 					}
 				}
-			
+				else if (pid >= PARAM_EQCENTERFREQ_FIRST && pid <= PARAM_EQCENTERFREQ_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(value);
+					}
+				}
+				else if (pid >= PARAM_EQQFACTOR_FIRST && pid <= PARAM_EQQFACTOR_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(value);
+					}
+				}
+				else if (pid >= PARAM_EQGAIN_FIRST && pid <= PARAM_EQGAIN_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(value);
+					}
+				}
+				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQBYPASS_FIRST]->switchEqualizerBypass(value);
+					}
+				}
+				else if (pid >= PARAM_ALLPASSDELAY_FIRST && pid <= PARAM_ALLPASSDELAY_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateAllpassDelay(value);
+					}
+				}
+				else if (pid >= PARAM_ALLPASSDECAY_FIRST && pid <= PARAM_ALLPASSDECAY_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(value);
+					}
+				}
+				else if (pid >= PARAM_ALLPASSBYPASS_FIRST && pid <= PARAM_ALLPASSBYPASS_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSBYPASS_FIRST]->switchAllpassBypass(value);
+					}
+				}
+				else if (pid >= PARAM_OUTGAIN_FIRST && pid <= PARAM_OUTGAIN_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(value);
+					}
+				}
+				else if (pid >= PARAM_OUTBYPASS_FIRST && pid <= PARAM_OUTBYPASS_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_OUTBYPASS_FIRST]->switchOutputBypass(value);
+					}
+				}
+				//...
 				else if (pid >= PARAM_GENERALVSTOUTPUTSELECT_FIRST && pid <= PARAM_GENERALVSTOUTPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {

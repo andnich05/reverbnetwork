@@ -401,21 +401,21 @@ void ReverbNetworkEditor::createAPModule() {
 	filterTypeView->sizeToFit();
 	CRowColumnView* paramFirstRow = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	paramFirstRow->setBackgroundColor(CColor(0, 0, 0, 0));
-	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId));
-	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId));
+	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId, &ValueConversion::textEditStringToValueConversionCenterFreq, &ValueConversion::textEditValueToStringConversionCenterFreq));
+	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId, &ValueConversion::textEditStringToValueConversionQFactor, &ValueConversion::textEditValueToStringConversionQFactor));
 	paramFirstRow->sizeToFit();
 	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
 	equalizerView->addView(filterTypeView);
 	equalizerView->addView(paramFirstRow);
-	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId));
+	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId, &ValueConversion::textEditStringToValueConversionEqGain, &ValueConversion::textEditValueToStringConversionEqGain));
 
 
 	// Holds the allpass controls (delay and decay)
 	CRowColumnView* allpassView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	allpassView->setBackgroundColor(CColor(0, 0, 0, 0));
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
-	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId));
-	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId));
+	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId, &ValueConversion::textEditStringToValueConversionDelay, &ValueConversion::textEditValueToStringConversionDelay));
+	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId, &ValueConversion::textEditStringToValueConversionDecay, &ValueConversion::textEditValueToStringConversionDecay));
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
@@ -424,7 +424,7 @@ void ReverbNetworkEditor::createAPModule() {
 	// Holds the output gain control
 	CRowColumnView* gainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
-	gainView->addView(createKnobGroup("Gain", gainView->getWidth(), id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId));
+	gainView->addView(createKnobGroup("Gain", gainView->getWidth(), id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId, &ValueConversion::textEditStringToValueConversionGain, &ValueConversion::textEditValueToStringConversionGain));
 	gainView->setBackgroundColor(CColor(0, 0, 0, 0));
 
 	// Add process views to the control view
@@ -447,7 +447,7 @@ void ReverbNetworkEditor::createAPModule() {
 	++totalNumberOfCreatedModules;
 }
 
-CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag) {
+CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CTextLabel* groupNameLabel = new CTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), title);
@@ -458,8 +458,8 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	addGuiElementPointer(knob, knobTag);
 	CTextEdit* groupTextEdit = new CTextEdit(CRect(CPoint(0, knob->getViewSize().bottom + 3), CPoint(groupView->getWidth(), 15)), this, valueEditTag, "0.0");
 	addGuiElementPointer(groupTextEdit, valueEditTag);
-	groupTextEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
-	groupTextEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	groupTextEdit->setStringToValueProc(textEditStringToValueFunctionPtr);
+	groupTextEdit->setValueToStringProc(textEditValueToStringFunctionPtr);
 	groupTextEdit->setFont(CFontRef(kNormalFontSmall));
 	groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
 	groupTextEdit->setFrameColor(CColor(0, 0, 0, 0));
@@ -514,8 +514,8 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 
 	CTextEdit* valueEdit = new CTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, valueEditTag, "0.0");
 	addGuiElementPointer(valueEdit, valueEditTag);
-	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
-	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversionGain);
+	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversionGain);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
 	valueEdit->setBackColor(CColor(0, 0, 0, 0));
 	valueEdit->setFrameColor(CColor(0, 0, 0, 0));

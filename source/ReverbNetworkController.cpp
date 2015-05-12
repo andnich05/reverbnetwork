@@ -63,8 +63,6 @@ namespace Vst {
 		// M*I+M to M*I+2*M-1 => Allpass Decay
 		// M*I+2*M-1 to M*I+3*M-1 => Module output gain
 
-
-
 		// Parameter creation
 		//------
 		// MIXER parameters

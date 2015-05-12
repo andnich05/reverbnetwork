@@ -17,29 +17,31 @@ EqualizerModule::EqualizerModule(FilterType filterType, double samplingFreq, dou
 	yn2 = 0;
 	
 	calculateK();
-	calculateCoefficients(filterType);
 }
 
 EqualizerModule::~EqualizerModule() 
 {
 }
 
-void EqualizerModule::setGainInDB(const double& g) {
-	dBgain = g;
-	gain = pow(10, (g / 20));
-}
+//void EqualizerModule::setGainInDB(const double& g) {
+//	dBgain = g;
+//	gain = pow(10, (g / 20));
+//}
 
+#include <string>
 void EqualizerModule::calculateK() {
 	// Grenzfrequenz
 	double cutoffFreq = centerFreq / (2 * qFactor);
 	// Hilfsvariable
 	K = tan((cutoffFreq / samplingFreq) * M_PI);
+	
+	calculateCoefficients();
 }
 
 // Source: Zölzer Buch
-void EqualizerModule::calculateCoefficients(FilterType filterType) {
+void EqualizerModule::calculateCoefficients() {
 	switch (filterType) {
-	case lowPass: {
+	case FilterType::lowPass: {
 		// Lowpass
 		double denominator = 1 + sqrt(2) * K + pow(K, 2);
 		a0 = (pow(K, 2)) / denominator;
@@ -49,7 +51,7 @@ void EqualizerModule::calculateCoefficients(FilterType filterType) {
 		b2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
 		break;
 	}
-	case highPass: {
+	case FilterType::highPass: {
 		double denominator = 1 + sqrt(2) * K + pow(K, 2);
 		a0 = 1 / denominator;
 		a1 = -2 / denominator;
@@ -58,7 +60,7 @@ void EqualizerModule::calculateCoefficients(FilterType filterType) {
 		b2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
 		break;
 	}
-	case bandPass: {
+	case FilterType::bandPass: {
 		double denominator = 1 + (1 / qFactor) * K + pow(K, 2);
 		a0 = (1 + (gain / qFactor) * K + pow(K, 2)) / denominator;
 		a1 = (2 * (pow(K, 2) - 1)) / denominator;
@@ -67,7 +69,7 @@ void EqualizerModule::calculateCoefficients(FilterType filterType) {
 		b2 = a2;
 		break;
 	}
-	case bandStop: {
+	case FilterType::bandStop: {
 		double denominator = 1 + (gain / qFactor) * K + pow(K, 2);
 		a0 = (1 + (gain / qFactor) * K + pow(K, 2)) / denominator;
 		a1 = (2 * (pow(K, 2) - 1)) / denominator;
@@ -76,7 +78,7 @@ void EqualizerModule::calculateCoefficients(FilterType filterType) {
 		b2 = a2;
 		break;
 	}
-	case lowShelf: {
+	case FilterType::lowShelf: {
 		// Increasing low shelf filter
 		if (gain >= 1.0) {
 			double denominator = 1 + sqrt(2) * K + pow(K, 2);
@@ -97,7 +99,7 @@ void EqualizerModule::calculateCoefficients(FilterType filterType) {
 		}
 			break;
 	}
-	case highShelf: {
+	case FilterType::highShelf: {
 		// Increasing high shelf filter
 		if (gain >= 1.0) {
 			double denominator = 1 + sqrt(2) * K + pow(K, 2);

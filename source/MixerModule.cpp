@@ -16,13 +16,6 @@ double MixerModule::mixChannels(std::vector<double>& channelSamples) {
 			output += channelSamples[i] * channelGain[i];
 		}
 	}
-
-#ifdef LIMITER
-	if (output > 1.0) {
-		output = 1.0;
-	}
-#endif
-
 	return output;
 }
 

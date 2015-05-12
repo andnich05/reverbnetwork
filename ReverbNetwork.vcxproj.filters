@@ -306,6 +306,9 @@
     <ClInclude Include="source\GuiHandleView.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
+    <ClInclude Include="source\ReverbNetworkEnums.h">
+      <Filter>Source Files\source</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReverbNetwork.def">

@@ -17,5 +17,8 @@ void GainModule::processSample(double& sample) {
 	if (sample > 1.0) {
 		sample = 1.0;
 	}
+	else if (sample < -1.0) {
+		sample = -1.0;
+	}
 #endif
 }

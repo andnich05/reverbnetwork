@@ -17,7 +17,8 @@ public:
 	// Change current sample rate
 	inline void setSampleRate(const unsigned long& s) { sampleRate = s; freeBuffers(); createBuffers(); }; // Recreate buffers when sample rate changes
 	// Set delay time
-	inline void setDelayTime(const double& sec) { delayTime = sec; delaySamples = (unsigned long)(sec * sampleRate); };
+	inline void setDelayTimeSec(const double& sec) { delayTime = sec; delaySamples = (unsigned long)(sec * sampleRate); };
+	inline void setDelayTimeMsec(const double& ms) { delayTime = ms / 1000; delaySamples = (unsigned long)(delayTime * sampleRate); };
 	// Set decay time
 	void setDecayTime(const double& sec);
 	// Set Allpass gain

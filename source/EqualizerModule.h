@@ -1,36 +1,27 @@
 #ifndef EQUALIZERMODULE_H
 #define EQUALIZERMODULE_H
 
+#include "ReverbNetworkEnums.h"
+
 class EqualizerModule
 {
 public:
 
-	// Possible filter types
-	enum FilterType : unsigned int
-	{
-		lowPass,
-		highPass,
-		bandPass,
-		bandStop,
-		lowShelf,
-		highShelf
-	};
-
 	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double dBgain);
 	~EqualizerModule();
 
-	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; }
-	inline void setCenterFreq(const double& f0) { centerFreq = f0; }
-	inline void setQFactor(const double& q) { qFactor = q; }
-	void setGainInDB(const double& g);
-	inline void setFilterType(const FilterType& type) { filterType = type; }
+	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; calculateK(); }
+	inline void setCenterFreq(const double& f0) { centerFreq = f0; calculateK(); }
+	inline void setQFactor(const double& q) { qFactor = q; calculateK(); }
+	inline void setGain(const double& g) { gain = g; calculateK(); };
+	inline void setFilterType(const FilterType& type) { filterType = type; calculateK(); }
 
 	void processSample(double& sample);
 
 private:
 
 	void calculateK();
-	void calculateCoefficients(FilterType filterType);
+	void calculateCoefficients();
 
 	// Sampling frequency
 	double samplingFreq;
