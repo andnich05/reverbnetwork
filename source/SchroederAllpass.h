@@ -4,7 +4,7 @@
 class SchroederAllpass
 {
 public:
-	SchroederAllpass(unsigned long sampleRate, unsigned long delaySamples, double gain);
+	SchroederAllpass(double sampleRate, double delay, double decay);
 	~SchroederAllpass();
 
 	// Process input sample by reference => saving speed

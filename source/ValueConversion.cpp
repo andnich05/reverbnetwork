@@ -17,11 +17,11 @@ void ValueConversion::setSampleRate(const unsigned long s) {
 }
 
 double ValueConversion::normToValueCenterFreq(const double& normValue) {
-	return (normValue * (sampleRate / 2));
+	return (MINEQCENTERFREQ + (sampleRate / 2 - MINEQCENTERFREQ) * normValue);
 }
 
 double ValueConversion::valueToNormCenterFreq(const double& value) {
-	return ((value * 2) / sampleRate);
+	return ((value - MINEQCENTERFREQ) / (sampleRate / 2 - MINEQCENTERFREQ));
 }
 
 double ValueConversion::normToValueQFactor(const double& normValue) {

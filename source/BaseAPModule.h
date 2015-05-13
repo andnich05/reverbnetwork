@@ -11,7 +11,7 @@ class GainModule;
 class BaseAPModule
 {
 public:
-	BaseAPModule(unsigned int sampleRate);
+	BaseAPModule(double sampleRate);
 	~BaseAPModule();
 
 	// Process all input channels of a module, return output sample which is a mix of the input samples

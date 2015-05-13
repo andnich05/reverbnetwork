@@ -38,7 +38,7 @@ public:
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
-	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
+	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const float& knobStartValue, const int32_t& valueEditTag, const float& valueEditStartValue, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
 
 	// Create a text label with a title for a group
 	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width);
@@ -53,8 +53,6 @@ private:
 
 	// View where the modules are placed and where they can be moved around and stuff
 	CScrollView* workspaceView;
-
-	//// True if the GUI for the module is present (= created and not removed yet)
 
 	// True if the id (= the index of the vector) is already taken
 	std::vector<bool> allpassModuleIdPool;

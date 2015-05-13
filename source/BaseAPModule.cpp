@@ -9,12 +9,12 @@
 #include <cmath>
 #include <string>
 
-BaseAPModule::BaseAPModule(unsigned int sampleRate)
+BaseAPModule::BaseAPModule(double sampleRate)
 	: sampleRate(sampleRate)
-	, mixer(new MixerModule())
-	, equalizer(new EqualizerModule(FilterType::lowPass, sampleRate, sampleRate / 4, 1.0, 1.0))
-	, allpass(new SchroederAllpass(sampleRate, 0, 0.0))
-	, gainOutput(new GainModule())
+	, mixer(new MixerModule(ValueConversion::logToLinear(DEFAULTOUTPUTGAINDB)))
+	, equalizer(new EqualizerModule(FilterType::lowPass, sampleRate, DEFAULTEQCENTERFREQ, DEFAULTEQQFACTOR, ValueConversion::logToLinear(DEFAULTEQGAIN)))
+	, allpass(new SchroederAllpass(sampleRate, DEFAULTDELAY, DEFAULTDECAY))
+	, gainOutput(new GainModule(ValueConversion::logToLinear(DEFAULTOUTPUTGAINDB)))
 	, bypassMixer(false)
 	, bypassEqualizer(false)
 	, bypassAllpass(false)
@@ -84,6 +84,10 @@ void BaseAPModule::updateEqualizerQFactor(const double& qFactor) {
 }
 void BaseAPModule::updateEqualizerGain(const double& gain) {
 	equalizer->setGain(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain)));
+	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain))).c_str());
+	//fprintf(pFile, "y(n): %s\n", std::to_string(K).c_str());
+	fclose(pFile);
 }
 
 void BaseAPModule::updateAllpassDelay(const double& delay) {
@@ -94,6 +98,7 @@ void BaseAPModule::updateAllpassDecay(const double& decay) {
 }
 
 void BaseAPModule::updateOutputGain(const double& gain) {
+	
 	gainOutput->setGain(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain)));
 }
 

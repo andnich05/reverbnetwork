@@ -85,7 +85,6 @@ CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState
 	}
 	return kMouseEventHandled;
 
-
 }
 
 CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonState& buttons)

@@ -30,10 +30,17 @@ EqualizerModule::~EqualizerModule()
 
 #include <string>
 void EqualizerModule::calculateK() {
+	if (FilterType::lowPass || FilterType::highPass) {
+		K = tan((centerFreq / samplingFreq) * M_PI);
+	}
+	else {
+		double bandwidth = centerFreq / qFactor;
+		K = tan(((centerFreq + bandwidth / 2) / samplingFreq) * M_PI);
+	}
 	// Grenzfrequenz
-	double cutoffFreq = centerFreq / (2 * qFactor);
+	//double cutoffFreq = centerFreq / (2 * qFactor);
 	// Hilfsvariable
-	K = tan((cutoffFreq / samplingFreq) * M_PI);
+	//K = tan((cutoffFreq / samplingFreq) * M_PI);
 	
 	calculateCoefficients();
 }
@@ -66,16 +73,16 @@ void EqualizerModule::calculateCoefficients() {
 		a1 = (2 * (pow(K, 2) - 1)) / denominator;
 		a2 = (1 - (gain / qFactor) * K + pow(K, 2)) / denominator;
 		b1 = a1;
-		b2 = a2;
+		b2 = (1 - (1 / qFactor) * K + pow(K, 2)) / denominator;
 		break;
 	}
 	case FilterType::bandStop: {
 		double denominator = 1 + (gain / qFactor) * K + pow(K, 2);
-		a0 = (1 + (gain / qFactor) * K + pow(K, 2)) / denominator;
+		a0 = (1 + (1 / qFactor) * K + pow(K, 2)) / denominator;
 		a1 = (2 * (pow(K, 2) - 1)) / denominator;
-		a2 = (1 - (gain / qFactor) * K + pow(K, 2)) / denominator;
+		a2 = (1 - (1 / qFactor) * K + pow(K, 2)) / denominator;
 		b1 = a1;
-		b2 = a2;
+		b2 = (1 - (gain / qFactor) * K + pow(K, 2)) / denominator;
 		break;
 	}
 	case FilterType::lowShelf: {

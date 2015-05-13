@@ -1,9 +1,9 @@
 #include "MixerModule.h"
 #include "ReverbNetworkDefines.h"
 
-MixerModule::MixerModule() {
+MixerModule::MixerModule(const double& gain) {
 	// Initialisation
-	channelGain.resize(MAXMODULEINPUTS, 0.0);
+	channelGain.resize(MAXMODULEINPUTS, gain);
 }
 
 MixerModule::~MixerModule() {

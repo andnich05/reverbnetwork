@@ -6,7 +6,7 @@
 class MixerModule
 {
 public:
-	MixerModule();
+	MixerModule(const double& gain);
 	~MixerModule();
 
 	// Mix samples of each channels, return the new sample value (no reference possible?)

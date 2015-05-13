@@ -4,10 +4,10 @@
 class GainModule
 {
 public:
-	GainModule();
+	GainModule(double gain);
 	~GainModule();
 
-	inline void setGain(const double& g) { if (g >= 0.0 && g <= 1.0) gain = g; }
+	inline void setGain(const double& g) { gain = g; }
 	void processSample(double& sample);
 
 private:

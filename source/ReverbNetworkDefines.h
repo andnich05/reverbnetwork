@@ -7,11 +7,6 @@
 // Maximum number of AP outputs (should be 1 for now)
 //#define MAXMODULEOUTPUTS 1
 
-// Maximum delay of an Allpass in seconds
-#define MAXDELAY 1.0
-
-// Maximum decay of an Allpass in seconds
-#define MAXDECAY 10.0
 
 // Maximum number of VST inputs
 #define MAXVSTINPUTS 2
@@ -25,20 +20,37 @@
 // Maximum number of AP inputs
 #define MAXMODULEINPUTS (MAXMODULENUMBER + MAXVSTINPUTS)
 
+// Minimum Eq Center Frequency
+#define MINEQCENTERFREQ 20
+#define DEFAULTEQCENTERFREQ 4000
+// Maximum Eq Center Frequency (Sample rate / 2 for now)
+//#define MAXEQCENTERFREQ 20000
+
 //Min EQ Q Factor
 #define MINEQQFACTOR 0.01
+#define DEFAULTEQQFACTOR 1.0
 // Maximum Equalizer Q Factor
 #define MAXEQQFACTOR 16.0
 
 // Minimum Equalizer Gain in dB
 #define MINEQGAINDB -60.0
+#define DEFAULTEQGAIN 0.0
 // Maximum Equalizer Gain in dB
-#define MAXEQGAINDB 12.0
+#define MAXEQGAINDB 60.0
+
+#define DEFAULTDELAY 0.0
+// Maximum delay of an Allpass in seconds
+#define MAXDELAY 1.0
+
+#define DEFAULTDECAY 0.0
+// Maximum decay of an Allpass in seconds
+#define MAXDECAY 10.0
 
 // Minimum Output Gain in dB
 #define MINOUTPUTGAINDB -60.0
+#define DEFAULTOUTPUTGAINDB 0.0
 // Maximum Output Gain in dB
-#define MAXOUTPUTGAINDB 30.0
+#define MAXOUTPUTGAINDB 60.0
 
 //---------------------------
 // Mapping for VST parameters

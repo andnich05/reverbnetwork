@@ -2,18 +2,20 @@
 #include "ReverbNetworkDefines.h"
 #include <cmath>
 
-SchroederAllpass::SchroederAllpass(unsigned long sampleRate, unsigned long delaySamples, double gain)
+SchroederAllpass::SchroederAllpass(double sampleRate, double delay, double decay)
 	: inputBuffer(nullptr)
 	, outputBuffer(nullptr)
 	, bufferPos(0) 
 	, sampleRate(sampleRate)
-	, delaySamples(delaySamples)
-	, delayTime(0.0)
-	, decayTime(0.0)
-	, gain(gain)
+	, delaySamples(sampleRate * delay)
+	, delayTime(delay)
+	, decayTime(decay)
 {
+	yn = 0;
+	xnD = 0;
+	ynD = 0;
+	setDecayTime(decay);
 	createBuffers();
-
 }
 
 SchroederAllpass::~SchroederAllpass() {
@@ -72,8 +74,12 @@ void SchroederAllpass::freeBuffers() {
 //#include <string>
 void SchroederAllpass::setDecayTime(const double& sec) {
 	decayTime = sec;
-	double db = -60 * (delayTime / decayTime);
-	gain = pow(10.0, db / 20);
+	double dB = 0.0;
+	// Prevent division by zero
+	if(decayTime > 0.0) {
+		dB = -60 * (delayTime / decayTime);
+	}
+	gain = pow(10.0, dB / 20);
 
 	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(delayTime).c_str());
