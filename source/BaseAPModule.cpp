@@ -70,36 +70,36 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 }
 
 void BaseAPModule::updateMixerGain(const unsigned int& inputNumber, const double& gain) {
-	mixer->setChannelGain(inputNumber, ValueConversion::logToLinear(ValueConversion::normToValueGain(gain)));
+	mixer->setChannelGain(inputNumber, ValueConversion::logToLinear(gain));
 }
 
 void BaseAPModule::updateEqualizerFilterType(const double& filterType) {
 	equalizer->setFilterType((FilterType)((int)(filterType)));
 }
 void BaseAPModule::updateEqualizerCenterFrequency(const double& freq) {
-	equalizer->setCenterFreq(ValueConversion::normToValueCenterFreq(freq));
+	equalizer->setCenterFreq(freq);
 }
 void BaseAPModule::updateEqualizerQFactor(const double& qFactor) {
-	equalizer->setQFactor(ValueConversion::normToValueQFactor(qFactor));
+	equalizer->setQFactor(qFactor);
 }
 void BaseAPModule::updateEqualizerGain(const double& gain) {
-	equalizer->setGain(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain)));
-	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain))).c_str());
-	//fprintf(pFile, "y(n): %s\n", std::to_string(K).c_str());
-	fclose(pFile);
+	equalizer->setGain(ValueConversion::logToLinear(gain));
+	//FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	//fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain))).c_str());
+	////fprintf(pFile, "y(n): %s\n", std::to_string(K).c_str());
+	//fclose(pFile);
 }
 
 void BaseAPModule::updateAllpassDelay(const double& delay) {
-	allpass->setDelayTimeSec(ValueConversion::normToValueDelay(delay));
+	allpass->setDelayTimeSec(delay);
 }
 void BaseAPModule::updateAllpassDecay(const double& decay) {
-	allpass->setDecayTime(ValueConversion::normToValueDecay(decay));
+	allpass->setDecayTime(decay);
 }
 
 void BaseAPModule::updateOutputGain(const double& gain) {
 	
-	gainOutput->setGain(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain)));
+	gainOutput->setGain(ValueConversion::logToLinear(gain));
 }
 
 

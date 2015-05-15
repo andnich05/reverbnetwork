@@ -2,6 +2,7 @@
 #include "ReverbNetworkDefines.h"
 #include <cstdlib>
 #include <string>
+#include "ReverbNetworkEnums.h"
 
 double ValueConversion::sampleRate = 0.0;
 
@@ -14,6 +15,22 @@ ValueConversion::~ValueConversion() {
 
 void ValueConversion::setSampleRate(const unsigned long s) {
 	sampleRate = s;
+}
+
+double ValueConversion::normToValueMixerInputSelect(const double& normValue) {
+	return normValue * ((float)MAXMODULENUMBER + (float)MAXVSTINPUTS);
+}
+
+double ValueConversion::valueToNormMixerInputSelect(const double& value) {
+	return value * (1 / ((float)MAXMODULENUMBER + (float)MAXVSTINPUTS));
+}
+
+double ValueConversion::normToValueFilterTypeSelect(const double& normValue) {
+	return normValue * ((float)(FilterType::numberOfFilterTypes - 1));	
+}
+
+double ValueConversion::valueToNormFilterTypeSelect(const double& value) {
+	return value * (1 / ((float)(FilterType::numberOfFilterTypes - 1)));
 }
 
 double ValueConversion::normToValueCenterFreq(const double& normValue) {
@@ -73,61 +90,61 @@ double ValueConversion::logToLinear(const double& logValue) {
 }
 
 bool ValueConversion::textEditStringToValueConversionCenterFreq(const char* txt, float& result, void* userData) {
-	result = valueToNormCenterFreq(atof(txt));
+	result = (atof(txt));
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversionCenterFreq(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.0f", normToValueCenterFreq(value));
+	sprintf(utf8String, "%1.0f", (value));
 	return true;
 }
 
 bool ValueConversion::textEditStringToValueConversionQFactor(const char* txt, float& result, void* userData) {
-	result = valueToNormQFactor(atof(txt));
+	result = atof(txt);
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversionQFactor(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", normToValueQFactor(value));
+	sprintf(utf8String, "%1.2f", value);
 	return true;
 }
 
 bool ValueConversion::textEditStringToValueConversionEqGain(const char* txt, float& result, void* userData) {
-	result = valueToNormEqGain(atof(txt));
+	result = atof(txt);
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversionEqGain(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", normToValueEqGain(value));
+	sprintf(utf8String, "%1.2f", value);
 	return true;
 }
 
 bool ValueConversion::textEditStringToValueConversionDelay(const char* txt, float& result, void* userData) {
-	result = valueToNormDelay(atof(txt));
+	result = atof(txt);
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversionDelay(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", normToValueDelay(value));
+	sprintf(utf8String, "%1.2f", value);
 	return true;
 }
 
 bool ValueConversion::textEditStringToValueConversionDecay(const char* txt, float& result, void* userData) {
-	result = valueToNormDecay(atof(txt));
+	result = atof(txt);
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversionDecay(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", normToValueDecay(value));
+	sprintf(utf8String, "%1.2f", value);
 	return true;
 }
 
 bool ValueConversion::textEditStringToValueConversionGain(const char* txt, float& result, void* userData) {
-	result = valueToNormGain(atof(txt));
+	result = atof(txt);
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversionGain(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", normToValueGain(value));
+	sprintf(utf8String, "%1.2f", value);
 	return true;
 }

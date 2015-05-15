@@ -47,7 +47,7 @@
 namespace Steinberg {
 namespace Vst {
 
-class ReverbNetworkController;
+class ReverbNetworkEditor;
 
 //-----------------------------------------------------------------------------
 class ReverbNetworkController : public EditController
@@ -63,16 +63,16 @@ public:
 
 	static FUnknown* createInstance(void*) { return (IEditController*)new ReverbNetworkController(); }
 
-	//void editorDestroyed(EditorView* editor) {} // nothing to do here
-	//void editorAttached(EditorView* editor);
-	//void editorRemoved(EditorView* editor);
+	void editorDestroyed(EditorView* editor) {} // nothing to do here
+	void editorAttached(EditorView* editor);
+	void editorRemoved(EditorView* editor);
 
-	////---Internal functions-------
-	//void addDependentView(ADelayEditor* view);
-	//void removeDependentView(ADelayEditor* view);
+	//---Internal functions-------
+	void addDependentView(ReverbNetworkEditor* view);
+	void removeDependentView(ReverbNetworkEditor* view);
 
 private:
-	//TArray <ReverbNetworkEditor*> viewsArray;
+	TArray <ReverbNetworkEditor*> viewsArray;
 };
 
 }} // namespaces

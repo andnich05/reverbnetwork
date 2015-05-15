@@ -4,6 +4,7 @@
 
 #include "GuiHandleView.h"
 #include "ValueConversion.h"
+#include "ReverbNetworkEnums.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -152,13 +153,21 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	frame->addView(workspaceView);
 	frame->addView(vstOuputSelect);
+
+	// !!! Called every time the editor is reopened => memory leak?
+	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+		createAPModule();
+	}
+
+	updateGuiWithControllerParameters();
+
 	return true;
 }
 
 void PLUGIN_API ReverbNetworkEditor::close() {
 	if (frame)
 	{
-		frame->forget();	// Same as 'delete frame'?
+		frame->forget();	// delete frame
 		frame = 0;
 	}
 }
@@ -198,25 +207,27 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			workspaceView->setDirty();
 		}
 	}
+	// CAnimKnob accepts only normalized values (BUG?)
 	// Mixer
 	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
 		// Update the VST parameter variable
-		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::valueToNormMixerInputSelect(pControl->getValue()));
 		// Update the module member variable (is called in process())
 		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), pControl->getValue());
 	}
 	else if (tag >= id_mixer_knob_gainFirst && tag <= id_mixer_knob_gainLast)  {
+		// Knob value already normalized => no conversion needed
 		controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_knob_gainFirst), pControl->getValue());
-		controller->performEdit(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_knob_gainFirst), pControl->getValue());
-		// Update the text edit box under the knob
-		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(pControl->getValue());
+		controller->performEdit(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_knob_gainFirst), ValueConversion::normToValueGain(pControl->getValue()));
+		// Update the text edit box under the knob => convert from normalized value to real value
+		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToValueGain(pControl->getValue()));
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
 	}
 	else if (tag >= id_mixer_textEdit_gainFirst && tag <= id_mixer_textEdit_gainLast)  {
-		controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_textEdit_gainFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_textEdit_gainFirst), ValueConversion::valueToNormGain(pControl->getValue()));
 		controller->performEdit(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_textEdit_gainFirst), pControl->getValue());
 		// Update the knob above the textEdit
-		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(pControl->getValue());
+		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormGain(pControl->getValue()));
 		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
 	}
 	else if (tag >= id_mixer_switch_bypassFirst && tag <= id_mixer_switch_bypassLast)  {
@@ -225,43 +236,46 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	// Equalizer
 	else if (tag >= id_equalizer_optionMenu_filterTypeFirst && tag <= id_equalizer_optionMenu_filterTypeLast)  {
-		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::valueToNormFilterTypeSelect(pControl->getValue()));
 		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), pControl->getValue());
 	}
 	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
 		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), pControl->getValue());
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), pControl->getValue());
-		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(pControl->getValue());
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(pControl->getValue()).c_str());
+		fclose(pFile);*/
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), ValueConversion::normToValueCenterFreq(pControl->getValue()));
+		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(ValueConversion::normToValueCenterFreq(pControl->getValue()));
 		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_centerFreqFirst && tag <= id_equalizer_textEdit_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::valueToNormCenterFreq(pControl->getValue()));
 		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), pControl->getValue());
-		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(pControl->getValue());
+		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::valueToNormCenterFreq(pControl->getValue()));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_knob_qFactorFirst && tag <= id_equalizer_knob_qFactorLast)  {
 		controller->setParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_knob_qFactorFirst), pControl->getValue());
-		controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_knob_qFactorFirst), pControl->getValue());
-		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - id_equalizer_knob_qFactorFirst)]->setValue(pControl->getValue());
+		controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_knob_qFactorFirst), ValueConversion::normToValueQFactor(pControl->getValue()));
+		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - id_equalizer_knob_qFactorFirst)]->setValue(ValueConversion::normToValueQFactor(pControl->getValue()));
 		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - id_equalizer_knob_qFactorFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_qFactorFirst && tag <= id_equalizer_textEdit_qFactorLast)  {
-		controller->setParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), ValueConversion::valueToNormQFactor(pControl->getValue()));
 		controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), pControl->getValue());
-		guiElements[id_equalizer_knob_qFactorFirst + (tag - id_equalizer_textEdit_qFactorFirst)]->setValue(pControl->getValue());
+		guiElements[id_equalizer_knob_qFactorFirst + (tag - id_equalizer_textEdit_qFactorFirst)]->setValue(ValueConversion::valueToNormQFactor(pControl->getValue()));
 		guiElements[id_equalizer_knob_qFactorFirst + (tag - id_equalizer_textEdit_qFactorFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_knob_gainFirst && tag <= id_equalizer_knob_gainLast)  {
 		controller->setParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_knob_gainFirst), pControl->getValue());
-		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_knob_gainFirst), pControl->getValue());
-		guiElements[id_equalizer_textEdit_gainFirst + (tag - id_equalizer_knob_gainFirst)]->setValue(pControl->getValue());
+		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_knob_gainFirst), ValueConversion::normToValueEqGain(pControl->getValue()));
+		guiElements[id_equalizer_textEdit_gainFirst + (tag - id_equalizer_knob_gainFirst)]->setValue(ValueConversion::normToValueEqGain(pControl->getValue()));
 		guiElements[id_equalizer_textEdit_gainFirst + (tag - id_equalizer_knob_gainFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_gainFirst && tag <= id_equalizer_textEdit_gainLast)  {
-		controller->setParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), ValueConversion::valueToNormEqGain(pControl->getValue()));
 		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), pControl->getValue());
-		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setValue(pControl->getValue());
+		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormEqGain(pControl->getValue()));
 		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_switch_bypassFirst && tag <= id_equalizer_switch_bypassLast)  {
@@ -271,26 +285,26 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	// Allpass
 	else if (tag >= id_allpass_knob_delayFirst && tag <= id_allpass_knob_delayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_knob_delayFirst), pControl->getValue());
-		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_knob_delayFirst), pControl->getValue());
-		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(pControl->getValue());
+		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_knob_delayFirst), ValueConversion::normToValueDelay(pControl->getValue()));
+		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::normToValueDelay(pControl->getValue()));
 		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->invalid();
 	}
 	else if (tag >= id_allpass_textEdit_delayFirst && tag <= id_allpass_textEdit_delayLast)  {
-		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::valueToNormDelay(pControl->getValue()));
 		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), pControl->getValue());
-		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(pControl->getValue());
+		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(ValueConversion::valueToNormDelay(pControl->getValue()));
 		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setDirty();
 	}
 	else if (tag >= id_allpass_knob_decayFirst && tag <= id_allpass_knob_decayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), pControl->getValue());
-		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), pControl->getValue());
-		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->setValue(pControl->getValue());
+		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), ValueConversion::normToValueDelay(pControl->getValue()));
+		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->setValue(ValueConversion::normToValueDelay(pControl->getValue()));
 		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->invalid();
 	}
 	else if (tag >= id_allpass_textEdit_decayFirst && tag <= id_allpass_textEdit_decayLast)  {
-		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::valueToNormDecay(pControl->getValue()));
 		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), pControl->getValue());
-		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setValue(pControl->getValue());
+		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setValue(ValueConversion::valueToNormDecay(pControl->getValue()));
 		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setDirty();
 	}
 	else if (tag >= id_allpass_switch_bypassFirst && tag <= id_allpass_switch_bypassLast)  {
@@ -300,14 +314,14 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	// Output
 	else if (tag >= id_output_knob_gainFirst && tag <= id_output_knob_gainLast)  {
 		controller->setParamNormalized(PARAM_OUTGAIN_FIRST + (tag - id_output_knob_gainFirst), pControl->getValue());
-		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_knob_gainFirst), pControl->getValue());
-		guiElements[id_output_textEdit_gainFirst + (tag - id_output_knob_gainFirst)]->setValue(pControl->getValue());
+		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_knob_gainFirst), ValueConversion::normToValueDelay(pControl->getValue()));
+		guiElements[id_output_textEdit_gainFirst + (tag - id_output_knob_gainFirst)]->setValue(ValueConversion::normToValueDelay(pControl->getValue()));
 		guiElements[id_output_textEdit_gainFirst + (tag - id_output_knob_gainFirst)]->invalid();
 	}
 	else if (tag >= id_output_textEdit_gainFirst && tag <= id_output_textEdit_gainLast)  {
-		controller->setParamNormalized(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), ValueConversion::valueToNormGain(pControl->getValue()));
 		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), pControl->getValue());
-		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setValue(pControl->getValue());
+		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormGain(pControl->getValue()));
 		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setDirty();
 	}
 	else if (tag >= id_output_switch_bypassFirst && tag <= id_output_switch_bypassLast)  {
@@ -316,7 +330,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	// General
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
-		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(pControl->getValue()));
 		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), pControl->getValue());
 	}
 }
@@ -353,7 +367,8 @@ void ReverbNetworkEditor::createAPModule() {
 			break;
 		}
 	}
-	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30), CPoint(0, 0)), handleViewSize, moduleId);
+	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
+		CPoint(0, 0)), handleViewSize, moduleId);
 	baseModuleView->setBackgroundColor(CColor(55, 55, 55, 255));
 
 	std::string temp = "Allpass Module ";
@@ -373,7 +388,8 @@ void ReverbNetworkEditor::createAPModule() {
 		temp = "IN ";
 		temp.append(std::to_string(i));
 		temp.append(":");
-		mixerView->addView(createMixerRow(temp.c_str(), mixerView->getWidth(), id_mixer_optionMenu_inputSelectFirst + i + moduleId * MAXMODULEINPUTS, id_mixer_knob_gainFirst + i + moduleId * MAXMODULEINPUTS, id_mixer_textEdit_gainFirst + i + moduleId * MAXMODULEINPUTS));
+		mixerView->addView(createMixerRow(temp.c_str(), mixerView->getWidth(), id_mixer_optionMenu_inputSelectFirst + i + moduleId * MAXMODULEINPUTS, 
+			id_mixer_knob_gainFirst + i + moduleId * MAXMODULEINPUTS, id_mixer_textEdit_gainFirst + i + moduleId * MAXMODULEINPUTS));
 	}
 
 
@@ -401,21 +417,32 @@ void ReverbNetworkEditor::createAPModule() {
 	filterTypeView->sizeToFit();
 	CRowColumnView* paramFirstRow = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	paramFirstRow->setBackgroundColor(CColor(0, 0, 0, 0));
-	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, ValueConversion::valueToNormCenterFreq(DEFAULTEQCENTERFREQ), id_equalizer_textEdit_centerFreqFirst + moduleId, ValueConversion::valueToNormCenterFreq(DEFAULTEQCENTERFREQ), &ValueConversion::textEditStringToValueConversionCenterFreq, &ValueConversion::textEditValueToStringConversionCenterFreq));
-	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, ValueConversion::valueToNormQFactor(DEFAULTEQQFACTOR), id_equalizer_textEdit_qFactorFirst + moduleId, ValueConversion::valueToNormQFactor(DEFAULTEQQFACTOR), &ValueConversion::textEditStringToValueConversionQFactor, &ValueConversion::textEditValueToStringConversionQFactor));
+	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, ValueConversion::valueToNormCenterFreq(DEFAULTEQCENTERFREQ), 
+		id_equalizer_textEdit_centerFreqFirst + moduleId, DEFAULTEQCENTERFREQ, MINEQCENTERFREQ, MAXEQCENTERFREQ, &ValueConversion::textEditStringToValueConversionCenterFreq, 
+		&ValueConversion::textEditValueToStringConversionCenterFreq));
+
+	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, ValueConversion::valueToNormQFactor(DEFAULTEQQFACTOR), 
+		id_equalizer_textEdit_qFactorFirst + moduleId, DEFAULTEQQFACTOR, MINEQQFACTOR, MAXEQQFACTOR, &ValueConversion::textEditStringToValueConversionQFactor, 
+		&ValueConversion::textEditValueToStringConversionQFactor));
 	paramFirstRow->sizeToFit();
 	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
 	equalizerView->addView(filterTypeView);
 	equalizerView->addView(paramFirstRow);
-	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, ValueConversion::valueToNormEqGain(DEFAULTEQGAIN), id_equalizer_textEdit_gainFirst + moduleId, ValueConversion::valueToNormEqGain(DEFAULTEQGAIN), &ValueConversion::textEditStringToValueConversionEqGain, &ValueConversion::textEditValueToStringConversionEqGain));
+	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, ValueConversion::valueToNormEqGain(DEFAULTEQGAIN), 
+		id_equalizer_textEdit_gainFirst + moduleId, DEFAULTEQGAIN, MINEQGAINDB, MAXEQGAINDB, &ValueConversion::textEditStringToValueConversionEqGain, 
+		&ValueConversion::textEditValueToStringConversionEqGain));
 
 
 	// Holds the allpass controls (delay and decay)
 	CRowColumnView* allpassView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	allpassView->setBackgroundColor(CColor(0, 0, 0, 0));
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
-	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, ValueConversion::valueToNormDelay(DEFAULTDELAY), id_allpass_textEdit_delayFirst + moduleId, ValueConversion::valueToNormDelay(DEFAULTDELAY), &ValueConversion::textEditStringToValueConversionDelay, &ValueConversion::textEditValueToStringConversionDelay));
-	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, ValueConversion::valueToNormDecay(DEFAULTDECAY), id_allpass_textEdit_decayFirst + moduleId, ValueConversion::valueToNormDecay(DEFAULTDECAY), &ValueConversion::textEditStringToValueConversionDecay, &ValueConversion::textEditValueToStringConversionDecay));
+	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, ValueConversion::valueToNormDelay(DEFAULTDELAY), 
+		id_allpass_textEdit_delayFirst + moduleId, DEFAULTDELAY, 0, MAXDELAY, &ValueConversion::textEditStringToValueConversionDelay, 
+		&ValueConversion::textEditValueToStringConversionDelay));
+	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, ValueConversion::valueToNormDecay(DEFAULTDECAY), 
+		id_allpass_textEdit_decayFirst + moduleId, DEFAULTDECAY, 0, MAXDECAY, &ValueConversion::textEditStringToValueConversionDecay, 
+		&ValueConversion::textEditValueToStringConversionDecay));
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
@@ -424,7 +451,9 @@ void ReverbNetworkEditor::createAPModule() {
 	// Holds the output gain control
 	CRowColumnView* gainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
-	gainView->addView(createKnobGroup("Gain", gainView->getWidth(), id_output_knob_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB), id_output_textEdit_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB), &ValueConversion::textEditStringToValueConversionGain, &ValueConversion::textEditValueToStringConversionGain));
+	gainView->addView(createKnobGroup("Gain", gainView->getWidth(), id_output_knob_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB), 
+		id_output_textEdit_gainFirst + moduleId, DEFAULTOUTPUTGAINDB, MINOUTPUTGAINDB, MAXOUTPUTGAINDB, &ValueConversion::textEditStringToValueConversionGain, 
+		&ValueConversion::textEditValueToStringConversionGain));
 	gainView->setBackgroundColor(CColor(0, 0, 0, 0));
 
 	// Add process views to the control view
@@ -447,20 +476,26 @@ void ReverbNetworkEditor::createAPModule() {
 	++totalNumberOfCreatedModules;
 }
 
-CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const float& knobStartValue, const int32_t& valueEditTag, const float& valueEditStartValue, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
+CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const float& knobStartValue,
+	const int32_t& valueEditTag, const float& valueEditStartValue, const float& valueEditMinValue, const float& valueEditMaxValue,
+	CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
+
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CTextLabel* groupNameLabel = new CTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), title);
 	groupNameLabel->setFont(kNormalFontSmall);
 	groupNameLabel->setBackColor(CColor(0, 0, 0, 0));
 	groupNameLabel->setFrameColor(CColor(0, 0, 0, 0));
-	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0 + (groupView->getWidth() - knobBackground->getWidth()) / 2, groupNameLabel->getViewSize().bottom + 3), CPoint(knobBackground->getWidth(), knobBackground->getWidth())), this, knobTag, knobBackground->getHeight() / knobBackground->getWidth(), knobBackground->getWidth(), knobBackground);
+	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0 + (groupView->getWidth() - knobBackground->getWidth()) / 2, groupNameLabel->getViewSize().bottom + 3), 
+		CPoint(knobBackground->getWidth(), knobBackground->getWidth())), this, knobTag, knobBackground->getHeight() / knobBackground->getWidth(), knobBackground->getWidth(), knobBackground);
 	addGuiElementPointer(knob, knobTag);
 	knob->setValue(knobStartValue);
 	CTextEdit* groupTextEdit = new CTextEdit(CRect(CPoint(0, knob->getViewSize().bottom + 3), CPoint(groupView->getWidth(), 15)), this, valueEditTag, "0.0");
 	addGuiElementPointer(groupTextEdit, valueEditTag);
 	groupTextEdit->setStringToValueProc(textEditStringToValueFunctionPtr);
 	groupTextEdit->setValueToStringProc(textEditValueToStringFunctionPtr);
+	groupTextEdit->setMin(valueEditMinValue);
+	groupTextEdit->setMax(valueEditMaxValue);
 	groupTextEdit->setValue(valueEditStartValue);
 	groupTextEdit->setFont(CFontRef(kNormalFontSmall));
 	groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
@@ -515,12 +550,13 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	addGuiElementPointer(knob, knobTag);
 	knob->setValue(ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB));
 
-
 	CTextEdit* valueEdit = new CTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, valueEditTag, "0.0");
 	addGuiElementPointer(valueEdit, valueEditTag);
 	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversionGain);
 	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversionGain);
-	valueEdit->setValue(ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB));
+	valueEdit->setMin(MINOUTPUTGAINDB);
+	valueEdit->setMax(MAXOUTPUTGAINDB);
+	valueEdit->setValue(DEFAULTOUTPUTGAINDB);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
 	valueEdit->setBackColor(CColor(0, 0, 0, 0));
 	valueEdit->setFrameColor(CColor(0, 0, 0, 0));
@@ -542,7 +578,34 @@ void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
 
 //bool textEditStringToValueConversion(UTF8StringPtr txt, float& result, void* userData);
 
+void ReverbNetworkEditor::updateGuiWithControllerParameters() {
+	updateGuiParameter(PARAM_MIXERINPUTSELECT_FIRST, PARAM_MIXERINPUTSELECT_LAST, id_mixer_optionMenu_inputSelectFirst, &ValueConversion::normToValueMixerInputSelect);
+	updateGuiParameter(PARAM_MIXERGAIN_FIRST, PARAM_MIXERGAIN_LAST, id_mixer_knob_gainFirst, nullptr);
+	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);
+	updateGuiParameter(PARAM_EQFILTERTYPE_FIRST, PARAM_EQFILTERTYPE_LAST, id_equalizer_optionMenu_filterTypeFirst, &ValueConversion::normToValueFilterTypeSelect);
+	updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
+	updateGuiParameter(PARAM_EQQFACTOR_FIRST, PARAM_EQQFACTOR_LAST, id_equalizer_knob_qFactorFirst, nullptr);
+	updateGuiParameter(PARAM_EQGAIN_FIRST, PARAM_EQGAIN_LAST, id_equalizer_knob_gainFirst, nullptr);
+	//updateGuiParameter(PARAM_EQBYPASS_FIRST, PARAM_EQBYPASS_LAST, id_equalizer_switch_bypassFirst, nullptr);
+	updateGuiParameter(PARAM_ALLPASSDELAY_FIRST, PARAM_ALLPASSDELAY_LAST, id_allpass_knob_delayFirst, nullptr);
+	updateGuiParameter(PARAM_ALLPASSDECAY_FIRST, PARAM_ALLPASSDECAY_LAST, id_allpass_knob_decayFirst, nullptr);
+	//updateGuiParameter(PARAM_ALLPASSBYPASS_FIRST, PARAM_ALLPASSBYPASS_LAST, id_allpass_switch_bypassFirst, nullptr);
+	updateGuiParameter(PARAM_OUTGAIN_FIRST, PARAM_OUTGAIN_LAST, id_output_knob_gainFirst, nullptr);
+	//updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
+	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToValueMixerInputSelect);
+}
 
+void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr) {
+	for (uint32 i = firstParamId; i < lastParamId + 1; ++i) {
+		if (functPtr) {
+			guiElements[firstGuiId + (i - firstParamId)]->setValue(functPtr(getController()->getParamNormalized(i)));
+		}
+		else {
+			guiElements[firstGuiId + (i - firstParamId)]->setValue(getController()->getParamNormalized(i));
+		}
+		valueChanged(guiElements[firstGuiId + (i - firstParamId)]);
+	}
+}
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;

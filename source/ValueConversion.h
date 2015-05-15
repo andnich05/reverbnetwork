@@ -9,6 +9,10 @@ public:
 
 	static void setSampleRate(const unsigned long s);
 
+	static double normToValueMixerInputSelect(const double& normValue);
+	static double valueToNormMixerInputSelect(const double& value);
+	static double normToValueFilterTypeSelect(const double& normValue);
+	static double valueToNormFilterTypeSelect(const double& value);
 	static double normToValueCenterFreq(const double& normValue);
 	static double valueToNormCenterFreq(const double& value);
 	static double normToValueQFactor(const double& normValue);

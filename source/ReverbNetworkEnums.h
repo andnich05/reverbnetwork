@@ -9,7 +9,8 @@ enum FilterType
 	bandPass,
 	bandStop,
 	lowShelf,
-	highShelf
+	highShelf,
+	numberOfFilterTypes
 };
 
 #endif // REVERBNETWORKENUMS_H

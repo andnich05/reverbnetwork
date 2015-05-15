@@ -38,7 +38,9 @@ public:
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
-	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const float& knobStartValue, const int32_t& valueEditTag, const float& valueEditStartValue, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
+	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const float& knobStartValue, const int32_t& valueEditTag, 
+		const float& valueEditStartValue, const float& valueEditMinValue, const float& valueEditMaxValue, CTextEditStringToValueProc textEditStringToValueFunctionPtr, 
+		CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
 
 	// Create a text label with a title for a group
 	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width);
@@ -67,8 +69,15 @@ private:
 	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!
 	// Remove the pointers out of this vector manually?
 	std::vector<CControl*> guiElements;
-
+	// Add a GUI element pointer to the vector with the GUI-ID as the index
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
+
+	// Sync GUI with controller parameters (e.g. if the user closes and reopens the GUI the changes in the GUI would be lost)
+	void updateGuiWithControllerParameters();
+
+	// Conversion function can be a nullptr if no conversion is needed
+	typedef double(*ConversionFunction)(const double&);
+	void updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr);
 
 	// http://www.kvraudio.com/forum/viewtopic.php?p=5432847
 	//typedef bool(*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);

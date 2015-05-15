@@ -94,6 +94,7 @@ namespace Vst {
 					parameter->appendString(USTRING(temp2.c_str()));
 				}
 				parameters.addParameter(parameter);
+				
 				++pidCounter;
 			}
 		}
@@ -107,8 +108,7 @@ namespace Vst {
 				temp.append(" - Mixer Channel Input ");
 				temp.append(std::to_string(j));
 				temp.append(" Gain");
-				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING(""), 0.0, 1.0, 0.0);
-				parameter->setPrecision(2);
+				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING("dB"), MINOUTPUTGAINDB, MAXOUTPUTGAINDB, DEFAULTOUTPUTGAINDB);
 				parameters.addParameter(parameter);
 				++pidCounter;
 			}
@@ -145,8 +145,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Center Frequency");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING("Hz"), 0.0, 1.0, 0.0);
-			parameter->setPrecision(0);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING("Hz"), MINEQCENTERFREQ, MAXEQCENTERFREQ, DEFAULTEQCENTERFREQ);
 			parameters.addParameter(parameter);
 		}
 		// Equalizer Q Factor
@@ -154,8 +153,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Q Factor");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(""), 0.0, 1.0, 0.0);
-			parameter->setPrecision(1);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(""), MINEQQFACTOR, MAXEQQFACTOR, DEFAULTEQQFACTOR);
 			parameters.addParameter(parameter);
 		}
 		// Equalizer Gain
@@ -163,8 +161,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Gain");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(""), 0.0, 1.0, 0.0);
-			parameter->setPrecision(2);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING("dB"), MINEQGAINDB, MAXEQGAINDB, DEFAULTEQGAIN);
 			parameters.addParameter(parameter);
 		}
 		// Equalizer Bypass
@@ -185,8 +182,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Delay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("sec"), 0.0, 1.0, 0.0);
-			parameter->setPrecision(2);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("sec"), 0.0, MAXDELAY, DEFAULTDELAY);
 			parameters.addParameter(parameter);
 		}
 		// Allpass decay
@@ -194,8 +190,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Decay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING("sec"), 0.0, 1.0, 0.0);
-			parameter->setPrecision(2);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING("sec"), 0.0, MAXDECAY, DEFAULTDECAY);
 			parameters.addParameter(parameter);
 		}
 		// Allpass Bypass
@@ -216,8 +211,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Output Gain");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(""), 0.0, 1.0, 0.0);
-			parameter->setPrecision(2);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(""), MINOUTPUTGAINDB, MAXOUTPUTGAINDB, DEFAULTOUTPUTGAINDB);
 			parameters.addParameter(parameter);
 		}
 		// Bypass
@@ -272,46 +266,46 @@ namespace Vst {
 	}
 	return 0;
 }
-//
-////------------------------------------------------------------------------
-//void ADelayController::addDependentView(ADelayEditor* view)
-//{
-//	viewsArray.add(view);
-//}
-//
-////------------------------------------------------------------------------
-//void ADelayController::removeDependentView(ADelayEditor* view)
-//{
-//	for (int32 i = 0; i < viewsArray.total(); i++)
-//	{
-//		if (viewsArray.at(i) == view)
-//		{
-//			viewsArray.removeAt(i);
-//			break;
-//		}
-//	}
-//}
-//
-////------------------------------------------------------------------------
-//void ADelayController::editorAttached(EditorView* editor)
-//{
-//	ADelayEditor* view = dynamic_cast<ADelayEditor*> (editor);
-//	if (view)
-//	{
-//		addDependentView(view);
-//	}
-//}
-//
-////------------------------------------------------------------------------
-//void ADelayController::editorRemoved(EditorView* editor)
-//{
-//	ADelayEditor* view = dynamic_cast<ADelayEditor*> (editor);
-//	if (view)
-//	{
-//		removeDependentView(view);
-//	}
-//}
-//
+
+//------------------------------------------------------------------------
+void ReverbNetworkController::addDependentView(ReverbNetworkEditor* view)
+{
+	viewsArray.add(view);
+}
+
+//------------------------------------------------------------------------
+void ReverbNetworkController::removeDependentView(ReverbNetworkEditor* view)
+{
+	for (int32 i = 0; i < viewsArray.total(); i++)
+	{
+		if (viewsArray.at(i) == view)
+		{
+			viewsArray.removeAt(i);
+			break;
+		}
+	}
+}
+
+//------------------------------------------------------------------------
+void ReverbNetworkController::editorAttached(EditorView* editor)
+{
+	ReverbNetworkEditor* view = dynamic_cast<ReverbNetworkEditor*> (editor);
+	if (view)
+	{
+		addDependentView(view);
+	}
+}
+
+//------------------------------------------------------------------------
+void ReverbNetworkController::editorRemoved(EditorView* editor)
+{
+	ReverbNetworkEditor* view = dynamic_cast<ReverbNetworkEditor*> (editor);
+	if (view)
+	{
+		removeDependentView(view);
+	}
+}
+
 
 
 

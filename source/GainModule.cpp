@@ -3,9 +3,7 @@
 #include <string>
 GainModule::GainModule(double gain) 
 	: gain(gain) {
-	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
-	fclose(pFile);
+
 }
 
 GainModule::~GainModule() {

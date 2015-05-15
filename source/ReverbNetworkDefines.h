@@ -21,10 +21,10 @@
 #define MAXMODULEINPUTS (MAXMODULENUMBER + MAXVSTINPUTS)
 
 // Minimum Eq Center Frequency
-#define MINEQCENTERFREQ 20
-#define DEFAULTEQCENTERFREQ 4000
+#define MINEQCENTERFREQ 20.0
+#define DEFAULTEQCENTERFREQ 4000.0
 // Maximum Eq Center Frequency (Sample rate / 2 for now)
-//#define MAXEQCENTERFREQ 20000
+#define MAXEQCENTERFREQ 20000.0
 
 //Min EQ Q Factor
 #define MINEQQFACTOR 0.01
