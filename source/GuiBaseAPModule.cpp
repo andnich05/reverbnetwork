@@ -14,21 +14,41 @@ namespace VSTGUI {
 GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int moduleId)
 : CViewContainer(rect)
 , handleRegion(handleRegion)
+, viewSize(rect)
 , moduleId(moduleId)
 {
+	this->handleRegion.offset(-1, -1);
 	backgroundOffset (0, 0);
 	backgroundColor = kBlackCColor;
 	setAutosizingEnabled (true);
 	mousePressed = false;
 	mousePressedX = 0;
 	mousePressedY = 0;
+	collapsed = false;
 }
 
 unsigned int GuiBaseAPModule::getModuleId() {
 	return moduleId;
 }
 
-// ANFASSER OBEN HINMACHEN AN DEM MAN DAS MODUL VERSCHIEBEN KANN
+void GuiBaseAPModule::collapseView(const bool& collapse) {
+	if (collapse) {
+		viewSize = this->getViewSize();
+		viewSize.setTopLeft(frameToLocal(viewSize.getTopLeft()));
+		viewSize.setBottomRight(frameToLocal(viewSize.getBottomRight()));
+		this->setViewSize(CRect(localToFrame(handleRegion.getTopLeft()).x, localToFrame(handleRegion.getTopLeft()).y, 
+			localToFrame(viewSize.getBottomRight()).x, localToFrame(handleRegion.getBottomRight()).y));
+	}
+	else {
+		this->setViewSize(CRect(localToFrame(viewSize.getTopLeft()).x, localToFrame(viewSize.getTopLeft()).y,
+			localToFrame(viewSize.getBottomRight()).x, localToFrame(viewSize.getBottomRight()).y));
+	}
+	collapsed = collapse;
+	this->setMouseableArea(this->getViewSize());
+	this->getParentView()->invalid();
+	this->invalid();
+}
+
 CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 {
 	this->invalid();

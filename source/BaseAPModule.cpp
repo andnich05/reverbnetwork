@@ -52,7 +52,9 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 	if (!bypassEqualizer) {
 		equalizer->processSample(outputSample);
 	}
-
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(outputSample).c_str());
+	fclose(pFile);*/
 	// Send through the allpass
 	if (!bypassAllpass) {
 		allpass->doProcessing(outputSample);
@@ -64,6 +66,8 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 			gainOutput->processSample(outputSample);
 		}
 	}
+
+	
 
 	// Return output sample of the whole module
 	return outputSample;

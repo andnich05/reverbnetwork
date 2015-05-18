@@ -239,7 +239,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
-
+						value = ValueConversion::normToValueMixerInputSelect(value); // Transform normalized value to list index
 						if (value == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectModuleInput(moduleNumber, moduleInput);
 						}
@@ -255,7 +255,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
-						apModules[moduleNumber]->updateMixerGain(moduleInput, value);
+						apModules[moduleNumber]->updateMixerGain(moduleInput, ValueConversion::normToValueGain(value));
 					}
 				}
 				else if (pid >= PARAM_MIXERBYPASS_FIRST && pid <= PARAM_MIXERBYPASS_LAST) {
@@ -265,22 +265,23 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						value = ValueConversion::normToValueFilterTypeSelect(value);
 						apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateEqualizerFilterType(value);
 					}
 				}
 				else if (pid >= PARAM_EQCENTERFREQ_FIRST && pid <= PARAM_EQCENTERFREQ_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(value);
+						apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToValueCenterFreq(value));
 					}
 				}
 				else if (pid >= PARAM_EQQFACTOR_FIRST && pid <= PARAM_EQQFACTOR_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(value);
+						apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(ValueConversion::normToValueQFactor(value));
 					}
 				}
 				else if (pid >= PARAM_EQGAIN_FIRST && pid <= PARAM_EQGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(value);
+						apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToValueEqGain(value));
 					}
 				}
 				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
@@ -290,12 +291,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_ALLPASSDELAY_FIRST && pid <= PARAM_ALLPASSDELAY_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateAllpassDelay(value);
+						apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateAllpassDelay(ValueConversion::normToValueDelay(value));
 					}
 				}
 				else if (pid >= PARAM_ALLPASSDECAY_FIRST && pid <= PARAM_ALLPASSDECAY_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(value);
+						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(ValueConversion::normToValueDecay(value));
 					}
 				}
 				else if (pid >= PARAM_ALLPASSBYPASS_FIRST && pid <= PARAM_ALLPASSBYPASS_LAST) {
@@ -305,7 +306,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_OUTGAIN_FIRST && pid <= PARAM_OUTGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(value);
+						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToValueGain(value));
 					}
 				}
 				else if (pid >= PARAM_OUTBYPASS_FIRST && pid <= PARAM_OUTBYPASS_LAST) {
@@ -317,12 +318,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				else if (pid >= PARAM_GENERALVSTOUTPUTSELECT_FIRST && pid <= PARAM_GENERALVSTOUTPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-
-						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-						fprintf(pFile, "y(n): %s\n", std::to_string(value - MAXMODULENUMBER).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST).c_str());
-						fclose(pFile);*/
-
+						value = ValueConversion::normToValueMixerInputSelect(value);
 						if (value == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectVstOutput(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
 						}
@@ -348,6 +344,11 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		}
 	}
 
+	
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(connectionMatrix->mapVstInput(unmappedVstInput)).c_str());
+	fclose(pFile);*/
+
 	// Process the audio samples
 	if (data.numSamples > 0)
 	{
@@ -367,15 +368,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		}
 
 		// Get the connection matrix
-		const std::vector<std::vector<short>>& moduleToModuleConnections = connectionMatrix->getModuleToModuleConnections();
-		const std::vector<std::vector<short>>& vstToModuleConnections = connectionMatrix->getVstToModuleConnections();
-		const std::vector<short>& moduleToVstConnections = connectionMatrix->getModuleToVstConnections();
-		const std::vector<short>& vstToVstConnections = connectionMatrix->getVstToVstConnections();
+		const std::vector<std::vector<short>>& moduleInputConnections = connectionMatrix->getModuleInputConnections();
+		const std::vector<short>& vstOutputConnections = connectionMatrix->getVstOutputConnections();
 
 		// Vector with all samples for all inputs which are connected to a module input
 		std::vector<double> samplesToProcess;
 
-		// VST inputs to module inputs
 		// Sample interval
 		for (uint32 sample = 0; sample < numberOfSamples; ++sample) {
 			// Module input processing
@@ -383,13 +381,25 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				samplesToProcess.clear();
 				// For each module input: check if the input is connected to a VST input
 				for (uint16 moduleInput = 0; moduleInput < MAXMODULEINPUTS; ++moduleInput) {
-					if (moduleToModuleConnections[module][moduleInput] != -1) {
-						// Input is connected to another module's output => take sample from module input buffer
-						samplesToProcess.push_back(moduleInputBuffer[moduleToModuleConnections[module][moduleInput]]);
-					}
-					else if (vstToModuleConnections[module][moduleInput] != -1) {
-						// Input is connected to a VST input => take sample from the VST input
-						samplesToProcess.push_back((double)(inputSamples[vstToModuleConnections[module][moduleInput]][sample]));
+					//if (moduleToModuleConnections[module][moduleInput] != -1) {
+					//	// Input is connected to another module's output => take sample from module input buffer
+					//	samplesToProcess.push_back(moduleInputBuffer[moduleToModuleConnections[module][moduleInput]]);
+					//}
+					//else if (vstToModuleConnections[module][moduleInput] != -1) {
+					//	// Input is connected to a VST input => take sample from the VST input
+					//	samplesToProcess.push_back((double)(inputSamples[vstToModuleConnections[module][moduleInput]][sample]));
+					//}
+					
+					if (moduleInputConnections[module][moduleInput] != -1) {
+						if (moduleInputConnections[module][moduleInput] < MAXMODULENUMBER) {
+							// Input is connected to another module's output => take sample from module input buffer
+							samplesToProcess.push_back(moduleInputBuffer[moduleInputConnections[module][moduleInput]]);
+						}
+						else {
+							// Input is connected to a VST input => take sample from the VST input
+							short mappedVstInput = moduleInputConnections[module][moduleInput];
+							samplesToProcess.push_back((double)(inputSamples[connectionMatrix->unmapVstInput(mappedVstInput)][sample]));
+						}
 					}
 					else {
 						// Input isn't connected => sample value is zero
@@ -399,7 +409,13 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				// Process the vector and write the output sample into the correct module output buffer
 				moduleOutputBuffer[module] = apModules[module]->processModuleSamples(samplesToProcess);
 			}
-			
+
+			short mappedVstInput = moduleInputConnections[0][0];
+			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(moduleInputConnections[0][0]).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(connectionMatrix->unmapVstInput(mappedVstInput)).c_str());
+			fclose(pFile);*/
+
 			// !!! Swap input and output buffers
 			double* temp = moduleInputBuffer;
 			moduleInputBuffer = moduleOutputBuffer;
@@ -407,18 +423,33 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 
 			// VST output processing
 			for (uint16 vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) {
-				if (moduleToVstConnections[vstOutput] != -1) {
-					// VST output is connected to a module's output => take sample from the module output buffer
-					outputSamples[vstOutput][sample] = (moduleOutputBuffer[moduleToVstConnections[vstOutput]]);
+				//if (moduleToVstConnections[vstOutput] != -1) {
+				//	// VST output is connected to a module's output => take sample from the module output buffer
+				//	outputSamples[vstOutput][sample] = (moduleOutputBuffer[moduleToVstConnections[vstOutput]]);
+				//}
+				//else if (vstToVstConnections[vstOutput] != -1) {
+				//	// VST output is connected directly to VST input => take sample from the VST input
+				//	outputSamples[vstOutput][sample] = inputSamples[vstToVstConnections[vstOutput]][sample];
+				//}
+				if (vstOutputConnections[vstOutput] != -1) {
+					if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
+						// VST output is connected to a module's output => take sample from the module output buffer
+						outputSamples[vstOutput][sample] = (moduleOutputBuffer[vstOutputConnections[vstOutput]]);
+					}
+					else {
+						// VST output is connected directly to VST input => take sample from the VST input
+						short mappedVstInput = vstOutputConnections[vstOutput];
+						outputSamples[vstOutput][sample] = inputSamples[connectionMatrix->unmapVstInput(mappedVstInput)][sample];
+					}
 				}
-				else if (vstToVstConnections[vstOutput] != -1) {
-					// VST output is connected directly to VST input => take sample from the VST input
-					outputSamples[vstOutput][sample] = inputSamples[vstToVstConnections[vstOutput]][sample];
+				else {
+					// Output isn't connected => sample value is zero
+					outputSamples[vstOutput][sample] = 0.0;
 				}
 			}
 		}
 
-		/*FILE* pFile = fopen("C:\\logVst.txt", "a");
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", "TEST");
 		fclose(pFile);*/
 	}

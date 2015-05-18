@@ -13,4 +13,5 @@ enum FilterType
 	numberOfFilterTypes
 };
 
+
 #endif // REVERBNETWORKENUMS_H

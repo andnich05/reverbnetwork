@@ -34,11 +34,11 @@ double ValueConversion::valueToNormFilterTypeSelect(const double& value) {
 }
 
 double ValueConversion::normToValueCenterFreq(const double& normValue) {
-	return (MINEQCENTERFREQ + (sampleRate / 2 - MINEQCENTERFREQ) * normValue);
+	return (MINEQCENTERFREQ + (MAXEQCENTERFREQ - MINEQCENTERFREQ) * normValue);
 }
 
 double ValueConversion::valueToNormCenterFreq(const double& value) {
-	return ((value - MINEQCENTERFREQ) / (sampleRate / 2 - MINEQCENTERFREQ));
+	return ((value - MINEQCENTERFREQ) / (MAXEQCENTERFREQ - MINEQCENTERFREQ));
 }
 
 double ValueConversion::normToValueQFactor(const double& normValue) {

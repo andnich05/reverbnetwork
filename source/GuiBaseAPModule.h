@@ -24,13 +24,17 @@ public:
 	virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 
 	unsigned int getModuleId ();
+	void collapseView(const bool& collapse);
+	inline bool isCollapsed() { return collapsed; }
 
 private:
 	int mousePressedX;
 	int mousePressedY;
 	bool mousePressed;
 	CRect handleRegion;
+	CRect viewSize;
 	unsigned int moduleId;
+	bool collapsed;
 };
 
 }

@@ -2,7 +2,7 @@
 #define CONNECTIONMATRIX_H
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 class ConnectionMatrix
 {
@@ -11,10 +11,8 @@ public:
 	~ConnectionMatrix();
 
 	// Get a reference to a connection vector
-	inline const std::vector<std::vector<short>>& getModuleToModuleConnections() { return moduleToModuleConnections; };
-	inline const std::vector<std::vector<short>>& getVstToModuleConnections() { return vstToModuleConnections; };
-	inline const std::vector<short>& getModuleToVstConnections() { return moduleToVstConnections; };
-	inline const std::vector<short>& getVstToVstConnections() { return vstToVstConnections; };
+	inline const std::vector<std::vector<short>>& getModuleInputConnections() { return moduleInputConnections; };
+	inline const std::vector<short>& getVstOutputConnections() { return vstOutputConnections; };
 
 	// Establish a connection between an output of a module and the specified input of another module
 	void setModuleToModuleConnection(const unsigned short& sourceModule, const unsigned short& destModule, const unsigned short& destModuleInput);
@@ -37,19 +35,21 @@ public:
 	// Reset all connections, all vector elements are set to -1
 	void resetAllConnections();
 
+	// Map VST input
+	inline short& unmapVstInput(short& mappedVstInput) { mappedVstInput = vstInputMapFromMapped[mappedVstInput]; return mappedVstInput; }
+
 private:
 	// First array dimension holds the modules, second holds the inputs of that module
-	// Each module can be connected to every other module, so the total number of inputs is MAXMODULENUMBER-1
+	// Each module can be connected to any other module, so the total number of inputs is MAXMODULENUMBER-1
 	// The array value is the index of the inputSamples array (= module output) to which the module input is connected
-	// E.g. [AP0][I2] = AP1 => means the output of AP1 is connected to the second input of 
-	std::vector<std::vector<short>> moduleToModuleConnections;
+	// E.g. [AP0][I2] = AP1 => means the output of AP1 is connected to the second input of AP0
+	// Vector value: 0 to MAXMODULENUMBER-1 => Module outputs; MAXMODULENUMBER to MAXMODULENUMBER+MAXVSTINPUTS-1 => VST inputs; -1 => Not connected
+	std::vector<std::vector<short>> moduleInputConnections;
+	std::vector<short> vstOutputConnections;
 
-	std::vector<std::vector<short>> vstToModuleConnections;
-
-	// Holds to which module output or VST input a VST output is connected
-	std::vector<short> moduleToVstConnections;
-
-	std::vector<short> vstToVstConnections;
+	// Mapping for the VST inputs which come after the module outputs
+	std::unordered_map<unsigned short, unsigned short> vstInputMapToMapped;
+	std::unordered_map<unsigned short, unsigned short> vstInputMapFromMapped;
 
 	// Mapped values for VST inputs and the output of all modules
 	//std::vector<unsigned short> vstInputs;

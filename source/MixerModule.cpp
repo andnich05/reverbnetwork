@@ -21,5 +21,5 @@ double MixerModule::mixChannels(std::vector<double>& channelSamples) {
 
 #include <string>
 void MixerModule::setChannelGain(const unsigned short& channel, const double& gain) {
-	channelGain[channel] = gain;	
+	channelGain[channel] = gain;
 }
