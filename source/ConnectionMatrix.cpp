@@ -40,12 +40,12 @@ ConnectionMatrix::~ConnectionMatrix() {
 // E.g. [AP0][I2] = AP1 => means the output of AP1 is connected to the second input (mapped value) of AP0
 
 void ConnectionMatrix::setModuleToModuleConnection(const unsigned short& sourceModule, const unsigned short& destModule, const unsigned short& destModuleInput) {
-	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "module to moudle");
 	fprintf(pFile, "y(n): %s\n", std::to_string(sourceModule).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(destModule).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(destModuleInput).c_str());
-	fclose(pFile);
+	fclose(pFile);*/
 
 
 	moduleInputConnections[destModule][destModuleInput] = sourceModule;
@@ -57,12 +57,12 @@ void ConnectionMatrix::setVstToModuleConnection(const unsigned short& vstInput, 
 		moduleToModuleConnections[destModule][destModuleInput] = -1;
 	}*/
 
-	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "vst to module");
 	fprintf(pFile, "y(n): %s\n", std::to_string(vstInput).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(destModule).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(destModuleInput).c_str());
-	fclose(pFile);
+	fclose(pFile);*/
 
 	moduleInputConnections[destModule][destModuleInput] = vstInputMapToMapped[vstInput];
 }
@@ -73,11 +73,11 @@ void ConnectionMatrix::setModuleToVstConnection(const unsigned short& sourceModu
 		vstToVstConnections[vstOutput] = -1;
 	}*/
 
-	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "module to vst");
 	fprintf(pFile, "y(n): %s\n", std::to_string(sourceModule).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(vstOutput).c_str());
-	fclose(pFile);
+	fclose(pFile);*/
 
 	vstOutputConnections[vstOutput] = sourceModule;
 }
@@ -88,11 +88,11 @@ void ConnectionMatrix::setVstToVstConnection(const unsigned short& vstInput, con
 		moduleToVstConnections[vstOutput] = -1;
 	}*/
 
-	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "vst to vst");
 	fprintf(pFile, "y(n): %s\n", std::to_string(vstInput).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(vstOutput).c_str());
-	fclose(pFile);
+	fclose(pFile);*/
 
 	vstOutputConnections[vstOutput] = vstInputMapToMapped[vstInput];
 }

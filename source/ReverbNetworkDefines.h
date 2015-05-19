@@ -9,7 +9,7 @@
 
 
 // Maximum number of VST inputs
-#define MAXVSTINPUTS 2
+#define MAXVSTINPUTS 6
 
 // Maximum number of VST outputs
 #define MAXVSTOUTPUTS 2

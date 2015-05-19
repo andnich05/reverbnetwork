@@ -123,8 +123,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	frame = new CFrame(editorSize, parent, this);
 	frame->setBackgroundColor(CColor(110, 110, 110, 255));
 
-	workspaceView = new CScrollView(CRect(0, 0, 700, 700), CRect(0, 0, 700, 700), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar, 16.0);
+	workspaceView = new CScrollView(CRect(0, 0, 700, 700), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
 	workspaceView->setBackgroundColor(CColor(80, 80, 80, 255));
+	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
+	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 
 	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(750, 200), CPoint(100, 20)), this, id_addModule, "Add Module");
 	frame->addView(buttonAddModule);
@@ -267,8 +270,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_centerFreqFirst && tag <= id_equalizer_textEdit_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), pControl->getValue());
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), pControl->getValue());
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::valueToNormCenterFreq(pControl->getValue()));
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::valueToNormCenterFreq(pControl->getValue()));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::valueToNormCenterFreq(pControl->getValue()));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setDirty();
 	}
@@ -392,31 +395,45 @@ void ReverbNetworkEditor::createAPModule() {
 	
 	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
 		CPoint(0, 0)), handleViewSize, moduleId);
-	baseModuleView->setBackgroundColor(CColor(55, 55, 55, 255));
+	baseModuleView->setBackgroundColor(CColor(50, 50, 50, 255));
 
 	std::string temp = "Allpass Module ";
 	temp.append(std::to_string(moduleId));
 	moduleTitle->setText(temp.c_str());
 
 	// Control view which holds the individual processing modules
-	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 300), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy);
+	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 300), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	controlView->setBackgroundColor(CColor(0, 0, 0, 0));
 	//controlView->addView(knob);
-
+	
 	// Holds the input mixer controls (input gain for each channel)
-	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(200, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	mixerView->setBackgroundColor(CColor(0, 0, 0, 0));
-	mixerView->addView(createGroupTitle("INPUT MIXER", mixerView->getWidth()));
+	CRowColumnView* mixerMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(180, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	for (uint32 i = 0; i < MAXMODULEINPUTS; ++i) {
 		temp = "IN ";
 		temp.append(std::to_string(i));
 		temp.append(":");
-		mixerView->addView(createMixerRow(temp.c_str(), mixerView->getWidth(), id_mixer_optionMenu_inputSelectFirst + i + moduleId * MAXMODULEINPUTS, 
+		mixerView->addView(createMixerRow(temp.c_str(), mixerMainView->getWidth(), id_mixer_optionMenu_inputSelectFirst + i + moduleId * MAXMODULEINPUTS,
 			id_mixer_knob_gainFirst + i + moduleId * MAXMODULEINPUTS, id_mixer_textEdit_gainFirst + i + moduleId * MAXMODULEINPUTS));
 	}
+	mixerView->setBackgroundColor(CColor(50, 50, 50, 255));
+	mixerView->sizeToFit();
+	CScrollView* mixerScrollView = new CScrollView(CRect(CPoint(0, 0), CPoint(mixerMainView->getWidth(), controlView->getHeight() - 50)), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
+	mixerScrollView->addView(mixerView);
+	mixerScrollView->setBackgroundColor(CColor(0, 0, 0, 255));
+	mixerScrollView->sizeToFit();
+	mixerScrollView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+
+
+	if (mixerView->getHeight() < mixerScrollView->getHeight()) {
+		mixerScrollView->getVerticalScrollbar()->setVisible(false);
+	}
+	mixerMainView->setBackgroundColor(CColor(0, 0, 0, 0));
+	mixerMainView->addView(createGroupTitle("INPUT MIXER", mixerMainView->getWidth()));
+	mixerMainView->addView(mixerScrollView);
 
 	// Holds the equalizer controls
-	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(140, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(150, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	equalizerView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CRowColumnView* filterTypeView = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	filterTypeView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -488,7 +505,7 @@ void ReverbNetworkEditor::createAPModule() {
 	gainView->setBackgroundColor(CColor(0, 0, 0, 0));
 
 	// Add process views to the control view
-	controlView->addView(mixerView);
+	controlView->addView(mixerMainView);
 	controlView->addView(equalizerView);
 	controlView->addView(allpassView);
 	controlView->addView(gainView);
@@ -548,18 +565,17 @@ CTextLabel* ReverbNetworkEditor::createGroupTitle(const VSTGUI::UTF8StringPtr ti
 
 CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& optionMenuTag, const int32_t& knobTag, const int32_t& valueEditTag) {
 	CRowColumnView* mixerRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(width, 20)), CRowColumnView::kColumnStyle);
-	mixerRow->setSpacing(2);
+	mixerRow->setSpacing(5);
 	mixerRow->setBackgroundColor(CColor(0, 0, 0, 0));
 
-	CTextLabel* inputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(40, 20)), title);
+	CTextLabel* inputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(5, 20)), "");
 	inputTitle->setFont(CFontRef(kNormalFontSmall));
 	inputTitle->setBackColor(CColor(0, 0, 0, 0));
 	inputTitle->setFrameColor(CColor(0, 0, 0, 0));
 
-	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(0, 0)), this, optionMenuTag);
+	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(90, 20)), this, optionMenuTag);
 	addGuiElementPointer(inputSelect, optionMenuTag);
 	inputSelect->setFont(CFontRef(kNormalFontSmall));
-	inputSelect->setViewSize(CRect(CPoint(0, 0), CPoint(90, 20)));
 	inputSelect->addEntry("<Not Connected>");
 	inputSelect->setCurrent(0);
 	std::string temp = "";
@@ -627,23 +643,15 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 }
 
 void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr) {
-	for (uint32 i = firstParamId; i < lastParamId + 1; ++i) {
-		if (guiElements[firstGuiId + (i - firstParamId)]) {
-			if (functPtr) {
-				guiElements[firstGuiId + (i - firstParamId)]->setValue(functPtr(getController()->getParamNormalized(i)));
+	for (uint32 i = firstParamId; i < lastParamId + 1; ++i) { // Iterate over all parameters
+		if (guiElements[firstGuiId + (i - firstParamId)]) { // Check if the GUI element is valid
+			if (functPtr) { // Check if a value conversion is needed
+				guiElements[firstGuiId + (i - firstParamId)]->setValue(functPtr(getController()->getParamNormalized(i))); // Set GUI element value
 			}
 			else {
-				guiElements[firstGuiId + (i - firstParamId)]->setValue(getController()->getParamNormalized(i));
+				guiElements[firstGuiId + (i - firstParamId)]->setValue(getController()->getParamNormalized(i)); // Set GUI element value
 			}
-
-			if (firstGuiId == id_equalizer_switch_bypassFirst) {
-				FILE* pFile = fopen("E:\\logVst.txt", "a");
-				fprintf(pFile, "y(n): %s\n", "EQQQQQQQ");
-				fprintf(pFile, "y(n): %s\n", std::to_string(getController()->getParamNormalized(i)).c_str());
-				fclose(pFile);
-			}
-
-			valueChanged(guiElements[firstGuiId + (i - firstParamId)]);
+			valueChanged(guiElements[firstGuiId + (i - firstParamId)]); // Update the corresponding textEdit (if there exists one)
 		}
 	}
 }

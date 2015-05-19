@@ -10,17 +10,17 @@ public:
 	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double dBgain);
 	~EqualizerModule();
 
-	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; calculateK(); }
-	inline void setCenterFreq(const double& f0) { centerFreq = f0; calculateK(); }
-	inline void setQFactor(const double& q) { qFactor = q; calculateK(); }
-	inline void setGain(const double& g) { gain = g; calculateK(); };
-	inline void setFilterType(const FilterType& type) { filterType = type; calculateK(); }
+	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; calculateCoefficients(); }
+	inline void setCenterFreq(const double& f0) { centerFreq = f0; calculateCoefficients(); }
+	inline void setQFactor(const double& q) { qFactor = q; oneDividedByQ = 1 / qFactor; calculateCoefficients(); }
+	inline void setGain(const double& g) { gain = g; calculateCoefficients(); };
+	inline void setFilterType(const FilterType& type) { filterType = type; calculateCoefficients(); }
 
 	void processSample(double& sample);
 
 private:
 
-	void calculateK();
+	//void calculateK();
 	void calculateCoefficients();
 
 	// Sampling frequency
@@ -43,8 +43,9 @@ private:
 	double yn1, yn2;
 	// Filter coefficients
 	double a0, a1, a2, b1, b2;
-	// Auxiliary variable
-	double K;
+	// Auxiliary variables
+	double K, oneDividedByQ;
+
 };
 
 #endif // EQUALIZERMODULE_H

@@ -233,7 +233,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				ParamValue value = 0.0;
 				int32 sampleOffset = 0.0;
 				pid = queue->getParameterId();
-				
+
 				if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {

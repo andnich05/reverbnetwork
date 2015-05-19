@@ -10,121 +10,105 @@ EqualizerModule::EqualizerModule(FilterType filterType, double samplingFreq, dou
 	, filterType(filterType)
 {
 	// Initialize everything
-	xn0 = 0;
-	xn1 = 0;
-	xn2 = 0;
-	yn1 = 0;
-	yn2 = 0;
+	xn0 = 0.0;
+	xn1 = 0.0;
+	xn2 = 0.0;
+	yn1 = 0.0;
+	yn2 = 0.0;
 	
-	calculateK();
+	K = 0.0;
+	oneDividedByQ = 1 / qFactor;
+
+	calculateCoefficients();
 }
 
 EqualizerModule::~EqualizerModule() 
 {
 }
 
-//void EqualizerModule::setGainInDB(const double& g) {
-//	dBgain = g;
-//	gain = pow(10, (g / 20));
-//}
-
-#include <string>
-void EqualizerModule::calculateK() {
-	if (FilterType::lowPass || FilterType::highPass) {
-		K = tan((centerFreq / samplingFreq) * M_PI);
-	}
-	else {
-		double bandwidth = centerFreq / qFactor;
-		K = tan(((centerFreq + bandwidth / 2) / samplingFreq) * M_PI);
-	}
-	// Grenzfrequenz
-	//double cutoffFreq = centerFreq / (2 * qFactor);
-	// Hilfsvariable
-	//K = tan((cutoffFreq / samplingFreq) * M_PI);
-	
-	calculateCoefficients();
-}
-
-// Source: Zölzer Buch
+// Source: Zölzer book p.136+137
+// Alle WURZEL(2)-Terme werden durch 1/qFactor ersetzt!
 void EqualizerModule::calculateCoefficients() {
+
+	K = tan((centerFreq / samplingFreq) * M_PI);
+
 	switch (filterType) {
 	case FilterType::lowPass: {
-		// Lowpass
-		double denominator = 1 + sqrt(2) * K + pow(K, 2);
+		double denominator = 1 + oneDividedByQ * K + pow(K, 2);
 		a0 = (pow(K, 2)) / denominator;
 		a1 = (2 * pow(K, 2)) / denominator;
 		a2 = a0;
 		b1 = (2 * (pow(K, 2) - 1)) / denominator;
-		b2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
+		b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		break;
 	}
 	case FilterType::highPass: {
-		double denominator = 1 + sqrt(2) * K + pow(K, 2);
+		double denominator = 1 + oneDividedByQ * K + pow(K, 2);
 		a0 = 1 / denominator;
 		a1 = -2 / denominator;
 		a2 = a0;
 		b1 = (2 * (pow(K, 2) - 1)) / denominator;
-		b2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
+		b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		break;
 	}
 	case FilterType::bandPass: {
-		double denominator = 1 + (1 / qFactor) * K + pow(K, 2);
-		a0 = (1 + (gain / qFactor) * K + pow(K, 2)) / denominator;
+		double denominator = 1 + oneDividedByQ * K + pow(K, 2);
+		a0 = (1 + gain * oneDividedByQ * K + pow(K, 2)) / denominator;
 		a1 = (2 * (pow(K, 2) - 1)) / denominator;
-		a2 = (1 - (gain / qFactor) * K + pow(K, 2)) / denominator;
+		a2 = (1 - gain * oneDividedByQ * K + pow(K, 2)) / denominator;
 		b1 = a1;
-		b2 = (1 - (1 / qFactor) * K + pow(K, 2)) / denominator;
+		b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		break;
 	}
 	case FilterType::bandStop: {
-		double denominator = 1 + (gain / qFactor) * K + pow(K, 2);
-		a0 = (1 + (1 / qFactor) * K + pow(K, 2)) / denominator;
+		double denominator = 1 + gain * oneDividedByQ * K + pow(K, 2);
+		a0 = (1 + oneDividedByQ * K + pow(K, 2)) / denominator;
 		a1 = (2 * (pow(K, 2) - 1)) / denominator;
-		a2 = (1 - (1 / qFactor) * K + pow(K, 2)) / denominator;
+		a2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		b1 = a1;
-		b2 = (1 - (gain / qFactor) * K + pow(K, 2)) / denominator;
+		b2 = (1 - gain * oneDividedByQ  * K + pow(K, 2)) / denominator;
 		break;
 	}
 	case FilterType::lowShelf: {
 		// Increasing low shelf filter
 		if (gain >= 1.0) {
-			double denominator = 1 + sqrt(2) * K + pow(K, 2);
-			a0 = (1 + sqrt(2 * gain) * K + gain * pow(K, 2)) / denominator;
+			double denominator = 1 + oneDividedByQ * K + pow(K, 2);
+			a0 = (1 + oneDividedByQ * sqrt(gain) * K + gain * pow(K, 2)) / denominator;
 			a1 = (2 * (gain * pow(K, 2) - 1)) / denominator;
-			a2 = (1 - sqrt(2 * gain) * K + gain * pow(K, 2)) / denominator;
+			a2 = (1 - oneDividedByQ * sqrt(gain) * K + gain * pow(K, 2)) / denominator;
 			b1 = (2 * (pow(K, 2) - 1)) / denominator;
-			b2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
+			b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		}
 		// Decreasing low shelf filter
 		else {
-			double denominator = 1 + sqrt(2 * gain) * K + gain * pow(K, 2);
-			a0 = (1 + sqrt(2) * K + pow(K, 2)) / denominator;
+			double denominator = 1 + oneDividedByQ * sqrt(gain) * K + gain * pow(K, 2);
+			a0 = (1 + oneDividedByQ * K + pow(K, 2)) / denominator;
 			a1 = (2 * (pow(K, 2) - 1)) / denominator;
-			a2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
+			a2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 			b1 = (2 * (gain * pow(K, 2) - 1)) / denominator;
-			b2 = (1 - sqrt(2 * gain) * K + gain * pow(K, 2)) / denominator;
+			b2 = (1 - oneDividedByQ * sqrt(gain) * K + gain * pow(K, 2)) / denominator;
 		}
 			break;
 	}
 	case FilterType::highShelf: {
 		// Increasing high shelf filter
 		if (gain >= 1.0) {
-			double denominator = 1 + sqrt(2) * K + pow(K, 2);
-			a0 = (gain + sqrt(2 * gain) * K + pow(K, 2)) / denominator;
+			double denominator = 1 + oneDividedByQ * K + pow(K, 2);
+			a0 = (gain + oneDividedByQ * sqrt(gain) * K + pow(K, 2)) / denominator;
 			a1 = (2 * (pow(K, 2) - gain)) / denominator;
-			a2 = (gain - sqrt(2 * gain) * K + pow(K, 2)) / denominator;
+			a2 = (gain - oneDividedByQ * sqrt(gain) * K + pow(K, 2)) / denominator;
 			b1 = (2 * (pow(K, 2) - 1)) / denominator;
-			b2 = (1 - sqrt(2) * K + pow(K, 2)) / denominator;
+			b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		}
 		// Decreasing high shelf filter
 		else {
-			double aDenominator = gain + sqrt(2 * gain) * K + pow(K, 2);
-			double bDenominator = 1 + sqrt(2 / gain) * K + (pow(K, 2) / gain);
-			a0 = (1 + sqrt(2) * K + pow(K, 2)) / aDenominator;
+			double aDenominator = gain + oneDividedByQ * sqrt(gain) * K + pow(K, 2);
+			double bDenominator = 1 + oneDividedByQ / sqrt(gain) * K + (pow(K, 2) / gain);
+			a0 = (1 + oneDividedByQ * K + pow(K, 2)) / aDenominator;
 			a1 = (2 * (pow(K, 2) - 1)) / aDenominator;
-			a2 = (1 - sqrt(2) * K + pow(K, 2)) / aDenominator;
+			a2 = (1 - oneDividedByQ * K + pow(K, 2)) / aDenominator;
 			b1 = (2 * (pow(K, 2) / gain - 1)) / bDenominator;
-			b2 = (1 - sqrt(2 / gain) * K + (pow(K, 2) / gain)) / bDenominator;
+			b2 = (1 - oneDividedByQ / sqrt(gain) * K + (pow(K, 2) / gain)) / bDenominator;
 		}
 		break;
 	}

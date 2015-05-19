@@ -58,7 +58,7 @@ CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState
 
 	// where are global coordinates of the parent (?) view
 
-		// frameToLocal changes the global coordinates (e.g. 1200) to local coordinates of this frame (e.g. 50)
+	// frameToLocal changes the global coordinates (e.g. 1200) to local coordinates of this frame (e.g. 50)
 	
 	CPoint whereCopy = where;
 	frameToLocal(whereCopy);
