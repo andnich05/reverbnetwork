@@ -1,4 +1,5 @@
 #include "EqualizerModule.h"
+#include "ValueConversion.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
 
@@ -51,22 +52,27 @@ void EqualizerModule::calculateCoefficients() {
 		b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
 		break;
 	}
-	case FilterType::bandPass: {
-		double denominator = 1 + oneDividedByQ * K + pow(K, 2);
-		a0 = (1 + gain * oneDividedByQ * K + pow(K, 2)) / denominator;
-		a1 = (2 * (pow(K, 2) - 1)) / denominator;
-		a2 = (1 - gain * oneDividedByQ * K + pow(K, 2)) / denominator;
-		b1 = a1;
-		b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
-		break;
-	}
-	case FilterType::bandStop: {
-		double denominator = 1 + gain * oneDividedByQ * K + pow(K, 2);
-		a0 = (1 + oneDividedByQ * K + pow(K, 2)) / denominator;
-		a1 = (2 * (pow(K, 2) - 1)) / denominator;
-		a2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
-		b1 = a1;
-		b2 = (1 - gain * oneDividedByQ  * K + pow(K, 2)) / denominator;
+	case FilterType::bandPassStop: {
+		if (gain >= 1.0) {
+			// Band pass
+			double denominator = 1 + oneDividedByQ * K + pow(K, 2);
+			a0 = (1 + gain * oneDividedByQ * K + pow(K, 2)) / denominator;
+			a1 = (2 * (pow(K, 2) - 1)) / denominator;
+			a2 = (1 - gain * oneDividedByQ * K + pow(K, 2)) / denominator;
+			b1 = a1;
+			b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
+		}
+		else{
+			// Band stop
+			// Switch sign of log gain value
+			double switchedGain = ValueConversion::logToLinear(-ValueConversion::linearToLog(gain));
+			double denominator = 1 + switchedGain * oneDividedByQ * K + pow(K, 2);
+			a0 = (1 + oneDividedByQ * K + pow(K, 2)) / denominator;
+			a1 = (2 * (pow(K, 2) - 1)) / denominator;
+			a2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
+			b1 = a1;
+			b2 = (1 - switchedGain * oneDividedByQ  * K + pow(K, 2)) / denominator;
+		}
 		break;
 	}
 	case FilterType::lowShelf: {
@@ -81,12 +87,14 @@ void EqualizerModule::calculateCoefficients() {
 		}
 		// Decreasing low shelf filter
 		else {
-			double denominator = 1 + oneDividedByQ * sqrt(gain) * K + gain * pow(K, 2);
+			// Switch sign of log gain value
+			double switchedGain = ValueConversion::logToLinear(-ValueConversion::linearToLog(gain));
+			double denominator = 1 + oneDividedByQ * sqrt(switchedGain) * K + switchedGain * pow(K, 2);
 			a0 = (1 + oneDividedByQ * K + pow(K, 2)) / denominator;
 			a1 = (2 * (pow(K, 2) - 1)) / denominator;
 			a2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
-			b1 = (2 * (gain * pow(K, 2) - 1)) / denominator;
-			b2 = (1 - oneDividedByQ * sqrt(gain) * K + gain * pow(K, 2)) / denominator;
+			b1 = (2 * (switchedGain * pow(K, 2) - 1)) / denominator;
+			b2 = (1 - oneDividedByQ * sqrt(switchedGain) * K + switchedGain * pow(K, 2)) / denominator;
 		}
 			break;
 	}
@@ -102,13 +110,15 @@ void EqualizerModule::calculateCoefficients() {
 		}
 		// Decreasing high shelf filter
 		else {
-			double aDenominator = gain + oneDividedByQ * sqrt(gain) * K + pow(K, 2);
-			double bDenominator = 1 + oneDividedByQ / sqrt(gain) * K + (pow(K, 2) / gain);
+			// Switch sign of log gain value
+			double switchedGain = ValueConversion::logToLinear(-ValueConversion::linearToLog(gain));
+			double aDenominator = switchedGain + oneDividedByQ * sqrt(switchedGain) * K + pow(K, 2);
+			double bDenominator = 1 + oneDividedByQ / sqrt(switchedGain) * K + (pow(K, 2) / switchedGain);
 			a0 = (1 + oneDividedByQ * K + pow(K, 2)) / aDenominator;
 			a1 = (2 * (pow(K, 2) - 1)) / aDenominator;
 			a2 = (1 - oneDividedByQ * K + pow(K, 2)) / aDenominator;
-			b1 = (2 * (pow(K, 2) / gain - 1)) / bDenominator;
-			b2 = (1 - oneDividedByQ / sqrt(gain) * K + (pow(K, 2) / gain)) / bDenominator;
+			b1 = (2 * (pow(K, 2) / switchedGain - 1)) / bDenominator;
+			b2 = (1 - oneDividedByQ / sqrt(switchedGain) * K + (pow(K, 2) / switchedGain)) / bDenominator;
 		}
 		break;
 	}

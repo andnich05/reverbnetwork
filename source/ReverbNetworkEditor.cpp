@@ -10,12 +10,11 @@ namespace Steinberg {
 namespace Vst {
 
 	// Title bar GUI ids (identification through dynamic_cast)
-	const int32_t id_addModule = 0;
-	const int32_t id_hideModule = id_addModule + 1;
-	const int32_t id_removeModule = id_hideModule + 1;
+	const int32_t id_collapseModule = 0;
+	const int32_t id_closeModule = id_collapseModule + 1;
 
 	// Mixer GUI ids
-	const int32_t id_mixer_optionMenu_inputSelectFirst = id_removeModule + 1;
+	const int32_t id_mixer_optionMenu_inputSelectFirst = id_closeModule + 1;
 	const int32_t id_mixer_optionMenu_inputSelectLast = id_mixer_optionMenu_inputSelectFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
 	const int32_t id_mixer_knob_gainFirst = id_mixer_optionMenu_inputSelectLast + 1;
 	const int32_t id_mixer_knob_gainLast = id_mixer_knob_gainFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
@@ -62,10 +61,13 @@ namespace Vst {
 	const int32_t id_output_switch_bypassFirst = id_output_textEdit_gainLast + 1;
 	const int32_t id_output_switch_bypassLast = id_output_switch_bypassFirst + MAXMODULENUMBER - 1;
 
+	const int32_t id_general_checkBox_moduleVisibleFirst = id_output_switch_bypassLast + 1;
+	const int32_t id_general_checkBox_moduleVisibleLast = id_general_checkBox_moduleVisibleFirst + MAXMODULENUMBER - 1;
+
 	//------
 
 	// VST output select
-	const int32_t id_general_optionMenu_vstOutputFirst = id_output_switch_bypassLast + 1;
+	const int32_t id_general_optionMenu_vstOutputFirst = id_general_checkBox_moduleVisibleLast + 1;
 	const int32_t id_general_optionMenu_vstOutputLast = id_general_optionMenu_vstOutputFirst + MAXVSTOUTPUTS - 1;
 
 
@@ -112,33 +114,76 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		return false;
 	}
 
-	// Initialize the vector
-	//guiElements.resize(id_last, nullptr);
-
 	knobBackground = new CBitmap("knob.png");
 	knobBackgroundSmall = new CBitmap("knob2.png");
-	groupFrame = new CBitmap("groupframe.png");
+	ppmOff = new CBitmap("ppmOff.png");
+	ppmOn = new CBitmap("ppmOn.png");
 
-	CRect editorSize(0, 0, 1000, 700);
+	CRect editorSize(0, 0, 1200, 700);
 	frame = new CFrame(editorSize, parent, this);
 	frame->setBackgroundColor(CColor(110, 110, 110, 255));
 
-	workspaceView = new CScrollView(CRect(0, 0, 700, 700), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
+	workspaceView = new CScrollView(CRect(0, 0, 800, 600), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
 	workspaceView->setBackgroundColor(CColor(80, 80, 80, 255));
 	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
 	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 
-	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(750, 200), CPoint(100, 20)), this, id_addModule, "Add Module");
-	frame->addView(buttonAddModule);
-	//CTextButton* buttonRemoveModule = new CTextButton(CRect(CPoint(750, 230), CPoint(100, 20)), this, 'RmvM', "Remove Module");
-	//frame->addView(buttonRemoveModule);
+	// Create Module List
+	CRowColumnView* viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	CScrollView* viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(100, 500)), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
+	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	CRowColumnView* viewModuleList = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
+	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+		createAPModule();
+		CRowColumnView* viewModuleRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+		std::string title = "APM";
+		title.append(std::to_string(i));
+		CTextLabel* labelModuleTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(45, 18)), title.c_str());
+		labelModuleTitle->setFont(kNormalFontSmall);
+		labelModuleTitle->setBackColor(CColor(0, 0, 0, 0));
+		labelModuleTitle->setFrameColor(CColor(0, 0, 0, 0));
+		labelModuleTitle->setHoriAlign(CHoriTxtAlign::kLeftText);
+		CCheckBox* checkBoxShowHideModule = new CCheckBox(CRect(CPoint(0, 0), CPoint(18, 18)), this, id_general_checkBox_moduleVisibleFirst + i, "");
+		addGuiElementPointer(checkBoxShowHideModule, id_general_checkBox_moduleVisibleFirst + i);
+		//CTextButton* buttonCopyParameters = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, 1234, "Copy");
+		//CTextButton* buttonPasteParameters = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, 1234, "Paste");
+		viewModuleRow->addView(labelModuleTitle);
+		viewModuleRow->addView(checkBoxShowHideModule);
+		//viewModuleRow->addView(buttonCopyParameters);
+		//viewModuleRow->addView(buttonPasteParameters);
+		viewModuleRow->sizeToFit();
+		viewModuleList->addView(viewModuleRow);
+		viewModuleRow->setBackgroundColor(CColor(0, 0, 0, 0));
+	}
+	viewModuleScrollList->addView(viewModuleList);
+	viewModuleScrollList->setContainerSize(viewModuleList->getViewSize());
+	viewModuleList->sizeToFit();
+	viewModuleListMain->addView(createGroupTitle("Module List:", viewModuleScrollList->getWidth()));
+	viewModuleListMain->addView(viewModuleScrollList);
+	viewModuleListMain->sizeToFit();
+	viewModuleListMain->setBackgroundColor(CColor(0, 0, 0, 0));
+	viewModuleScrollList->setBackgroundColor(CColor(50, 50, 50, 255));
+	viewModuleList->setBackgroundColor(CColor(0, 0, 0, 0));
 
-	CRowColumnView* vstOuputSelect = new CRowColumnView(CRect(CPoint(800, 0), CPoint(0, 0)));
+	// Create VST output selection 
+	CRowColumnView* viewVstOutputSelect = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
+	viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
+		CRowColumnView* viewOutputSelectRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 0.0);
+		std::string title = "VST";
+		title.append(std::to_string(i));
+		title.append(" OUT:");
+		CTextLabel* labelVstOutputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(70, 20)), title.c_str());
+		labelVstOutputTitle->setFont(kNormalFontSmall);
+		labelVstOutputTitle->setBackColor(CColor(0, 0, 0, 0));
+		labelVstOutputTitle->setFrameColor(CColor(0, 0, 0, 0));
+		//labelVstOutputTitle->setHoriAlign(CHoriTxtAlign::kLeftText);
+		viewOutputSelectRow->addView(labelVstOutputTitle);
 		COptionMenu* menu = new COptionMenu(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_optionMenu_vstOutputFirst + i);
 		addGuiElementPointer(menu, id_general_optionMenu_vstOutputFirst + i);
+		menu->setFont(kNormalFontSmall);
 		menu->addEntry("<Not Connected>");
 		for (uint32 j = 0; j < MAXMODULENUMBER; ++j) {
 			temp = "APM";
@@ -152,21 +197,52 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 			temp.append(" IN");
 			menu->addEntry((temp).c_str());
 		}
-		vstOuputSelect->addView(menu);
+		menu->setFrameColor(CColor(0, 0, 0, 0));
+		viewOutputSelectRow->addView(menu);
+		viewOutputSelectRow->sizeToFit();
+		viewOutputSelectRow->setBackgroundColor(CColor(50, 50, 50, 255));
+		viewVstOutputSelect->addView(viewOutputSelectRow);
 	}
-	vstOuputSelect->sizeToFit();
+	viewVstOutputSelect->setBackgroundColor(CColor(0, 0, 0, 0));
+	temp = "VST Inputs: ";
+	temp.append(std::to_string((int)(MAXVSTINPUTS)));
+	CTextLabel* labelNumberOfVstInputs = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
+	labelNumberOfVstInputs->setFont(kNormalFontSmall);
+	labelNumberOfVstInputs->setBackColor(CColor(0, 0, 0, 0));
+	labelNumberOfVstInputs->setFrameColor(CColor(0, 0, 0, 0));
+	labelNumberOfVstInputs->setHoriAlign(CHoriTxtAlign::kLeftText);
+	temp = "VST Outputs: ";
+	temp.append(std::to_string((int)(MAXVSTOUTPUTS)));
+	CTextLabel* labelNumberOfVstOutputs = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
+	labelNumberOfVstOutputs->setFont(kNormalFontSmall);
+	labelNumberOfVstOutputs->setBackColor(CColor(0, 0, 0, 0));
+	labelNumberOfVstOutputs->setFrameColor(CColor(0, 0, 0, 0));
+	labelNumberOfVstOutputs->setHoriAlign(CHoriTxtAlign::kLeftText);
+	temp = "Modules: ";
+	temp.append(std::to_string((int)(MAXMODULENUMBER)));
+	CTextLabel* labelNumberOfModules = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
+	labelNumberOfModules->setFont(kNormalFontSmall);
+	labelNumberOfModules->setBackColor(CColor(0, 0, 0, 0));
+	labelNumberOfModules->setFrameColor(CColor(0, 0, 0, 0));
+	labelNumberOfModules->setHoriAlign(CHoriTxtAlign::kLeftText);
+	viewVstOutputSelect->addView(labelNumberOfVstInputs);
+	viewVstOutputSelect->addView(labelNumberOfVstOutputs);
+	viewVstOutputSelect->addView(labelNumberOfModules);
+	viewVstOutputSelect->sizeToFit();
 
-	frame->addView(workspaceView);
-	frame->addView(vstOuputSelect);
-
-	// !!! Called every time the editor is reopened => memory leak?
-	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-		createAPModule();
-	}
-
+	CRowColumnView* mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
+	mainView->addView(workspaceView);
+	mainView->addView(viewModuleListMain);
+	mainView->addView(viewVstOutputSelect);
+	mainView->sizeToFit();
+	mainView->setBackgroundColor(CColor(0, 0, 0, 0));
+	frame->addView(mainView);
+	frame->sizeToFit();
+	
 	knobBackground->forget();
 	knobBackgroundSmall->forget();
-	groupFrame->forget();
+	ppmOff->forget();
+	ppmOn->forget();
 
 	updateGuiWithControllerParameters();
 
@@ -186,19 +262,10 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 }
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
+	// Get the GUI id
 	int32_t tag = pControl->getTag();
 	
-	if(tag == id_addModule) {
-		// Make sure create function is called only one time (without it would be two times)
-		if (pControl->isDirty()) {
-			createAPModule();
-
-			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", "Create");
-			fclose(pFile);*/
-		}
-	}
-	else if (tag == id_hideModule) {
+	if (tag == id_collapseModule) {
 		// Make sure create function is called only one time (without it it would be two times)
 		if (pControl->isDirty()) {
 			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
@@ -215,20 +282,22 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			}
 		}
 	}
-	else if (tag == id_removeModule) {	// Close button of AP module pressed
+	else if (tag == id_closeModule) {	// Close button of AP module pressed
 		if (pControl->isDirty()) {
-			// Remove the module view, the parent-child hierarchy is: baseModuleView(handleView(closeViewButton
+			// Find the right module
 			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
 				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
-					allpassModuleIdPool[dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->getModuleId()] = false;
-					workspaceView->removeView(pControl->getParentView()->getParentView());
+					// Update check box in the module list
+					guiElements[id_general_checkBox_moduleVisibleFirst + i]->setValue(0.f);
+					// Update parameter
+					valueChanged(guiElements[id_general_checkBox_moduleVisibleFirst + i]);
 					break;
 				}
 			}
 
 			//workspaceView->removeView(pControl->getParentView()->getParentView());
 			// Update the workspace view
-			workspaceView->setDirty();
+			//workspaceView->setDirty();
 		}
 	}
 	// CAnimKnob accepts only normalized values (BUG?)
@@ -350,6 +419,20 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_OUTBYPASS_FIRST + (tag - id_output_switch_bypassFirst), pControl->getValue());
 	}
 	// General
+	else if (tag >= id_general_checkBox_moduleVisibleFirst && tag <= id_general_checkBox_moduleVisibleLast) {
+		if (pControl->isDirty()) {
+			controller->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), pControl->getValue());
+			controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), pControl->getValue());
+			// Find the module with the correct id
+			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
+				if (dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->getModuleId() == tag - id_general_checkBox_moduleVisibleFirst) {
+					workspaceView->getView(i)->setVisible((bool)(pControl->getValue()));
+					break;
+				}
+			}
+			workspaceView->setDirty();
+		}
+	}
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
 		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(pControl->getValue()));
 		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(pControl->getValue()));
@@ -363,14 +446,14 @@ void ReverbNetworkEditor::createAPModule() {
 	}
 
 	// Handle view to grab and move the module with the mouse
-	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 500, 20));
+	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 520, 25));
 	handleView->setBackgroundColor(CColor(0, 0, 0, 0));
 
-	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_removeModule, "X");
-	addGuiElementPointer(closeViewButton, id_removeModule);
+	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_closeModule, "X");
+	addGuiElementPointer(closeViewButton, id_closeModule);
 	handleView->addView(closeViewButton);
-	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 40, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_hideModule, "^");
-	addGuiElementPointer(hideViewButton, id_hideModule);
+	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 40, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_collapseModule, "^");
+	addGuiElementPointer(hideViewButton, id_collapseModule);
 	handleView->addView(hideViewButton);
 
 	CRect handleViewSize = handleView->getViewSize();
@@ -408,7 +491,7 @@ void ReverbNetworkEditor::createAPModule() {
 	
 	// Holds the input mixer controls (input gain for each channel)
 	CRowColumnView* mixerMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(180, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
 	for (uint32 i = 0; i < MAXMODULEINPUTS; ++i) {
 		temp = "IN ";
 		temp.append(std::to_string(i));
@@ -433,21 +516,20 @@ void ReverbNetworkEditor::createAPModule() {
 	mixerMainView->addView(mixerScrollView);
 
 	// Holds the equalizer controls
-	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(150, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(150, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
 	equalizerView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CRowColumnView* filterTypeView = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	filterTypeView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* filterTypeTextLabel = new CTextLabel(CRect(0, 0, 70, 20), "Filter Type: ");
+	CTextLabel* filterTypeTextLabel = new CTextLabel(CRect(0, 0, 64, 20), "Filter Type:");
 	filterTypeTextLabel->setFont(CFontRef(kNormalFontSmall));
 	filterTypeTextLabel->setBackColor(CColor(0, 0, 0, 0));
 	filterTypeTextLabel->setFrameColor(CColor(0, 0, 0, 0));
-	COptionMenu* filterTypeMenu = new COptionMenu(CRect(0, 0, 70, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
+	COptionMenu* filterTypeMenu = new COptionMenu(CRect(0, 0, 85, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
 	addGuiElementPointer(filterTypeMenu, id_equalizer_optionMenu_filterTypeFirst + moduleId);
 	filterTypeMenu->setFont(CFontRef(kNormalFontSmall));
 	filterTypeMenu->addEntry("Low Pass");
 	filterTypeMenu->addEntry("High Pass");
-	filterTypeMenu->addEntry("Band Pass");
-	filterTypeMenu->addEntry("Band Stop");
+	filterTypeMenu->addEntry("Band Pass/Stop");
 	filterTypeMenu->addEntry("Low Shelf");
 	filterTypeMenu->addEntry("High Shelf");
 	filterTypeMenu->setCurrent(0);
@@ -499,9 +581,18 @@ void ReverbNetworkEditor::createAPModule() {
 	addGuiElementPointer(checkBoxGainBypass, id_output_switch_bypassFirst + moduleId);
 	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
 	gainView->addView(checkBoxGainBypass);
-	gainView->addView(createKnobGroup("Gain", gainView->getWidth(), id_output_knob_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB), 
+
+	CRowColumnView* knobPpmView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	knobPpmView->addView(createKnobGroup("Gain", gainView->getWidth()-20, id_output_knob_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB),
 		id_output_textEdit_gainFirst + moduleId, DEFAULTOUTPUTGAINDB, MINOUTPUTGAINDB, MAXOUTPUTGAINDB, &ValueConversion::textEditStringToValueConversionGain, 
 		&ValueConversion::textEditValueToStringConversionGain));
+	CVuMeter* ppm = new CVuMeter(CRect(CPoint(0, 0), CPoint(10, 200)), ppmOn, ppmOff, 60);
+	ppm->setValue(0.26);
+	knobPpmView->addView(ppm);
+	knobPpmView->setBackgroundColor(CColor(0, 0, 0, 0));
+	knobPpmView->sizeToFit();
+
+	gainView->addView(knobPpmView);
 	gainView->setBackgroundColor(CColor(0, 0, 0, 0));
 
 	// Add process views to the control view
@@ -591,6 +682,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 		temp.append(" IN");
 		inputSelect->addEntry((temp).c_str());
 	}
+	inputSelect->setFrameColor(CColor(0, 0, 0, 0));
 
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth())), 
 		this, knobTag, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
@@ -640,6 +732,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_OUTGAIN_FIRST, PARAM_OUTGAIN_LAST, id_output_knob_gainFirst, nullptr);
 	updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToValueMixerInputSelect);
+	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
 }
 
 void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr) {
@@ -655,6 +748,19 @@ void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastPar
 		}
 	}
 }
+//
+//CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
+//{
+//	if (message == CVSTGUITimer::kMsgTimer)
+//	{
+//		if (vuMeter)
+//		{
+//			vuMeter->setValue(1.f - ((lastVuMeterValue - 1.f) * (lastVuMeterValue - 1.f)));
+//			lastVuMeterValue = 0.f;
+//		}
+//	}
+//	return VSTGUIEditor::notify(sender, message);
+//}
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;

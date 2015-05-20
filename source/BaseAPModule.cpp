@@ -95,7 +95,7 @@ void BaseAPModule::updateEqualizerGain(const double& gain) {
 }
 
 void BaseAPModule::updateAllpassDelay(const double& delay) {
-	allpass->setDelayTimeSec(delay);
+	allpass->setDelayTimeMsec(delay);
 }
 void BaseAPModule::updateAllpassDecay(const double& decay) {
 	allpass->setDecayTime(decay);

@@ -6,8 +6,7 @@ enum FilterType
 {
 	lowPass,
 	highPass,
-	bandPass,
-	bandStop,
+	bandPassStop,
 	lowShelf,
 	highShelf,
 	numberOfFilterTypes

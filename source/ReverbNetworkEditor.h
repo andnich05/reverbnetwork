@@ -63,7 +63,8 @@ private:
 
 	CBitmap* knobBackground;
 	CBitmap* knobBackgroundSmall;
-	CBitmap* groupFrame;
+	CBitmap* ppmOff;
+	CBitmap* ppmOn;
 
 	// Holds pointers to all GUI elements which have their own GUI id; the index itself is the GUI id
 	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!
@@ -82,7 +83,8 @@ private:
 	// http://www.kvraudio.com/forum/viewtopic.php?p=5432847
 	//typedef bool(*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
 	
-	
+	// Update PPM (from Processor)???
+	//CMessageResult notify(CBaseObject* sender, const char* message);
 };
 
 }} // namespaces

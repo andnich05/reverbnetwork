@@ -1,6 +1,7 @@
 #include "SchroederAllpass.h"
 #include "ReverbNetworkDefines.h"
 #include <cmath>
+#include <string>
 
 SchroederAllpass::SchroederAllpass(double sampleRate, double delay, double decay)
 	: inputBuffer(nullptr)
@@ -35,7 +36,7 @@ void SchroederAllpass::doProcessing(double& sample) {
 	// Store current input sample in circular buffer
 	inputBuffer[bufferPos] = sample;
 
-	// Write output sample (use reference(?))
+	// Write output sample
 	sample = yn;
 
 	// Store current output sample in circular buffer
@@ -48,14 +49,19 @@ void SchroederAllpass::doProcessing(double& sample) {
 	if (bufferPos >= delaySamples) {
 		bufferPos = 0;
 	}
+	//FILE* pFile = fopen("E:\\logVst.txt", "a");
+	////fprintf(pFile, "y(n): %s\n", std::to_string(delayTime).c_str());
+	////fprintf(pFile, "y(n): %s\n", std::to_string(decayTime).c_str());
+	//fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
+	//fclose(pFile);
 }
 
 void SchroederAllpass::createBuffers() {
 	freeBuffers(); // just in case...
 
 	// Create pre-initialized arrays for maximum delay value (round up)
-	inputBuffer = new double[(int)(std::ceil(sampleRate * MAXDELAY))]();
-	outputBuffer = new double[(int)(std::ceil(sampleRate * MAXDELAY))]();
+	inputBuffer = new double[(int)(std::ceil(sampleRate * (MAXDELAY / 1000.0)))]();
+	outputBuffer = new double[(int)(std::ceil(sampleRate * (MAXDELAY / 1000.0)))]();
 }
 
 void SchroederAllpass::freeBuffers() {
@@ -71,19 +77,22 @@ void SchroederAllpass::freeBuffers() {
 	}
 }
 
-//#include <string>
+void SchroederAllpass::setDelayTimeMsec(const double& ms) {
+	delayTime = ms / 1000; 
+	delaySamples = (unsigned long)(delayTime * sampleRate); 
+	calculateGain();
+}
+
 void SchroederAllpass::setDecayTime(const double& sec) {
 	decayTime = sec;
+	calculateGain();
+}
+
+void SchroederAllpass::calculateGain() {
 	double dB = 0.0;
 	// Prevent division by zero
-	if(decayTime > 0.0) {
+	if (decayTime > 0.0) {
 		dB = -60 * (delayTime / decayTime);
 	}
 	gain = pow(10.0, dB / 20);
-
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(delayTime).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(decayTime).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
-	fclose(pFile);*/
 }

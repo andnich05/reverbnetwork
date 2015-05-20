@@ -2,14 +2,14 @@
 #define REVERBNETWORKDEFINES_H
 
 // Maximum number of AP modules
-#define MAXMODULENUMBER 5
+#define MAXMODULENUMBER 16
 
 // Maximum number of AP outputs (should be 1 for now)
 //#define MAXMODULEOUTPUTS 1
 
 
 // Maximum number of VST inputs
-#define MAXVSTINPUTS 6
+#define MAXVSTINPUTS 2
 
 // Maximum number of VST outputs
 #define MAXVSTOUTPUTS 2
@@ -39,8 +39,8 @@
 #define MAXEQGAINDB 60.0
 
 #define DEFAULTDELAY 0.0
-// Maximum delay of an Allpass in seconds
-#define MAXDELAY 1.0
+// Maximum delay of an Allpass in milliseconds
+#define MAXDELAY 1000.0
 
 #define DEFAULTDECAY 0.0
 // Maximum decay of an Allpass in seconds
@@ -102,10 +102,14 @@
 #define PARAM_OUTBYPASS_LAST (PARAM_OUTBYPASS_FIRST + MAXMODULENUMBER - 1)
 
 
+// Is a module visible?
+#define PARAM_MODULEVISIBLE_FIRST (PARAM_OUTBYPASS_LAST + 1)
+#define PARAM_MODULEVISIBLE_LAST (PARAM_MODULEVISIBLE_FIRST + MAXMODULENUMBER - 1)
+
 // ------
 
 // General parameters (outside the modules)
-#define PARAM_GENERALVSTOUTPUTSELECT_FIRST (PARAM_OUTBYPASS_LAST + 1)
+#define PARAM_GENERALVSTOUTPUTSELECT_FIRST (PARAM_MODULEVISIBLE_LAST + 1)
 #define PARAM_GENERALVSTOUTPUTSELECT_LAST (PARAM_GENERALVSTOUTPUTSELECT_FIRST + MAXVSTOUTPUTS - 1)
 
 #endif // REVERBNETWORKDEFINES_H

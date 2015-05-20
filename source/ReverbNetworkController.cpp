@@ -134,8 +134,7 @@ namespace Vst {
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQFILTERTYPE_FIRST + i);
 			parameter->appendString(USTRING("Low Pass"));
 			parameter->appendString(USTRING("High Pass"));
-			parameter->appendString(USTRING("Band Pass"));
-			parameter->appendString(USTRING("Band Stop"));
+			parameter->appendString(USTRING("Band Pass/Stop"));
 			parameter->appendString(USTRING("Low Shelf"));
 			parameter->appendString(USTRING("High Shelf"));
 			parameters.addParameter(parameter);
@@ -182,7 +181,7 @@ namespace Vst {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Delay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("sec"), 0.0, MAXDELAY, DEFAULTDELAY);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("ms"), 0.0, MAXDELAY, DEFAULTDELAY);
 			parameters.addParameter(parameter);
 		}
 		// Allpass decay
@@ -220,6 +219,16 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append("Output Gain Bypass");
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_OUTBYPASS_FIRST + i);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
+			parameters.addParameter(parameter);
+		}
+
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Visible");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MODULEVISIBLE_FIRST + i);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
 			parameters.addParameter(parameter);
