@@ -50,7 +50,7 @@ namespace Vst {
 class ReverbNetworkEditor;
 
 //-----------------------------------------------------------------------------
-class ReverbNetworkController : public EditController
+class ReverbNetworkController : public EditControllerEx1
 {
 public:
 	
@@ -70,6 +70,8 @@ public:
 	//---Internal functions-------
 	void addDependentView(ReverbNetworkEditor* view);
 	void removeDependentView(ReverbNetworkEditor* view);
+
+	tresult PLUGIN_API setParamNormalized(ParamID tag, ParamValue value);
 
 private:
 	TArray <ReverbNetworkEditor*> viewsArray;

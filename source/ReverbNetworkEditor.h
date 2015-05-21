@@ -47,7 +47,8 @@ public:
 
 	CRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& optionMenuTag, const int32_t& knobTag, const int32_t& valueEditTag);
 
-
+	// Update GUI from Controller (and/or from Processor with e.g. sample values)
+	void updateEditorFromController(ParamID tag, ParamValue value);
 
 private:
 	// Holds pointer to the module GUIs
@@ -83,8 +84,11 @@ private:
 	// http://www.kvraudio.com/forum/viewtopic.php?p=5432847
 	//typedef bool(*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
 	
-	// Update PPM (from Processor)???
-	//CMessageResult notify(CBaseObject* sender, const char* message);
+	// Messages to Editor
+	CMessageResult notify(CBaseObject* sender, const char* message);
+
+	std::vector<double> lastPpmValues;
+
 };
 
 }} // namespaces

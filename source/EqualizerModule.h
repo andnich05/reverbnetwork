@@ -7,7 +7,7 @@ class EqualizerModule
 {
 public:
 
-	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double dBgain);
+	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double gain);
 	~EqualizerModule();
 
 	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; calculateCoefficients(); }
@@ -30,7 +30,6 @@ private:
 	// Q factor or quality factor ("Güte")
 	double qFactor;
 	// Gain
-	double dBgain;
 	double gain;
 	// Filter type to use (see enum)
 	FilterType filterType;

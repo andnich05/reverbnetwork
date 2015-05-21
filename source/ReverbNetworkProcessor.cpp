@@ -59,6 +59,9 @@ ReverbNetworkProcessor::ReverbNetworkProcessor() {
 	moduleOutputBuffer = new double[MAXMODULENUMBER]();
 
 	connectionMatrix = new ConnectionMatrix();
+
+	ppmValues.resize(MAXMODULENUMBER, 0.0);
+	ppmOldValues.resize(MAXMODULENUMBER, 0.0);
 }
 
 ReverbNetworkProcessor::~ReverbNetworkProcessor() {
@@ -115,7 +118,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 {
 	// Minimum one input and one output
 	if (numIns >= 1 && numOuts >= 1) {
-		return kResultTrue;
+		if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
+			return kResultTrue;
+		}
 	}
 	return kResultFalse;
 }
@@ -222,9 +227,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		// Hier nix anlegen weil totale Verschwendung (wird aufgerufen auch wenn nix geändert wurde)
 		
 		// Number of changed parameters in the parameter list
-		int32 paramChangeCount = data.inputParameterChanges->getParameterCount ();
+		//int32 paramChangeCount = data.inputParameterChanges->getParameterCount ();
 		// For each parameter change
-		for (int32 index = 0; index < paramChangeCount; index++)
+		for (int32 index = 0; index < data.inputParameterChanges->getParameterCount(); index++)
 		{
 			IParamValueQueue* queue = data.inputParameterChanges->getParameterData (index);
 			if (queue) {
@@ -330,28 +335,17 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						}
 					}
 				}
-				/*
-				else if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
-					// Get only the last change of the value
-					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						// Value is normalized (0.0...1.0)
-						uint16 moduleNumber = pid - PARAM_MIXERINPUTSELECT_FIRST;	// Calculate the module number
-						apModules[moduleNumber]->updateParameter(pid, value);
-					}
-				}*/
-
 			}
 		}
 	}
 
-	
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(connectionMatrix->mapVstInput(unmappedVstInput)).c_str());
-	fclose(pFile);*/
 
 	// Process the audio samples
 	if (data.numSamples > 0)
 	{
+		// Reset PPM values
+		std::fill(ppmValues.begin(), ppmValues.end(), 0.0);
+
 		uint32 numberOfSamples = data.numSamples;
 
 		// Get the input buffers for all inputs
@@ -380,16 +374,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			for (uint16 module = 0; module < MAXMODULENUMBER; ++module) {
 				samplesToProcess.clear();
 				// For each module input: check if the input is connected to a VST input
-				for (uint16 moduleInput = 0; moduleInput < MAXMODULEINPUTS; ++moduleInput) {
-					//if (moduleToModuleConnections[module][moduleInput] != -1) {
-					//	// Input is connected to another module's output => take sample from module input buffer
-					//	samplesToProcess.push_back(moduleInputBuffer[moduleToModuleConnections[module][moduleInput]]);
-					//}
-					//else if (vstToModuleConnections[module][moduleInput] != -1) {
-					//	// Input is connected to a VST input => take sample from the VST input
-					//	samplesToProcess.push_back((double)(inputSamples[vstToModuleConnections[module][moduleInput]][sample]));
-					//}
-					
+				for (uint16 moduleInput = 0; moduleInput < MAXMODULEINPUTS; ++moduleInput) {				
 					if (moduleInputConnections[module][moduleInput] != -1) {
 						if (moduleInputConnections[module][moduleInput] < MAXMODULENUMBER) {
 							// Input is connected to another module's output => take sample from module input buffer
@@ -408,13 +393,11 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				// Process the vector and write the output sample into the correct module output buffer
 				moduleOutputBuffer[module] = apModules[module]->processModuleSamples(samplesToProcess);
+				// Update PPM values
+				if (moduleOutputBuffer[module] > ppmValues[module]) {
+					ppmValues[module] = moduleOutputBuffer[module];
+				}
 			}
-
-			short mappedVstInput = moduleInputConnections[0][0];
-			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(moduleInputConnections[0][0]).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string(connectionMatrix->unmapVstInput(mappedVstInput)).c_str());
-			fclose(pFile);*/
 
 			// !!! Swap input and output buffers
 			double* temp = moduleInputBuffer;
@@ -423,14 +406,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 
 			// VST output processing
 			for (uint16 vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) {
-				//if (moduleToVstConnections[vstOutput] != -1) {
-				//	// VST output is connected to a module's output => take sample from the module output buffer
-				//	outputSamples[vstOutput][sample] = (moduleOutputBuffer[moduleToVstConnections[vstOutput]]);
-				//}
-				//else if (vstToVstConnections[vstOutput] != -1) {
-				//	// VST output is connected directly to VST input => take sample from the VST input
-				//	outputSamples[vstOutput][sample] = inputSamples[vstToVstConnections[vstOutput]][sample];
-				//}
 				if (vstOutputConnections[vstOutput] != -1) {
 					if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
 						// VST output is connected to a module's output => take sample from the module output buffer
@@ -448,6 +423,42 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 			}
 		}
+
+
+		//---3) Write outputs parameter changes-----------
+		IParameterChanges* paramChanges = data.outputParameterChanges;
+		// a new value of VuMeter will be send to the host 
+		// (the host will send it back in sync to our controller for updating our editor)
+
+		
+
+		if (paramChanges) {
+				for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+					if (ppmValues[i] != ppmOldValues[i]) {
+						int32 index = 0;
+						IParamValueQueue* paramQueue = paramChanges->addParameterData(PARAM_PPMUPDATE_FIRST + i, index);
+						if (paramQueue) {
+							int32 index2 = 0;
+							paramQueue->addPoint(0, ppmValues[i], index2);
+							ppmOldValues[i] = ppmValues[i];
+						}
+					}
+				}
+			}
+		
+
+		/*if (paramChanges && fVuPPMOld != fVuPPM)
+		{
+			int32 index = 0;
+			IParamValueQueue* paramQueue = paramChanges->addParameterData(kVuPPMId, index);
+			if (paramQueue)
+			{
+				int32 index2 = 0;
+				paramQueue->addPoint(0, fVuPPM, index2);
+			}
+		}
+		fVuPPMOld = fVuPPM;*/
+
 
 		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", "TEST");

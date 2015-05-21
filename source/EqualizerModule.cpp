@@ -2,12 +2,13 @@
 #include "ValueConversion.h"
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <string>
 
-EqualizerModule::EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double dBgain)
+EqualizerModule::EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double gain)
 	: samplingFreq(samplingFreq)
 	, centerFreq(centerFreq)
 	, qFactor(qFactor)
-	, dBgain(dBgain)
+	, gain(gain)
 	, filterType(filterType)
 {
 	// Initialize everything
@@ -60,7 +61,7 @@ void EqualizerModule::calculateCoefficients() {
 			a1 = (2 * (pow(K, 2) - 1)) / denominator;
 			a2 = (1 - gain * oneDividedByQ * K + pow(K, 2)) / denominator;
 			b1 = a1;
-			b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;
+			b2 = (1 - oneDividedByQ * K + pow(K, 2)) / denominator;		
 		}
 		else{
 			// Band stop
@@ -73,6 +74,7 @@ void EqualizerModule::calculateCoefficients() {
 			b1 = a1;
 			b2 = (1 - switchedGain * oneDividedByQ  * K + pow(K, 2)) / denominator;
 		}
+		
 		break;
 	}
 	case FilterType::lowShelf: {

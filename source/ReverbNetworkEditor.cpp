@@ -61,7 +61,11 @@ namespace Vst {
 	const int32_t id_output_switch_bypassFirst = id_output_textEdit_gainLast + 1;
 	const int32_t id_output_switch_bypassLast = id_output_switch_bypassFirst + MAXMODULENUMBER - 1;
 
-	const int32_t id_general_checkBox_moduleVisibleFirst = id_output_switch_bypassLast + 1;
+	const int32_t id_output_ppmFirst = id_output_switch_bypassLast + 1;
+	const int32_t id_output_ppmLast = id_output_ppmFirst + MAXMODULENUMBER - 1;
+
+
+	const int32_t id_general_checkBox_moduleVisibleFirst = id_output_ppmLast + 1;
 	const int32_t id_general_checkBox_moduleVisibleLast = id_general_checkBox_moduleVisibleFirst + MAXMODULENUMBER - 1;
 
 	//------
@@ -70,22 +74,18 @@ namespace Vst {
 	const int32_t id_general_optionMenu_vstOutputFirst = id_general_checkBox_moduleVisibleLast + 1;
 	const int32_t id_general_optionMenu_vstOutputLast = id_general_optionMenu_vstOutputFirst + MAXVSTOUTPUTS - 1;
 
-
-
-	// Last used id of a GUI element!
-	const int32_t id_last = id_general_optionMenu_vstOutputLast;
-
-//bool(ReverbNetworkEditor::*ptrTextEditStringToValueConversion) (UTF8StringPtr text, float& result, void* data);
-
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
 , totalNumberOfCreatedModules(0)
 {
-
+	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
 	allpassModuleIdPool.resize(MAXMODULENUMBER, false);
 	//ptrTextEditStringToValueConversion = &textEditStringToValueConversion;
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
+
+
+	setIdleRate(40);
 }
 
 ReverbNetworkEditor::~ReverbNetworkEditor() {
@@ -516,7 +516,7 @@ void ReverbNetworkEditor::createAPModule() {
 	mixerMainView->addView(mixerScrollView);
 
 	// Holds the equalizer controls
-	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(150, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
+	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(150, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	equalizerView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CRowColumnView* filterTypeView = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	filterTypeView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -586,8 +586,8 @@ void ReverbNetworkEditor::createAPModule() {
 	knobPpmView->addView(createKnobGroup("Gain", gainView->getWidth()-20, id_output_knob_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB),
 		id_output_textEdit_gainFirst + moduleId, DEFAULTOUTPUTGAINDB, MINOUTPUTGAINDB, MAXOUTPUTGAINDB, &ValueConversion::textEditStringToValueConversionGain, 
 		&ValueConversion::textEditValueToStringConversionGain));
-	CVuMeter* ppm = new CVuMeter(CRect(CPoint(0, 0), CPoint(10, 200)), ppmOn, ppmOff, 60);
-	ppm->setValue(0.26);
+	CVuMeter* ppm = new CVuMeter(CRect(CPoint(0, 0), CPoint(5, 200)), ppmOn, ppmOff, 200);
+	addGuiElementPointer(ppm, id_output_ppmFirst + moduleId);
 	knobPpmView->addView(ppm);
 	knobPpmView->setBackgroundColor(CColor(0, 0, 0, 0));
 	knobPpmView->sizeToFit();
@@ -748,19 +748,33 @@ void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastPar
 		}
 	}
 }
-//
-//CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
-//{
-//	if (message == CVSTGUITimer::kMsgTimer)
-//	{
-//		if (vuMeter)
-//		{
-//			vuMeter->setValue(1.f - ((lastVuMeterValue - 1.f) * (lastVuMeterValue - 1.f)));
-//			lastVuMeterValue = 0.f;
-//		}
-//	}
-//	return VSTGUIEditor::notify(sender, message);
-//}
+
+void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue value)
+{
+	if (tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) {
+		// Update PPM value
+		lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = value;	
+	}
+}
+
+CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
+{
+	if (message == CVSTGUITimer::kMsgTimer)
+	{
+		// GUI refresh timer, can be set with setIdleRate()
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			if (guiElements[id_output_ppmFirst + i])
+			{
+				guiElements[id_output_ppmFirst + i]->setValue(1.0 - ((lastPpmValues[i] - 1.0) * (lastPpmValues[i] - 1.0)));
+				//lastPpmValues[i] = 0.0;
+				/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+				fprintf(pFile, "y(n): %s\n", std::to_string(lastPpmValues[i]).c_str());
+				fclose(pFile);*/
+			}
+		}
+	}
+	return VSTGUIEditor::notify(sender, message);
+}
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;

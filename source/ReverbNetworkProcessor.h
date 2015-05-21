@@ -57,6 +57,7 @@ public:
 	
 	tresult PLUGIN_API initialize (FUnknown* context);
 	tresult PLUGIN_API setBusArrangements (SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts);
+	//tresult PLUGIN_API getBusArrangement(BusDirection dir, int32 index, SpeakerArrangement& arr);
 
 	tresult PLUGIN_API setActive (TBool state);
 	tresult PLUGIN_API process (ProcessData& data);
@@ -77,7 +78,8 @@ private:
 
 	ConnectionMatrix* connectionMatrix;
 
-	
+	std::vector<double> ppmValues;
+	std::vector<double> ppmOldValues;
 
 };
 

@@ -51,7 +51,7 @@ void GuiBaseAPModule::collapseView(const bool& collapse) {
 
 CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 {
-	this->invalid();
+	this->setDirty();
 	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "mouse down");
 	fclose(pFile);*/
@@ -124,7 +124,7 @@ CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonStat
 		//fclose(pFile);*/
 		//ENDFOREACHSUBVIEW
 
-		this->getParentView()->invalid();
+		this->getParentView()->setDirty();
 	}
 	else {
 

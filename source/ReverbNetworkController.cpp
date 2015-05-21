@@ -50,9 +50,9 @@ namespace Steinberg {
 namespace Vst {
 
 //-----------------------------------------------------------------------------
-	tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
+tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 {
-	tresult result = EditController::initialize (context);
+	tresult result = EditControllerEx1::initialize (context);
 	if (result == kResultTrue)
 	{
 		//parameters.addParameter (STR16 ("Delay"), STR16 ("sec"), 0, 1, ParameterInfo::kCanAutomate, 100);
@@ -93,7 +93,7 @@ namespace Vst {
 					temp2.append(" Input");
 					parameter->appendString(USTRING(temp2.c_str()));
 				}
-				parameters.addParameter(parameter);
+				EditControllerEx1::parameters.addParameter(parameter);
 				
 				++pidCounter;
 			}
@@ -109,7 +109,7 @@ namespace Vst {
 				temp.append(std::to_string(j));
 				temp.append(" Gain");
 				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING("dB"), MINOUTPUTGAINDB, MAXOUTPUTGAINDB, DEFAULTOUTPUTGAINDB);
-				parameters.addParameter(parameter);
+				EditControllerEx1::parameters.addParameter(parameter);
 				++pidCounter;
 			}
 		}
@@ -121,7 +121,7 @@ namespace Vst {
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERBYPASS_FIRST + i);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 		// -----
@@ -137,7 +137,7 @@ namespace Vst {
 			parameter->appendString(USTRING("Band Pass/Stop"));
 			parameter->appendString(USTRING("Low Shelf"));
 			parameter->appendString(USTRING("High Shelf"));
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Center Frequency
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -145,7 +145,7 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Center Frequency");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING("Hz"), MINEQCENTERFREQ, MAXEQCENTERFREQ, DEFAULTEQCENTERFREQ);
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Q Factor
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -153,7 +153,7 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Q Factor");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(""), MINEQQFACTOR, MAXEQQFACTOR, DEFAULTEQQFACTOR);
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Gain
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -161,7 +161,7 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Gain");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING("dB"), MINEQGAINDB, MAXEQGAINDB, DEFAULTEQGAIN);
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Bypass
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -171,7 +171,7 @@ namespace Vst {
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQBYPASS_FIRST + i);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 		//-----
@@ -182,7 +182,7 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Delay");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("ms"), 0.0, MAXDELAY, DEFAULTDELAY);
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass decay
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -190,7 +190,7 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Decay");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING("sec"), 0.0, MAXDECAY, DEFAULTDECAY);
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass Bypass
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -200,7 +200,7 @@ namespace Vst {
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSBYPASS_FIRST + i);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 		//-----
@@ -211,7 +211,7 @@ namespace Vst {
 			temp.append(std::to_string(i));
 			temp.append(" Output Gain");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(""), MINOUTPUTGAINDB, MAXOUTPUTGAINDB, DEFAULTOUTPUTGAINDB);
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Bypass
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -221,7 +221,7 @@ namespace Vst {
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_OUTBYPASS_FIRST + i);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -231,7 +231,7 @@ namespace Vst {
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MODULEVISIBLE_FIRST + i);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 		//-----
@@ -258,7 +258,7 @@ namespace Vst {
 				temp2.append(" Input");
 				parameter->appendString(USTRING(temp2.c_str()));
 			}
-			parameters.addParameter(parameter);
+			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 	}
@@ -315,7 +315,21 @@ void ReverbNetworkController::editorRemoved(EditorView* editor)
 	}
 }
 
+tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, ParamValue value)
+{
+	// called from host to update our parameters state
+	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 
+	for (int32 i = 0; i < viewsArray.total (); i++)
+	{
+		if (viewsArray.at (i))
+		{
+			viewsArray.at(i)->updateEditorFromController(tag, value);
+		}
+	}
+
+	return result;
+}
 
 
 #if TARGET_OS_IPHONE

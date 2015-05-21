@@ -82,7 +82,12 @@ double ValueConversion::valueToNormGain(const double& value) {
 }
 
 double ValueConversion::linearToLog(const double& linearValue) {
-	return 20 * log10(linearValue);
+	if (linearValue > 0.0) {
+		return 20 * log10(linearValue);
+	}
+	else {
+		return 0.0;
+	}
 }
 
 double ValueConversion::logToLinear(const double& logValue) {
