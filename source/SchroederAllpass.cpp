@@ -60,8 +60,8 @@ void SchroederAllpass::createBuffers() {
 	freeBuffers(); // just in case...
 
 	// Create pre-initialized arrays for maximum delay value (round up)
-	inputBuffer = new double[(int)(std::ceil(sampleRate * (MAXDELAY / 1000.0)))]();
-	outputBuffer = new double[(int)(std::ceil(sampleRate * (MAXDELAY / 1000.0)))]();
+	inputBuffer = new double[(int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0)))]();
+	outputBuffer = new double[(int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0)))]();
 }
 
 void SchroederAllpass::freeBuffers() {

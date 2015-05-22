@@ -218,6 +218,7 @@
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_uidescription_win32.cpp" />
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
     <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
+    <ClCompile Include="source\PresetReadWrite.cpp" />
     <ClCompile Include="source\GuiWorkspaceView.cpp" />
     <ClCompile Include="source\GuiHandleView.cpp" />
     <ClCompile Include="source\GuiBaseAPModule.cpp" />
@@ -256,6 +257,7 @@
     <ClInclude Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstguieditor.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
+    <ClInclude Include="source\PresetReadWrite.h" />
     <ClInclude Include="source\GuiWorkspaceView.h" />
     <ClInclude Include="source\GuiHandleView.h" />
     <ClInclude Include="source\GuiBaseAPModule.h" />

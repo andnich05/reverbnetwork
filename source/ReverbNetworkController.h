@@ -71,7 +71,10 @@ public:
 	void addDependentView(ReverbNetworkEditor* view);
 	void removeDependentView(ReverbNetworkEditor* view);
 
+	tresult PLUGIN_API setComponentState(IBStream* state);
+
 	tresult PLUGIN_API setParamNormalized(ParamID tag, ParamValue value);
+	tresult PLUGIN_API setParamNormalizedFromPreset(ParamID tag, ParamValue value);
 
 private:
 	TArray <ReverbNetworkEditor*> viewsArray;

@@ -34,51 +34,51 @@ double ValueConversion::valueToNormFilterTypeSelect(const double& value) {
 }
 
 double ValueConversion::normToValueCenterFreq(const double& normValue) {
-	return (MINEQCENTERFREQ + (MAXEQCENTERFREQ - MINEQCENTERFREQ) * normValue);
+	return (MIN_EQCENTERFREQ + (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ) * normValue);
 }
 
 double ValueConversion::valueToNormCenterFreq(const double& value) {
-	return ((value - MINEQCENTERFREQ) / (MAXEQCENTERFREQ - MINEQCENTERFREQ));
+	return ((value - MIN_EQCENTERFREQ) / (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ));
 }
 
 double ValueConversion::normToValueQFactor(const double& normValue) {
-	return (MINEQQFACTOR + (MAXEQQFACTOR - MINEQQFACTOR) * normValue);
+	return (MIN_EQQFACTOR + (MAX_EQQFACTOR - MIN_EQQFACTOR) * normValue);
 }
 
 double ValueConversion::valueToNormQFactor(const double& value) {
-	return ((value - MINEQQFACTOR) / (MAXEQQFACTOR - MINEQQFACTOR));
+	return ((value - MIN_EQQFACTOR) / (MAX_EQQFACTOR - MIN_EQQFACTOR));
 }
 
 double ValueConversion::normToValueEqGain(const double& normValue) {
-	return (MINEQGAINDB + (MAXEQGAINDB - MINEQGAINDB) * normValue);
+	return (MIN_EQGAIN + (MAX_EQGAIN - MIN_EQGAIN) * normValue);
 }
 
 double ValueConversion::valueToNormEqGain(const double& value) {
-	return ((value - MINEQGAINDB) / (MAXEQGAINDB - MINEQGAINDB));
+	return ((value - MIN_EQGAIN) / (MAX_EQGAIN - MIN_EQGAIN));
 }
 
 double ValueConversion::normToValueDelay(const double& normValue) {
-	return (normValue * MAXDELAY);
+	return (MIN_ALLPASSDELAY + (MAX_ALLPASSDELAY - MIN_ALLPASSDELAY) * normValue);
 }
 
 double ValueConversion::valueToNormDelay(const double& value) {
-	return (value / MAXDELAY);
+	return ((value - MIN_ALLPASSDELAY) / (MAX_ALLPASSDELAY - MIN_ALLPASSDELAY));
 }
 
 double ValueConversion::normToValueDecay(const double& normValue) {
-	return (normValue * MAXDECAY);
+	return (MIN_ALLPASSDECAY + (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY) * normValue);
 }
 
 double ValueConversion::valueToNormDecay(const double& value) {
-	return (value / MAXDECAY);
+	return ((value - MIN_ALLPASSDECAY) / (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY));
 }
 
 double ValueConversion::normToValueGain(const double& normValue) {
-	return (MINOUTPUTGAINDB + (MAXOUTPUTGAINDB - MINOUTPUTGAINDB) * normValue);
+	return (MIN_OUTPUTGAIN + (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN) * normValue);
 }
 
 double ValueConversion::valueToNormGain(const double& value) {
-	return ((value - MINOUTPUTGAINDB) / (MAXOUTPUTGAINDB - MINOUTPUTGAINDB));
+	return ((value - MIN_OUTPUTGAIN) / (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN));
 }
 
 double ValueConversion::linearToLog(const double& linearValue) {

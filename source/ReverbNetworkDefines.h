@@ -1,3 +1,5 @@
+#include "ReverbNetworkEnums.h"
+
 #ifndef REVERBNETWORKDEFINES_H
 #define REVERBNETWORKDEFINES_H
 
@@ -20,37 +22,88 @@
 // Maximum number of AP inputs
 #define MAXMODULEINPUTS (MAXMODULENUMBER + MAXVSTINPUTS)
 
-// Minimum Eq Center Frequency
-#define MINEQCENTERFREQ 20.0
-#define DEFAULTEQCENTERFREQ 4000.0
-// Maximum Eq Center Frequency (Sample rate / 2 for now)
-#define MAXEQCENTERFREQ 20000.0
+//---------------------
+// Minimum, Maxmimum and Default values
 
-//Min EQ Q Factor
-#define MINEQQFACTOR 0.01
-#define DEFAULTEQQFACTOR 1.0
-// Maximum Equalizer Q Factor
-#define MAXEQQFACTOR 16.0
+// Mixer input select in menu indexes
+#define MIN_MIXERINPUT 0 // <Not Connected>
+#define MAX_MIXERINPUT (1 + MAXMODULEINPUTS) // Incl. <Not Connected>
+#define DEF_MIXERINPUT 0
 
-// Minimum Equalizer Gain in dB
-#define MINEQGAINDB -60.0
-#define DEFAULTEQGAIN 0.0
-// Maximum Equalizer Gain in dB
-#define MAXEQGAINDB 60.0
+// Mixer gain in dB
+#define MIN_MIXERGAIN -60.0
+#define MAX_MIXERGAIN 60.0
+#define DEF_MIXERGAIN 0.0
 
-#define DEFAULTDELAY 0.0
-// Maximum delay of an Allpass in milliseconds
-#define MAXDELAY 1000.0
+// Mixer bypass in bool
+#define MIN_MIXERBYPASS 0.0
+#define MAX_MIXERBYPASS 1.0
+#define DEF_MIXERBYPASS 0.0
 
-#define DEFAULTDECAY 0.0
-// Maximum decay of an Allpass in seconds
-#define MAXDECAY 10.0
+// Equalizer filter type in menu indexes
+#define MIN_EQFILTERTYPE 0
+#define MAX_EQFILTERTYPE (FilterType::numberOfFilterTypes - 1)
+#define DEF_EQFILTERTYPE 0
 
-// Minimum Output Gain in dB
-#define MINOUTPUTGAINDB -60.0
-#define DEFAULTOUTPUTGAINDB 0.0
-// Maximum Output Gain in dB
-#define MAXOUTPUTGAINDB 60.0
+// Equalizer Center frequency in Hertz
+#define MIN_EQCENTERFREQ 20.0
+#define MAX_EQCENTERFREQ 20000.0
+#define DEF_EQCENTERFREQ 4000.0
+
+// Equalizer QFactor
+#define MIN_EQQFACTOR 0.01
+#define MAX_EQQFACTOR 16.0
+#define DEF_EQQFACTOR 1.0
+
+// Equalizer Gain in dB
+#define MIN_EQGAIN -60.0
+#define MAX_EQGAIN 60.0
+#define DEF_EQGAIN 0.0
+
+// Equalizer Bypass in bool
+#define MIN_EQBYPASS 0.0
+#define MAX_EQBYPASS 1.0
+#define DEF_EQBYPASS 0.0
+
+// Allpass delay in ms
+#define MIN_ALLPASSDELAY 0.0
+#define MAX_ALLPASSDELAY 1000.0
+#define DEF_ALLPASSDELAY 0.0
+
+// Allpass decay in sec
+#define MIN_ALLPASSDECAY 0.0
+#define MAX_ALLPASSDECAY 10.0
+#define DEF_ALLPASSDECAY 0.0
+
+// Allpass bypass in bool
+#define MIN_ALLPASSBYPASS 0.0
+#define MAX_ALLPASSBYPASS 1.0
+#define DEF_ALLPASSBYPASS 0.0
+
+// Output gain in dB
+#define MIN_OUTPUTGAIN -60.0
+#define MAX_OUTPUTGAIN 60.0
+#define DEF_OUTPUTGAIN 0.0
+
+// Output bypass in bool
+#define MIN_OUTPUTBYPASS 0.0
+#define MAX_OUTPUTBYPASS 1.0
+#define DEF_OUTPUTBYPASS 0.0
+
+// Visibility of a module in bool
+#define MIN_MODULEVISIBLE 0.0
+#define MAX_MODULEVISIBLE 1.0
+#define DEF_MODULEVISIBLE 0.0
+
+// PPM update
+#define MIN_PPMVALUE 0.0
+#define MAX_PPMVALUE 1.0
+#define DEF_PPMVALUE 0.0
+
+// VST output select in menu indexes
+#define MIN_OUTPUTSELECT 0
+#define MAX_OUTPUTSELECT (1 + MAXMODULEINPUTS) // Incl. <Not Connected>
+#define DEF_OUTPUTSELECT 0
 
 //---------------------------
 // Mapping for VST parameters
@@ -106,14 +159,27 @@
 #define PARAM_MODULEVISIBLE_FIRST (PARAM_OUTBYPASS_LAST + 1)
 #define PARAM_MODULEVISIBLE_LAST (PARAM_MODULEVISIBLE_FIRST + MAXMODULENUMBER - 1)
 
+// General parameters (outside the modules)
+#define PARAM_GENERALVSTOUTPUTSELECT_FIRST (PARAM_MODULEVISIBLE_LAST + 1)
+#define PARAM_GENERALVSTOUTPUTSELECT_LAST (PARAM_GENERALVSTOUTPUTSELECT_FIRST + MAXVSTOUTPUTS - 1)
+
+
+
+
+
+// ---------------
+// Intern parameters which aren't added to the Controller
+
 // PPM update parameters
-#define PARAM_PPMUPDATE_FIRST (PARAM_MODULEVISIBLE_LAST + 1)
+#define PARAM_PPMUPDATE_FIRST (PARAM_GENERALVSTOUTPUTSELECT_LAST + 1)
 #define PARAM_PPMUPDATE_LAST (PARAM_PPMUPDATE_FIRST + MAXMODULENUMBER - 1)
 
 // ------
 
-// General parameters (outside the modules)
-#define PARAM_GENERALVSTOUTPUTSELECT_FIRST (PARAM_PPMUPDATE_LAST + 1)
-#define PARAM_GENERALVSTOUTPUTSELECT_LAST (PARAM_GENERALVSTOUTPUTSELECT_FIRST + MAXVSTOUTPUTS - 1)
+
+
+// ...
+
+
 
 #endif // REVERBNETWORKDEFINES_H

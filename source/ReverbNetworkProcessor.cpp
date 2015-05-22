@@ -46,6 +46,7 @@
 #include "BaseAPModule.h"
 #include "ConnectionMatrix.h"
 #include "ValueConversion.h"
+#include "PresetReadWrite.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -62,6 +63,8 @@ ReverbNetworkProcessor::ReverbNetworkProcessor() {
 
 	ppmValues.resize(MAXMODULENUMBER, 0.0);
 	ppmOldValues.resize(MAXMODULENUMBER, 0.0);
+
+	preset = new PresetReadWrite();
 }
 
 ReverbNetworkProcessor::~ReverbNetworkProcessor() {
@@ -214,6 +217,18 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 // Log output for debugging
 //#define LOG
 
+tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
+{
+	return preset->setParamterState(state);
+}
+
+//-----------------------------------------------------------------------------
+tresult PLUGIN_API ReverbNetworkProcessor::getState(IBStream* state)
+{
+	return preset->getParamterState(state);
+}
+
+
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 {
@@ -238,6 +253,11 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				ParamValue value = 0.0;
 				int32 sampleOffset = 0.0;
 				pid = queue->getParameterId();
+
+				// Update preset values...
+				if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+					preset->setNormValueByParamId(value, pid);
+				}
 
 				if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value

@@ -41,6 +41,8 @@
 
 #include "ReverbNetworkEditor.h"
 #include "ReverbNetworkDefines.h"
+#include "PresetReadWrite.h"
+
 
 #if TARGET_OS_IPHONE
 #include "interappaudio/iosEditor.h"
@@ -55,14 +57,6 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 	tresult result = EditControllerEx1::initialize (context);
 	if (result == kResultTrue)
 	{
-		//parameters.addParameter (STR16 ("Delay"), STR16 ("sec"), 0, 1, ParameterInfo::kCanAutomate, 100);
-		// Map (M=MAXMODULENUMBER; I=MAXMODULEINPUT):
-		// 0 to M*I-1 => Mixer input gain per channel
-		// (M*I to M*I+X => Equalizer parameters)
-		// M*I to M*I+M-1 => Allpass Delay
-		// M*I+M to M*I+2*M-1 => Allpass Decay
-		// M*I+2*M-1 to M*I+3*M-1 => Module output gain
-
 		// Parameter creation
 		//------
 		// MIXER parameters
@@ -108,7 +102,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 				temp.append(" - Mixer Channel Input ");
 				temp.append(std::to_string(j));
 				temp.append(" Gain");
-				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING("dB"), MINOUTPUTGAINDB, MAXOUTPUTGAINDB, DEFAULTOUTPUTGAINDB);
+				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING("dB"), MIN_MIXERGAIN, MAX_MIXERGAIN, DEF_MIXERGAIN);
 				EditControllerEx1::parameters.addParameter(parameter);
 				++pidCounter;
 			}
@@ -144,7 +138,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Center Frequency");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING("Hz"), MINEQCENTERFREQ, MAXEQCENTERFREQ, DEFAULTEQCENTERFREQ);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING("Hz"), MIN_EQCENTERFREQ, MAX_EQCENTERFREQ, DEF_EQCENTERFREQ);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Q Factor
@@ -152,7 +146,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Q Factor");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(""), MINEQQFACTOR, MAXEQQFACTOR, DEFAULTEQQFACTOR);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(""), MIN_EQQFACTOR, MAX_EQQFACTOR, DEF_EQQFACTOR);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Gain
@@ -160,7 +154,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Gain");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING("dB"), MINEQGAINDB, MAXEQGAINDB, DEFAULTEQGAIN);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING("dB"), MIN_EQGAIN, MAX_EQGAIN, DEF_EQGAIN);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Bypass
@@ -181,7 +175,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Delay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("ms"), 0.0, MAXDELAY, DEFAULTDELAY);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING("ms"), MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, DEF_ALLPASSDELAY);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass decay
@@ -189,7 +183,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Decay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING("sec"), 0.0, MAXDECAY, DEFAULTDECAY);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING("sec"), MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, DEF_ALLPASSDECAY);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass Bypass
@@ -210,7 +204,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Output Gain");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(""), MINOUTPUTGAINDB, MAXOUTPUTGAINDB, DEFAULTOUTPUTGAINDB);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(""), MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, DEF_OUTPUTGAIN);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Bypass
@@ -315,8 +309,49 @@ void ReverbNetworkController::editorRemoved(EditorView* editor)
 	}
 }
 
+tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
+{
+	// Create object
+	PresetReadWrite preset;
+	// Load filestream into object
+	tresult result = preset.setParamterState(state);
+	if (result == kResultTrue) {
+
+		// Read the values from the file stream and update the parameters
+		for (uint32 i = 0; i < parameters.getParameterCount(); ++i) {
+			setParamNormalized(i, preset.getNormValueByParamId(i));
+		}
+		// Update the GUI with the loaded parameters
+		for (int32 i = 0; i < viewsArray.total(); i++)
+		{
+			if (viewsArray.at(i))
+			{
+				viewsArray.at(i)->updateGuiWithControllerParameters();
+			}
+		}
+	}
+	return result;
+}
+
+tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID tag, ParamValue value)
+{
+	Parameter* parameter = getParameterObject(tag);
+	if (parameter)
+	{
+		parameter->setNormalized(value);
+		return kResultTrue;
+	}
+	return kResultFalse;
+}
+
 tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, ParamValue value)
 {
+	Parameter* parameter = getParameterObject(tag);
+	if (parameter)
+	{
+		parameter->setNormalized(value);
+	}
+
 	// called from host to update our parameters state
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 

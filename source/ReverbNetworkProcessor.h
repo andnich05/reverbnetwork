@@ -44,6 +44,7 @@
 
 class BaseAPModule;
 class ConnectionMatrix;
+class PresetReadWrite;
 
 namespace Steinberg {
 namespace Vst {
@@ -60,6 +61,8 @@ public:
 	//tresult PLUGIN_API getBusArrangement(BusDirection dir, int32 index, SpeakerArrangement& arr);
 
 	tresult PLUGIN_API setActive (TBool state);
+	tresult PLUGIN_API setState(IBStream* state);
+	tresult PLUGIN_API getState(IBStream* state);
 	tresult PLUGIN_API process (ProcessData& data);
 	
 	static FUnknown* createInstance(void*) { return (IAudioProcessor*)new ReverbNetworkProcessor(); }
@@ -81,6 +84,7 @@ private:
 	std::vector<double> ppmValues;
 	std::vector<double> ppmOldValues;
 
+	PresetReadWrite* preset;
 };
 
 }} // namespaces

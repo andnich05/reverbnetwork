@@ -84,7 +84,7 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
 
-
+	// Set GUI refresh timer to 40 ms (25 Hz)
 	setIdleRate(40);
 }
 
@@ -538,13 +538,11 @@ void ReverbNetworkEditor::createAPModule() {
 	filterTypeView->sizeToFit();
 	CRowColumnView* paramFirstRow = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	paramFirstRow->setBackgroundColor(CColor(0, 0, 0, 0));
-	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, ValueConversion::valueToNormCenterFreq(DEFAULTEQCENTERFREQ), 
-		id_equalizer_textEdit_centerFreqFirst + moduleId, DEFAULTEQCENTERFREQ, MINEQCENTERFREQ, MAXEQCENTERFREQ, &ValueConversion::textEditStringToValueConversionCenterFreq, 
-		&ValueConversion::textEditValueToStringConversionCenterFreq));
+	paramFirstRow->addView(createKnobGroup("CFreq", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId, 
+		MIN_EQCENTERFREQ, MAX_EQCENTERFREQ, &ValueConversion::textEditStringToValueConversionCenterFreq, &ValueConversion::textEditValueToStringConversionCenterFreq));
 
-	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, ValueConversion::valueToNormQFactor(DEFAULTEQQFACTOR), 
-		id_equalizer_textEdit_qFactorFirst + moduleId, DEFAULTEQQFACTOR, MINEQQFACTOR, MAXEQQFACTOR, &ValueConversion::textEditStringToValueConversionQFactor, 
-		&ValueConversion::textEditValueToStringConversionQFactor));
+	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId, 
+		MIN_EQQFACTOR, MAX_EQQFACTOR, &ValueConversion::textEditStringToValueConversionQFactor, &ValueConversion::textEditValueToStringConversionQFactor));
 	paramFirstRow->sizeToFit();
 	CCheckBox *checkBoxEqualizerBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_equalizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
@@ -552,9 +550,8 @@ void ReverbNetworkEditor::createAPModule() {
 	equalizerView->addView(checkBoxEqualizerBypass);
 	equalizerView->addView(filterTypeView);
 	equalizerView->addView(paramFirstRow);
-	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, ValueConversion::valueToNormEqGain(DEFAULTEQGAIN), 
-		id_equalizer_textEdit_gainFirst + moduleId, DEFAULTEQGAIN, MINEQGAINDB, MAXEQGAINDB, &ValueConversion::textEditStringToValueConversionEqGain, 
-		&ValueConversion::textEditValueToStringConversionEqGain));
+	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId, 
+		MIN_EQGAIN, MAX_EQGAIN, &ValueConversion::textEditStringToValueConversionEqGain, &ValueConversion::textEditValueToStringConversionEqGain));
 
 
 	// Holds the allpass controls (delay and decay)
@@ -564,12 +561,10 @@ void ReverbNetworkEditor::createAPModule() {
 	addGuiElementPointer(checkBoxAllpassBypass, id_allpass_switch_bypassFirst + moduleId);
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
 	allpassView->addView(checkBoxAllpassBypass);
-	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, ValueConversion::valueToNormDelay(DEFAULTDELAY), 
-		id_allpass_textEdit_delayFirst + moduleId, DEFAULTDELAY, 0, MAXDELAY, &ValueConversion::textEditStringToValueConversionDelay, 
-		&ValueConversion::textEditValueToStringConversionDelay));
-	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, ValueConversion::valueToNormDecay(DEFAULTDECAY), 
-		id_allpass_textEdit_decayFirst + moduleId, DEFAULTDECAY, 0, MAXDECAY, &ValueConversion::textEditStringToValueConversionDecay, 
-		&ValueConversion::textEditValueToStringConversionDecay));
+	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId, 
+		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, &ValueConversion::textEditStringToValueConversionDelay, &ValueConversion::textEditValueToStringConversionDelay));
+	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
+		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, &ValueConversion::textEditStringToValueConversionDecay, &ValueConversion::textEditValueToStringConversionDecay));
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
@@ -583,9 +578,8 @@ void ReverbNetworkEditor::createAPModule() {
 	gainView->addView(checkBoxGainBypass);
 
 	CRowColumnView* knobPpmView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	knobPpmView->addView(createKnobGroup("Gain", gainView->getWidth()-20, id_output_knob_gainFirst + moduleId, ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB),
-		id_output_textEdit_gainFirst + moduleId, DEFAULTOUTPUTGAINDB, MINOUTPUTGAINDB, MAXOUTPUTGAINDB, &ValueConversion::textEditStringToValueConversionGain, 
-		&ValueConversion::textEditValueToStringConversionGain));
+	knobPpmView->addView(createKnobGroup("Gain", gainView->getWidth()-20, id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId, 
+		MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, &ValueConversion::textEditStringToValueConversionGain, &ValueConversion::textEditValueToStringConversionGain));
 	CVuMeter* ppm = new CVuMeter(CRect(CPoint(0, 0), CPoint(5, 200)), ppmOn, ppmOff, 200);
 	addGuiElementPointer(ppm, id_output_ppmFirst + moduleId);
 	knobPpmView->addView(ppm);
@@ -615,9 +609,8 @@ void ReverbNetworkEditor::createAPModule() {
 	++totalNumberOfCreatedModules;
 }
 
-CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const float& knobStartValue,
-	const int32_t& valueEditTag, const float& valueEditStartValue, const float& valueEditMinValue, const float& valueEditMaxValue,
-	CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
+CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, 
+	const float& valueEditMinValue, const float& valueEditMaxValue, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
 
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -628,14 +621,12 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0 + (groupView->getWidth() - knobBackground->getWidth()) / 2, groupNameLabel->getViewSize().bottom + 3), 
 		CPoint(knobBackground->getWidth(), knobBackground->getWidth())), this, knobTag, knobBackground->getHeight() / knobBackground->getWidth(), knobBackground->getWidth(), knobBackground);
 	addGuiElementPointer(knob, knobTag);
-	knob->setValue(knobStartValue);
 	CTextEdit* groupTextEdit = new CTextEdit(CRect(CPoint(0, knob->getViewSize().bottom + 3), CPoint(groupView->getWidth(), 15)), this, valueEditTag, "0.0");
 	addGuiElementPointer(groupTextEdit, valueEditTag);
 	groupTextEdit->setStringToValueProc(textEditStringToValueFunctionPtr);
 	groupTextEdit->setValueToStringProc(textEditValueToStringFunctionPtr);
 	groupTextEdit->setMin(valueEditMinValue);
 	groupTextEdit->setMax(valueEditMaxValue);
-	groupTextEdit->setValue(valueEditStartValue);
 	groupTextEdit->setFont(CFontRef(kNormalFontSmall));
 	groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
 	groupTextEdit->setFrameColor(CColor(0, 0, 0, 0));
@@ -687,15 +678,13 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth())), 
 		this, knobTag, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
 	addGuiElementPointer(knob, knobTag);
-	knob->setValue(ValueConversion::valueToNormGain(DEFAULTOUTPUTGAINDB));
 
 	CTextEdit* valueEdit = new CTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, valueEditTag, "0.0");
 	addGuiElementPointer(valueEdit, valueEditTag);
 	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversionGain);
 	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversionGain);
-	valueEdit->setMin(MINOUTPUTGAINDB);
-	valueEdit->setMax(MAXOUTPUTGAINDB);
-	valueEdit->setValue(DEFAULTOUTPUTGAINDB);
+	valueEdit->setMin(MIN_OUTPUTGAIN);
+	valueEdit->setMax(MAX_OUTPUTGAIN);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
 	valueEdit->setBackColor(CColor(0, 0, 0, 0));
 	valueEdit->setFrameColor(CColor(0, 0, 0, 0));

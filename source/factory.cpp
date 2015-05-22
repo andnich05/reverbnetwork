@@ -45,7 +45,7 @@
 #define stringPluginName "ReverbNetwork"
 
 
-BEGIN_FACTORY_DEF ("AN/KMI", 
+BEGIN_FACTORY_DEF ("Hochschule RheinMain", 
 				   "http://www.hs-rm.de", 
 				   "mailto:a@b.de")
 
