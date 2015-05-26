@@ -70,6 +70,11 @@
 #define MAX_ALLPASSDELAY 1000.0
 #define DEF_ALLPASSDELAY 0.0
 
+//// Allpass delay in samples
+//#define MIN_ALLPASSDELAY 0.0
+//#define MAX_ALLPASSDELAY 1000.0
+//#define DEF_ALLPASSDELAY 0.0
+
 // Allpass decay in sec
 #define MIN_ALLPASSDECAY 0.0
 #define MAX_ALLPASSDECAY 10.0

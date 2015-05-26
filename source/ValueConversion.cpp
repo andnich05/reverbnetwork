@@ -65,6 +65,14 @@ double ValueConversion::valueToNormDelay(const double& value) {
 	return ((value - MIN_ALLPASSDELAY) / (MAX_ALLPASSDELAY - MIN_ALLPASSDELAY));
 }
 
+double ValueConversion::delayMillisecondsToSamples(const double& delayMilliseconds) {
+	return delayMilliseconds * sampleRate / 1000;
+}
+
+double ValueConversion::delaySamplesToMilliseconds(const double& delaySamples) {
+	return delaySamples / sampleRate * 1000;
+}
+
 double ValueConversion::normToValueDecay(const double& normValue) {
 	return (MIN_ALLPASSDECAY + (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY) * normValue);
 }
@@ -94,16 +102,16 @@ double ValueConversion::logToLinear(const double& logValue) {
 	return pow(10, (logValue / 20));
 }
 
-bool ValueConversion::textEditStringToValueConversionCenterFreq(const char* txt, float& result, void* userData) {
+bool ValueConversion::textEditStringToValueConversion(const char* txt, float& result, void* userData) {
 	result = (atof(txt));
 	return true;
 }
 
-bool ValueConversion::textEditValueToStringConversionCenterFreq(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.0f", (value));
+bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
+	sprintf(utf8String, "%1.2f", (value));
 	return true;
 }
-
+/*
 bool ValueConversion::textEditStringToValueConversionQFactor(const char* txt, float& result, void* userData) {
 	result = atof(txt);
 	return true;
@@ -152,4 +160,4 @@ bool ValueConversion::textEditStringToValueConversionGain(const char* txt, float
 bool ValueConversion::textEditValueToStringConversionGain(float value, char utf8String[256], void* userData) {
 	sprintf(utf8String, "%1.2f", value);
 	return true;
-}
+}*/

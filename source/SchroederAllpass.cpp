@@ -31,7 +31,8 @@ void SchroederAllpass::doProcessing(double& sample) {
 	ynD = outputBuffer[bufferPos]; // y(n-D)
 
 	// Difference equation
-	yn = -gain*sample + xnD + gain*ynD;
+	yn = -gain * sample + xnD + gain * ynD;
+	// Normal delay would be FIR: yn = sample + gain * xnD; or IIR: yn = sample + gain * ynD;
 
 	// Store current input sample in circular buffer
 	inputBuffer[bufferPos] = sample;
@@ -93,6 +94,15 @@ void SchroederAllpass::calculateGain() {
 	// Prevent division by zero
 	if (decayTime > 0.0) {
 		dB = -60 * (delayTime / decayTime);
+		gain = pow(10.0, dB / 20);
 	}
-	gain = pow(10.0, dB / 20);
+	else {
+		// If decay time is zero gain should be zero also => samples are simply delayed by the specified delay time
+		gain = 0.0;
+	}
+	
+
+	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
+	fclose(pFile);*/
 }

@@ -444,7 +444,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			}
 		}
 
-
 		//---3) Write outputs parameter changes-----------
 		IParameterChanges* paramChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host 

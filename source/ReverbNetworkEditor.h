@@ -58,6 +58,8 @@ private:
 	// Holds pointer to the module GUIs
 	//std::vector<GuiBaseAPModule*> apGuiModules;
 
+	double sampleRate;
+
 	// View where the modules are placed and where they can be moved around and stuff
 	CScrollView* workspaceView;
 
