@@ -14,6 +14,12 @@ PresetReadWrite::PresetReadWrite() {
 	for (unsigned int i = PARAM_MIXERBYPASS_FIRST; i <= PARAM_MIXERBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_MIXERBYPASS);
 	}
+	for (unsigned int i = PARAM_QUANTIZERBITDEPTH_FIRST; i <= PARAM_QUANTIZERBITDEPTH_LAST; ++i) {
+		//parameterValues.push_back(ValueConversion::valueToNormGain(DEF_EQGAIN));
+	}
+	for (unsigned int i = PARAM_QUANTIZERBYPASS_FIRST; i <= PARAM_QUANTIZERBYPASS_LAST; ++i) {
+		//parameterValues.push_back(DEF_EQBYPASS);
+	}
 	for (unsigned int i = PARAM_EQFILTERTYPE_FIRST; i <= PARAM_EQFILTERTYPE_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormFilterTypeSelect(DEF_EQFILTERTYPE));
 	}

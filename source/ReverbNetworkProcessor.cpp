@@ -108,6 +108,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 
 		ValueConversion::setSampleRate(processSetup.sampleRate);
 
+	/*	FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(processSetup.symbolicSampleSize).c_str());
+		fclose(pFile);*/
+
 		/*connectionMatrix->setVstToModuleConnection(0, 0, 0);
 		connectionMatrix->setVstToModuleConnection(0, 1, 0);
 		connectionMatrix->setModuleToVstConnection(0, 0);
@@ -286,6 +290,16 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				else if (pid >= PARAM_MIXERBYPASS_FIRST && pid <= PARAM_MIXERBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_MIXERBYPASS_FIRST]->switchMixerBypass(value);
+					}
+				}
+				else if (pid >= PARAM_QUANTIZERBITDEPTH_FIRST && pid <= PARAM_QUANTIZERBITDEPTH_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						//apModules[pid - PARAM_QUANTIZERBITDEPTH_FIRST]->updateEqualizerGain(ValueConversion::normToValueEqGain(value));
+					}
+				}
+				else if (pid >= PARAM_QUANTIZERBYPASS_FIRST && pid <= PARAM_QUANTIZERBYPASS_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						//apModules[pid - PARAM_QUANTIZERBYPASS_FIRST]->switchEqualizerBypass(value);
 					}
 				}
 				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {

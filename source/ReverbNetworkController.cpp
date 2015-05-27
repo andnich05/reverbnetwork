@@ -118,6 +118,26 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
+		// QUANTIZER parameters
+		// Quantizer bitdepth
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append(" Quantizer Bitdepth");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBITDEPTH_FIRST + i, USTRING("bit"), MIN_QUANTIZERBITDEPTH, MAX_QUANTIZERBITDEPTH, DEF_QUANTIZERBITDEPTH);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		// Quantizer Bypass
+		for (uint16 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i));
+			temp.append("Quantizer Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBYPASS_FIRST + i);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+
 		// -----
 		// EQUALIZER parameters
 		// Equalizer Filter Type

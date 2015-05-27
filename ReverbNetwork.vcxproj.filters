@@ -151,6 +151,9 @@
     <ClCompile Include="source\PresetReadWrite.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="source\QuantizerModule.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -319,6 +322,9 @@
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
     <ClInclude Include="source\PresetReadWrite.h">
+      <Filter>Source Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\QuantizerModule.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
   </ItemGroup>

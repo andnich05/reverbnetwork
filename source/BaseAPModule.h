@@ -4,6 +4,7 @@
 #include <vector>
 
 class MixerModule;
+class QuantizerModule;
 class EqualizerModule;
 class SchroederAllpass;
 class GainModule;
@@ -37,19 +38,17 @@ public:
 
 private:
 
-	// Mixes input signals into one signal with different gain values
 	MixerModule* mixer;
-	// Equalizer...
+	QuantizerModule* quantizer;
 	EqualizerModule* equalizer;
-	// Adds delay
 	SchroederAllpass* allpass;
-	// Gain...
 	GainModule* gainOutput;
 
 	unsigned int sampleRate;
 
 	// Bypass variables
 	bool bypassMixer;
+	bool bypassQuantizer;
 	bool bypassEqualizer;
 	bool bypassAllpass;
 	bool bypassGain;

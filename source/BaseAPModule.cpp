@@ -1,5 +1,6 @@
 #include "BaseAPModule.h"
 #include "MixerModule.h"
+#include "QuantizerModule.h"
 #include "EqualizerModule.h"
 #include "SchroederAllpass.h"
 #include "GainModule.h"
@@ -12,10 +13,12 @@
 BaseAPModule::BaseAPModule(double sampleRate)
 	: sampleRate(sampleRate)
 	, mixer(new MixerModule(ValueConversion::logToLinear(DEF_OUTPUTGAIN)))
+	, quantizer(new QuantizerModule(DEF_QUANTIZERBITDEPTH))
 	, equalizer(new EqualizerModule(FilterType::lowPass, sampleRate, DEF_EQCENTERFREQ, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
 	, allpass(new SchroederAllpass(sampleRate, DEF_ALLPASSDELAY, DEF_ALLPASSDECAY))
 	, gainOutput(new GainModule(ValueConversion::logToLinear(DEF_OUTPUTGAIN)))
 	, bypassMixer(false)
+	, bypassQuantizer(false)
 	, bypassEqualizer(false)
 	, bypassAllpass(false)
 	, bypassGain(false)
@@ -27,6 +30,10 @@ BaseAPModule::~BaseAPModule() {
 	if (mixer) {
 		delete mixer;
 		mixer = nullptr;
+	}
+	if (quantizer) {
+		delete quantizer;
+		quantizer = nullptr;
 	}
 	if (equalizer) {
 		delete equalizer;
@@ -43,10 +50,14 @@ BaseAPModule::~BaseAPModule() {
 }
 
 double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
-	double outputSample = 0.0;
-
 	// Mix channels
-	outputSample = mixer->mixChannels(channelSamples);
+	double outputSample = mixer->mixChannels(channelSamples);
+
+	if (!bypassQuantizer) {
+		if (outputSample != 0.0) {
+			quantizer->processSample(outputSample);
+		}
+	}
 
 	// Do equalizing
 	if (!bypassEqualizer) {

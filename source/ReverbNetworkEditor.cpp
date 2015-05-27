@@ -23,8 +23,16 @@ namespace Vst {
 	const int32_t id_mixer_switch_bypassFirst = id_mixer_textEdit_gainLast + 1;
 	const int32_t id_mixer_switch_bypassLast = id_mixer_switch_bypassFirst + MAXMODULENUMBER - 1;
 
+	// Quantizer GUI ids
+	const int32_t id_quantizer_knob_quantizationFirst = id_mixer_switch_bypassLast + 1;
+	const int32_t id_quantizer_knob_quantizationLast = id_quantizer_knob_quantizationFirst + MAXMODULENUMBER - 1;
+	const int32_t id_quantizer_textEdit_quantizationFirst = id_quantizer_knob_quantizationLast + 1;
+	const int32_t id_quantizer_textEdit_quantizationLast = id_quantizer_textEdit_quantizationFirst + MAXMODULENUMBER - 1;
+	const int32_t id_quantizer_switch_bypassFirst = id_quantizer_textEdit_quantizationLast + 1;
+	const int32_t id_quantizer_switch_bypassLast = id_quantizer_switch_bypassFirst + MAXMODULENUMBER - 1;
+
 	// Equalizer GUI ids
-	const int32_t id_equalizer_optionMenu_filterTypeFirst = id_mixer_switch_bypassLast + 1;
+	const int32_t id_equalizer_optionMenu_filterTypeFirst = id_quantizer_switch_bypassLast + 1;
 	const int32_t id_equalizer_optionMenu_filterTypeLast = id_equalizer_optionMenu_filterTypeFirst + MAXMODULENUMBER - 1;
 	const int32_t id_equalizer_knob_centerFreqFirst = id_equalizer_optionMenu_filterTypeLast + 1;
 	const int32_t id_equalizer_knob_centerFreqLast = id_equalizer_knob_centerFreqFirst + MAXMODULENUMBER - 1;

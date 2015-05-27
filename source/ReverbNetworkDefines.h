@@ -40,6 +40,16 @@
 #define MAX_MIXERBYPASS 1.0
 #define DEF_MIXERBYPASS 0.0
 
+// Quantizer bitdepth in bits
+#define MIN_QUANTIZERBITDEPTH 0.0
+#define MAX_QUANTIZERBITDEPTH 24.0
+#define DEF_QUANTIZERBITDEPTH 16.0
+
+// Equalizer Bypass in bool
+#define MIN_EQBYPASS 0.0
+#define MAX_EQBYPASS 1.0
+#define DEF_EQBYPASS 0.0
+
 // Equalizer filter type in menu indexes
 #define MIN_EQFILTERTYPE 0
 #define MAX_EQFILTERTYPE (FilterType::numberOfFilterTypes - 1)
@@ -113,6 +123,10 @@
 //---------------------------
 // Mapping for VST parameters
 
+
+// New parameter? Need to change: Defines (here), Controller (create new VST paramter), Processor (process function), 
+// PresetReadWrite (initialization of vector), Editor (GUI), Value Conversion
+
 // Mixer
 #define PARAM_MIXERINPUTSELECT_FIRST 0
 #define PARAM_MIXERINPUTSELECT_LAST (PARAM_MIXERINPUTSELECT_FIRST + MAXMODULENUMBER * MAXMODULEINPUTS - 1)
@@ -124,8 +138,16 @@
 #define PARAM_MIXERBYPASS_LAST (PARAM_MIXERBYPASS_FIRST + MAXMODULENUMBER - 1)
 
 
+// Quantizer
+#define PARAM_QUANTIZERBITDEPTH_FIRST (PARAM_MIXERBYPASS_LAST + 1)
+#define PARAM_QUANTIZERBITDEPTH_LAST (PARAM_QUANTIZERBITDEPTH_FIRST + MAXMODULENUMBER - 1)
+
+#define PARAM_QUANTIZERBYPASS_FIRST (PARAM_QUANTIZERBITDEPTH_LAST + 1)
+#define PARAM_QUANTIZERBYPASS_LAST (PARAM_QUANTIZERBYPASS_FIRST + MAXMODULENUMBER - 1)
+
+
 // Equalizer
-#define PARAM_EQFILTERTYPE_FIRST (PARAM_MIXERBYPASS_LAST + 1)
+#define PARAM_EQFILTERTYPE_FIRST (PARAM_QUANTIZERBYPASS_LAST + 1)
 #define PARAM_EQFILTERTYPE_LAST (PARAM_EQFILTERTYPE_FIRST + MAXMODULENUMBER - 1)
 
 #define PARAM_EQCENTERFREQ_FIRST (PARAM_EQFILTERTYPE_LAST + 1)
