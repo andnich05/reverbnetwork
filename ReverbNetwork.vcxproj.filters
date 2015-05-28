@@ -142,9 +142,6 @@
     <ClCompile Include="source\GuiBaseAPModule.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiHandleView.cpp">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClCompile>
     <ClCompile Include="source\GuiWorkspaceView.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
@@ -153,6 +150,9 @@
     </ClCompile>
     <ClCompile Include="source\QuantizerModule.cpp">
       <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiOnOffTextButton.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -312,9 +312,6 @@
     <ClInclude Include="source\GuiBaseAPModule.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiHandleView.h">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClInclude>
     <ClInclude Include="source\ReverbNetworkEnums.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
@@ -326,6 +323,9 @@
     </ClInclude>
     <ClInclude Include="source\QuantizerModule.h">
       <Filter>Source Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiOnOffTextButton.h">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

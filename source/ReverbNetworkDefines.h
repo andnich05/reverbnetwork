@@ -41,9 +41,14 @@
 #define DEF_MIXERBYPASS 0.0
 
 // Quantizer bitdepth in bits
-#define MIN_QUANTIZERBITDEPTH 0.0
-#define MAX_QUANTIZERBITDEPTH 24.0
-#define DEF_QUANTIZERBITDEPTH 16.0
+#define MIN_QUANTIZERBITDEPTH 1.0
+#define MAX_QUANTIZERBITDEPTH 32.0
+#define DEF_QUANTIZERBITDEPTH 32.0
+
+// Quantizer Bypass in bool
+#define MIN_QUANTIZERBYPASS 0.0
+#define MAX_QUANTIZERBYPASS 1.0
+#define DEF_QUANTIZERBYPASS 0.0
 
 // Equalizer Bypass in bool
 #define MIN_EQBYPASS 0.0

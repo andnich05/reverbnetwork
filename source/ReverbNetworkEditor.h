@@ -38,14 +38,14 @@ public:
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
-	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, 
-		const float& valueEditMinValue, const float& valueEditMaxValue, 
-		CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
+	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag,
+		const float& valueEditMinValue, const float& valueEditMaxValue, const int& valueEditPrecision);
+		//CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
 
 	// Create a text label with a title for a group
 	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width);
 
-	CRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& optionMenuTag, const int32_t& knobTag, const int32_t& valueEditTag);
+	CRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset);
 
 	// Sync GUI with controller parameters (e.g. otherwise if the user closes and reopens the GUI the changes in the GUI would be lost)
 	// Also called when users loads a VST Preset
@@ -75,7 +75,7 @@ private:
 
 	// Holds pointers to all GUI elements which have their own GUI id; the index itself is the GUI id
 	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!
-	// Remove the pointers out of this vector manually?
+	// Remove the pointers out of this vector manually => close()-function
 	std::vector<CControl*> guiElements;
 	// Add a GUI element pointer to the vector with the GUI-ID as the index
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
@@ -91,6 +91,8 @@ private:
 	CMessageResult notify(CBaseObject* sender, const char* message);
 
 	std::vector<double> lastPpmValues;
+
+	std::vector<double> savedGainValues;
 
 };
 

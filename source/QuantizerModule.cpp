@@ -5,13 +5,23 @@
 const double max32bitValueSigned = pow(2, 32) / 2 - 1;
 const double min32bitValueSigned = pow(2, 32) / 2;
 
-QuantizerModule::QuantizerModule(unsigned int quantization)
-	: quantization(quantization) {
+// ToDo: AND Maske
+// ToDo: Bios Gain 
 
+QuantizerModule::QuantizerModule(unsigned int quantization) {
+	setQuantization(quantization);
 }
 
 QuantizerModule::~QuantizerModule() {
 
+}
+
+void QuantizerModule::setQuantization(const double& q) {
+	bitsToReset = 32 - (unsigned int)(std::round(q));
+	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(q).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(bitsToReset).c_str());
+	fclose(pFile);*/
 }
 
 void QuantizerModule::processSample(double& sample) {
@@ -50,7 +60,7 @@ void QuantizerModule::processSample(double& sample) {
 	fclose(pFile);*/
 
 	// Set bits to zero
-	for (unsigned int i = 0; i < 31; ++i) {
+	for (unsigned int i = 0; i < bitsToReset; ++i) {
 		s.reset(i);
 	}
 

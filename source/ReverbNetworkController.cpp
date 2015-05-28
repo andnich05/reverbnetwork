@@ -124,7 +124,8 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Quantizer Bitdepth");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBITDEPTH_FIRST + i, USTRING("bit"), MIN_QUANTIZERBITDEPTH, MAX_QUANTIZERBITDEPTH, DEF_QUANTIZERBITDEPTH);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBITDEPTH_FIRST + i, USTRING("bit"), MIN_QUANTIZERBITDEPTH, MAX_QUANTIZERBITDEPTH, DEF_QUANTIZERBITDEPTH, 31);
+			parameter->setPrecision(0);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Quantizer Bypass

@@ -23,6 +23,9 @@ public:
 	void updateMixerGain(const unsigned int& inputNumber, const double& gain);
 	inline void switchMixerBypass(const double& bypass) { bypassMixer = (bypass != 0.0); }
 
+	void updateQuantizerQuantization(const double& quantization);
+	inline void switchQuantizerBypass(const double& bypass) { bypassQuantizer = (bypass != 0.0); }
+
 	void updateEqualizerFilterType(const double& filterType);
 	void updateEqualizerCenterFrequency(const double& freq);
 	void updateEqualizerQFactor(const double& qFactor);

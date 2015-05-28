@@ -18,19 +18,27 @@ void ValueConversion::setSampleRate(const unsigned long s) {
 }
 
 double ValueConversion::normToValueMixerInputSelect(const double& normValue) {
-	return normValue * ((float)MAXMODULENUMBER + (float)MAXVSTINPUTS);
+	return normValue * ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS);
 }
 
 double ValueConversion::valueToNormMixerInputSelect(const double& value) {
-	return value * (1 / ((float)MAXMODULENUMBER + (float)MAXVSTINPUTS));
+	return value * (1 / ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS));
 }
 
 double ValueConversion::normToValueFilterTypeSelect(const double& normValue) {
-	return normValue * ((float)(FilterType::numberOfFilterTypes - 1));	
+	return normValue * ((double)(FilterType::numberOfFilterTypes - 1));
 }
 
 double ValueConversion::valueToNormFilterTypeSelect(const double& value) {
-	return value * (1 / ((float)(FilterType::numberOfFilterTypes - 1)));
+	return value * (1 / ((double)(FilterType::numberOfFilterTypes - 1)));
+}
+
+double ValueConversion::normToValueQuantization(const double& normValue) {
+	return (MIN_QUANTIZERBITDEPTH + (MAX_QUANTIZERBITDEPTH - MIN_QUANTIZERBITDEPTH) * normValue);
+}
+
+double ValueConversion::valueToNormQuantization(const double& value) {
+	return ((value - MIN_QUANTIZERBITDEPTH) / (MAX_QUANTIZERBITDEPTH - MIN_QUANTIZERBITDEPTH));
 }
 
 double ValueConversion::normToValueCenterFreq(const double& normValue) {
@@ -108,56 +116,49 @@ bool ValueConversion::textEditStringToValueConversion(const char* txt, float& re
 }
 
 bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", (value));
-	return true;
-}
-/*
-bool ValueConversion::textEditStringToValueConversionQFactor(const char* txt, float& result, void* userData) {
-	result = atof(txt);
-	return true;
-}
+	if (userData == nullptr) {
+		sprintf(utf8String, "%1.2f", value);
+		return true;
+	}
+	int* precision = (int*)userData;
+	/*
+	if (*precision == 0) {
+		sprintf(utf8String, "%d", (value));
+		return true;
+	}
+	char format[256];
+	sprintf(format, "%1.");
+	sprintf(format + strlen(format), "%d", *precision);
+	sprintf(format + strlen(format), "f");
+	sprintf(utf8String, format, (value));*/
 
-bool ValueConversion::textEditValueToStringConversionQFactor(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", value);
+	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(*((int*)(userData))).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
+	fclose(pFile);*/
+
+	switch (*precision) {
+	case 0:
+		sprintf(utf8String, "%1.0f", value);
+		break;
+	case 1:
+		sprintf(utf8String, "%1.1f", value);
+		break;
+	case 2:
+		sprintf(utf8String, "%1.2f", value);
+		break;
+	case 3:
+		sprintf(utf8String, "%1.3f", value);
+		break;
+	case 4:
+		sprintf(utf8String, "%1.4f", value);
+		break;
+	case 5:
+		sprintf(utf8String, "%1.5f", value);
+		break;
+	default:
+		sprintf(utf8String, "%1.2f", value);
+		break;
+	}
 	return true;
 }
-
-bool ValueConversion::textEditStringToValueConversionEqGain(const char* txt, float& result, void* userData) {
-	result = atof(txt);
-	return true;
-}
-
-bool ValueConversion::textEditValueToStringConversionEqGain(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", value);
-	return true;
-}
-
-bool ValueConversion::textEditStringToValueConversionDelay(const char* txt, float& result, void* userData) {
-	result = atof(txt);
-	return true;
-}
-
-bool ValueConversion::textEditValueToStringConversionDelay(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", value);
-	return true;
-}
-
-bool ValueConversion::textEditStringToValueConversionDecay(const char* txt, float& result, void* userData) {
-	result = atof(txt);
-	return true;
-}
-
-bool ValueConversion::textEditValueToStringConversionDecay(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", value);
-	return true;
-}
-
-bool ValueConversion::textEditStringToValueConversionGain(const char* txt, float& result, void* userData) {
-	result = atof(txt);
-	return true;
-}
-
-bool ValueConversion::textEditValueToStringConversionGain(float value, char utf8String[256], void* userData) {
-	sprintf(utf8String, "%1.2f", value);
-	return true;
-}*/

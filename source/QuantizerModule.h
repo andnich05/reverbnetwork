@@ -8,9 +8,10 @@ public:
 	~QuantizerModule();
 
 	void processSample(double& sample);
+	void setQuantization(const double& q);
 
 private:
-	unsigned int quantization;
+	unsigned int bitsToReset;
 
 };
 

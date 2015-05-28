@@ -88,6 +88,10 @@ void BaseAPModule::updateMixerGain(const unsigned int& inputNumber, const double
 	mixer->setChannelGain(inputNumber, ValueConversion::logToLinear(gain));
 }
 
+void BaseAPModule::updateQuantizerQuantization(const double& quantization) {
+	quantizer->setQuantization(quantization);
+}
+
 void BaseAPModule::updateEqualizerFilterType(const double& filterType) {
 	equalizer->setFilterType((FilterType)((int)(filterType)));
 }

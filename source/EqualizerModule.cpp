@@ -36,7 +36,6 @@ void EqualizerModule::calculateCoefficients() {
 
 	switch (filterType) {
 	case FilterType::lowPass: {
-		// !!!!!!!!!!!!!!!!!!!! NOCHMAL ÜBERPRÜFEN
 		double denominator = 1 + oneDividedByQ * K + pow(K, 2);
 		a0 = (pow(K, 2)) / denominator;
 		a1 = (2 * pow(K, 2)) / denominator;
