@@ -356,6 +356,14 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToValueInputGain(value));
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
+		for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
+			if (guiElements[id_mixer_optionMenu_inputSelectFirst + i] != guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]) {
+				if (guiElements[id_mixer_optionMenu_inputSelectFirst + i]->getValue() == guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue()) {
+					guiElements[id_mixer_knob_gainFirst + i]->setValue(value);
+					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(ValueConversion::normToValueInputGain(value));
+				}
+			}
+		}
 	}
 	else if (tag >= id_mixer_textEdit_gainFirst && tag <= id_mixer_textEdit_gainLast)  {
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() != 0.0) {
@@ -367,6 +375,14 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormInputGain(value));
 		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
+		for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
+			if (guiElements[id_mixer_optionMenu_inputSelectFirst + i] != guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]) {
+				if (guiElements[id_mixer_optionMenu_inputSelectFirst + i]->getValue() == guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue()) {
+					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(value);
+					guiElements[id_mixer_knob_gainFirst + i]->setValue(ValueConversion::valueToNormInputGain(value));
+				}
+			}
+		}
 	}
 	//else if (tag >= id_mixer_button_muteFirst && tag <= id_mixer_button_muteLast)  {
 	//	controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_textEdit_gainFirst), ValueConversion::valueToNormGain(value));
