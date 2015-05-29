@@ -16,7 +16,8 @@ public:
 	~BaseAPModule();
 
 	// Process all input channels of a module, return output sample which is a mix of the input samples
-	double processModuleSamples(std::vector<double>& channelSamples);
+	//double processModuleSamples(std::vector<double>& channelSamples);
+	double processSamples(double* moduleInputBuffer, std::vector<double>& vstInputBuffer);
 
 	// Update functions; all passed values are raw VST parameters so that they have to be transformed accordingly
 	//void updateParameter(const unsigned int& pid, const double& normalizedValue);

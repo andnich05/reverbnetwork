@@ -25,6 +25,14 @@ double ValueConversion::valueToNormMixerInputSelect(const double& value) {
 	return value * (1 / ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS));
 }
 
+double ValueConversion::normToValueInputGain(const double& normValue) {
+	return (MIN_MIXERGAIN + (MAX_MIXERGAIN - MIN_MIXERGAIN) * normValue);
+}
+
+double ValueConversion::valueToNormInputGain(const double& value) {
+	return ((value - MIN_MIXERGAIN) / (MAX_MIXERGAIN - MIN_MIXERGAIN));
+}
+
 double ValueConversion::normToValueFilterTypeSelect(const double& normValue) {
 	return normValue * ((double)(FilterType::numberOfFilterTypes - 1));
 }
@@ -89,11 +97,11 @@ double ValueConversion::valueToNormDecay(const double& value) {
 	return ((value - MIN_ALLPASSDECAY) / (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY));
 }
 
-double ValueConversion::normToValueGain(const double& normValue) {
+double ValueConversion::normToValueOutputGain(const double& normValue) {
 	return (MIN_OUTPUTGAIN + (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN) * normValue);
 }
 
-double ValueConversion::valueToNormGain(const double& value) {
+double ValueConversion::valueToNormOutputGain(const double& value) {
 	return ((value - MIN_OUTPUTGAIN) / (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN));
 }
 

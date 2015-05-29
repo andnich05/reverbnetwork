@@ -1,25 +1,35 @@
 #include "MixerModule.h"
 #include "ReverbNetworkDefines.h"
+#include <string>
 
-MixerModule::MixerModule(const double& gain) {
-	// Initialisation
-	channelGain.resize(MAXMODULEINPUTS, gain);
+MixerModule::MixerModule(const double& defaultGain) {
+	// Initialization
+	inputGain.resize(MAXMODULENUMBER + MAXVSTINPUTS, defaultGain);
 }
 
 MixerModule::~MixerModule() {
 }
 
-double MixerModule::mixChannels(std::vector<double>& channelSamples) {
+double MixerModule::mixInputs(double* moduleInputBuffer, std::vector<double>& vstInputBuffer) {
+	if (moduleInputBuffer == nullptr) {
+		return 0.0;
+	}
+
 	double output = 0.0;
-	for (int i = 0; i < MAXMODULEINPUTS; ++i) {
-		if (channelGain[i] != 0.0) {
-			output += channelSamples[i] * channelGain[i];
+	for (int i = 0; i < inputGain.size(); ++i) {
+		if (inputGain[i] != 0.0) {
+			if (i < MAXMODULENUMBER) {
+				output += moduleInputBuffer[i] * inputGain[i];
+			}
+			else {
+				output += vstInputBuffer[i - MAXMODULENUMBER] * inputGain[i];
+			}
 		}
 	}
+
 	return output;
 }
 
-#include <string>
-void MixerModule::setChannelGain(const unsigned short& channel, const double& gain) {
-	channelGain[channel] = gain;
+void MixerModule::setInputGain(const int& input, const double& gain) {
+	inputGain[input] = gain;
 }

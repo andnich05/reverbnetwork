@@ -109,6 +109,6 @@ void ConnectionMatrix::resetAllConnections() {
 	// -1 means there is no connection at this input
 	moduleInputConnections.clear();
 	vstOutputConnections.clear();
-	moduleInputConnections.resize(MAXMODULENUMBER, std::vector<short>(MAXMODULEINPUTS, -1));
+	moduleInputConnections.resize(MAXMODULENUMBER, std::vector<short>(MAXINPUTS, -1));
 	vstOutputConnections.resize(MAXVSTOUTPUTS, -1);
 }

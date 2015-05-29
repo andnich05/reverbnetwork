@@ -44,6 +44,7 @@
 
 #include "ReverbNetworkDefines.h"
 #include "BaseAPModule.h"
+
 #include "ConnectionMatrix.h"
 #include "ValueConversion.h"
 #include "PresetReadWrite.h"
@@ -263,7 +264,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					preset->setNormValueByParamId(value, pid);
 				}
 
-				if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
+				/*if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERINPUTSELECT_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
@@ -279,12 +280,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 							connectionMatrix->setVstToModuleConnection(value - 1 - MAXMODULENUMBER, moduleNumber, moduleInput);
 						}
 					}
-				}
-				else if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
+				}*/
+				if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXMODULEINPUTS;	// Calculate the module number
-						uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXMODULEINPUTS;
-						apModules[moduleNumber]->updateMixerGain(moduleInput, ValueConversion::normToValueGain(value));
+						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXINPUTS;	// Calculate the module number
+						uint16 moduleInput = (pid - PARAM_MIXERGAIN_FIRST) % MAXINPUTS;
+						apModules[moduleNumber]->updateMixerGain(moduleInput, ValueConversion::normToValueInputGain(value));
 					}
 				}
 				else if (pid >= PARAM_MIXERBYPASS_FIRST && pid <= PARAM_MIXERBYPASS_LAST) {
@@ -345,7 +346,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_OUTGAIN_FIRST && pid <= PARAM_OUTGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToValueGain(value));
+						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToValueOutputGain(value));
 					}
 				}
 				else if (pid >= PARAM_OUTBYPASS_FIRST && pid <= PARAM_OUTBYPASS_LAST) {
@@ -358,6 +359,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						value = ValueConversion::normToValueMixerInputSelect(value);
+						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(value).c_str());
+						fclose(pFile);*/
 						if (value == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectVstOutput(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
 						}
@@ -396,19 +400,25 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		}
 
 		// Get the connection matrix
-		const std::vector<std::vector<short>>& moduleInputConnections = connectionMatrix->getModuleInputConnections();
+		//const std::vector<std::vector<short>>& moduleInputConnections = connectionMatrix->getModuleInputConnections();
 		const std::vector<short>& vstOutputConnections = connectionMatrix->getVstOutputConnections();
 
 		// Vector with all samples for all inputs which are connected to a module input
-		std::vector<double> samplesToProcess;
+		//std::vector<double> samplesToProcess;
+		std::vector<double> vstInputBuffer;
 
 		// Sample interval
 		for (uint32 sample = 0; sample < numberOfSamples; ++sample) {
 			// Module input processing
 			for (uint16 module = 0; module < MAXMODULENUMBER; ++module) {
-				samplesToProcess.clear();
+				vstInputBuffer.clear();
+				for (uint32 i = 0; i < MAXVSTINPUTS; ++i) {
+					vstInputBuffer.push_back((double)inputSamples[i][sample]);
+				}
+
 				// For each module input: check if the input is connected to a VST input
-				for (uint16 moduleInput = 0; moduleInput < MAXMODULEINPUTS; ++moduleInput) {				
+				/*for (uint16 moduleInput = 0; moduleInput < 
+				; ++moduleInput) {				
 					if (moduleInputConnections[module][moduleInput] != -1) {
 						if (moduleInputConnections[module][moduleInput] < MAXMODULENUMBER) {
 							// Input is connected to another module's output => take sample from module input buffer
@@ -424,14 +434,21 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						// Input isn't connected => sample value is zero
 						samplesToProcess.push_back(0.0);
 					}
-				}
+				}*/
+
 				// Process the vector and write the output sample into the correct module output buffer
-				moduleOutputBuffer[module] = apModules[module]->processModuleSamples(samplesToProcess);
+				//moduleOutputBuffer[module] = apModules[module]->processModuleSamples(samplesToProcess);
+				moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer);
 				// Update PPM values
 				if (moduleOutputBuffer[module] > ppmValues[module]) {
 					ppmValues[module] = moduleOutputBuffer[module];
 				}
 			}
+
+			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(moduleOutputBuffer[0]).c_str());
+			fclose(pFile);*/
+			
 
 			// !!! Swap input and output buffers
 			double* temp = moduleInputBuffer;
@@ -449,6 +466,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						// VST output is connected directly to VST input => take sample from the VST input
 						short mappedVstInput = vstOutputConnections[vstOutput];
 						outputSamples[vstOutput][sample] = inputSamples[connectionMatrix->unmapVstInput(mappedVstInput)][sample];
+						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(inputSamples[connectionMatrix->unmapVstInput(mappedVstInput)][sample]).c_str());
+						fclose(pFile);*/
 					}
 				}
 				else {

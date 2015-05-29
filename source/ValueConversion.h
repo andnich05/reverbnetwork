@@ -12,6 +12,8 @@ public:
 
 	static double normToValueMixerInputSelect(const double& normValue);
 	static double valueToNormMixerInputSelect(const double& value);
+	static double normToValueInputGain(const double& normValue);
+	static double valueToNormInputGain(const double& value);
 	static double normToValueQuantization(const double& normValue);
 	static double valueToNormQuantization(const double& value);
 	static double normToValueFilterTypeSelect(const double& normValue);
@@ -28,8 +30,8 @@ public:
 	static double delaySamplesToMilliseconds(const double& delaySamples);
 	static double normToValueDecay(const double& normValue);
 	static double valueToNormDecay(const double& value);
-	static double normToValueGain(const double& normValue);
-	static double valueToNormGain(const double& value);
+	static double normToValueOutputGain(const double& normValue);
+	static double valueToNormOutputGain(const double& value);
 
 	static double linearToLog(const double& linearValue);
 	static double logToLinear(const double& logValue);

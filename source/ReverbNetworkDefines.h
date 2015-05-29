@@ -20,19 +20,22 @@
 #define LIMITER
 
 // Maximum number of AP inputs
-#define MAXMODULEINPUTS (MAXMODULENUMBER + MAXVSTINPUTS)
+#define MAXMODULEINPUTS 8
+
+// Maximum number of POSSIBLE inputs
+#define MAXINPUTS (MAXMODULENUMBER + MAXVSTINPUTS)
 
 //---------------------
 // Minimum, Maxmimum and Default values
 
 // Mixer input select in menu indexes
 #define MIN_MIXERINPUT 0 // <Not Connected>
-#define MAX_MIXERINPUT (1 + MAXMODULEINPUTS) // Incl. <Not Connected>
+#define MAX_MIXERINPUT (1 + MAXINPUTS) // Incl. <Not Connected>
 #define DEF_MIXERINPUT 0
 
-// Mixer gain in dB
-#define MIN_MIXERGAIN -60.0
-#define MAX_MIXERGAIN 60.0
+// Mixer gain given as a factor between -1.0 and +1.0
+#define MIN_MIXERGAIN -1.0
+#define MAX_MIXERGAIN 1.0
 #define DEF_MIXERGAIN 0.0
 
 // Mixer bypass in bool
@@ -122,7 +125,7 @@
 
 // VST output select in menu indexes
 #define MIN_OUTPUTSELECT 0
-#define MAX_OUTPUTSELECT (1 + MAXMODULEINPUTS) // Incl. <Not Connected>
+#define MAX_OUTPUTSELECT (1 + MAXINPUTS) // Incl. <Not Connected>
 #define DEF_OUTPUTSELECT 0
 
 //---------------------------
@@ -137,7 +140,7 @@
 #define PARAM_MIXERINPUTSELECT_LAST (PARAM_MIXERINPUTSELECT_FIRST + MAXMODULENUMBER * MAXMODULEINPUTS - 1)
 
 #define PARAM_MIXERGAIN_FIRST (PARAM_MIXERINPUTSELECT_LAST + 1)
-#define PARAM_MIXERGAIN_LAST (PARAM_MIXERGAIN_FIRST + MAXMODULENUMBER * MAXMODULEINPUTS - 1)
+#define PARAM_MIXERGAIN_LAST (PARAM_MIXERGAIN_FIRST + MAXMODULENUMBER * MAXINPUTS - 1)
 
 #define PARAM_MIXERBYPASS_FIRST (PARAM_MIXERGAIN_LAST + 1)
 #define PARAM_MIXERBYPASS_LAST (PARAM_MIXERBYPASS_FIRST + MAXMODULENUMBER - 1)

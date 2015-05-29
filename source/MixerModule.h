@@ -6,16 +6,16 @@
 class MixerModule
 {
 public:
-	MixerModule(const double& gain);
+	MixerModule(const double& defaultGain);
 	~MixerModule();
 
-	// Mix samples of each channels, return the new sample value (no reference possible?)
-	double mixChannels(std::vector<double>& channelSamples);
-	// Set gain of each channel
-	void setChannelGain(const unsigned short& channel, const double& gain);
+	// Mix samples of each channels, return the new sample value
+	double mixInputs(double* moduleInputBuffer, std::vector<double>& vstInputBuffer);
+	// Set gain of each input
+	void setInputGain(const int& input, const double& gain);
 
 private:
-	std::vector<double> channelGain;
+	std::vector<double> inputGain;
 };
 
 #endif // MIXERMODULE_H

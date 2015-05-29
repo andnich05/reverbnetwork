@@ -12,7 +12,7 @@
 
 BaseAPModule::BaseAPModule(double sampleRate)
 	: sampleRate(sampleRate)
-	, mixer(new MixerModule(ValueConversion::logToLinear(DEF_OUTPUTGAIN)))
+	, mixer(new MixerModule(DEF_MIXERGAIN))
 	, quantizer(new QuantizerModule(DEF_QUANTIZERBITDEPTH))
 	, equalizer(new EqualizerModule(FilterType::lowPass, sampleRate, DEF_EQCENTERFREQ, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
 	, allpass(new SchroederAllpass(sampleRate, DEF_ALLPASSDELAY, DEF_ALLPASSDECAY))
@@ -49,9 +49,10 @@ BaseAPModule::~BaseAPModule() {
 	}
 }
 
-double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
+//double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
+double BaseAPModule::processSamples(double* moduleInputBuffer, std::vector<double>& vstInputBuffer) {
 	// Mix channels
-	double outputSample = mixer->mixChannels(channelSamples);
+	double outputSample = mixer->mixInputs(moduleInputBuffer, vstInputBuffer);
 
 	if (!bypassQuantizer) {
 		if (outputSample != 0.0) {
@@ -85,7 +86,7 @@ double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 }
 
 void BaseAPModule::updateMixerGain(const unsigned int& inputNumber, const double& gain) {
-	mixer->setChannelGain(inputNumber, ValueConversion::logToLinear(gain));
+	mixer->setInputGain(inputNumber, gain);
 }
 
 void BaseAPModule::updateQuantizerQuantization(const double& quantization) {

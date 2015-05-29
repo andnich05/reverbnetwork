@@ -9,7 +9,7 @@ PresetReadWrite::PresetReadWrite() {
 		parameterValues.push_back(ValueConversion::valueToNormMixerInputSelect(DEF_MIXERINPUT));
 	}
 	for (unsigned int i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
-		parameterValues.push_back(ValueConversion::valueToNormGain(DEF_MIXERGAIN));
+		parameterValues.push_back(ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
 	}
 	for (unsigned int i = PARAM_MIXERBYPASS_FIRST; i <= PARAM_MIXERBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_MIXERBYPASS);
@@ -30,7 +30,7 @@ PresetReadWrite::PresetReadWrite() {
 		parameterValues.push_back(ValueConversion::valueToNormQFactor(DEF_EQQFACTOR));
 	}
 	for (unsigned int i = PARAM_EQGAIN_FIRST; i <= PARAM_EQGAIN_LAST; ++i) {
-		parameterValues.push_back(ValueConversion::valueToNormGain(DEF_EQGAIN));
+		parameterValues.push_back(ValueConversion::valueToNormEqGain(DEF_EQGAIN));
 	}
 	for (unsigned int i = PARAM_EQBYPASS_FIRST; i <= PARAM_EQBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_EQBYPASS);
@@ -45,7 +45,7 @@ PresetReadWrite::PresetReadWrite() {
 		parameterValues.push_back(DEF_ALLPASSBYPASS);
 	}
 	for (unsigned int i = PARAM_OUTGAIN_FIRST; i <= PARAM_OUTGAIN_LAST; ++i) {
-		parameterValues.push_back(ValueConversion::valueToNormGain(DEF_OUTPUTGAIN));
+		parameterValues.push_back(ValueConversion::valueToNormOutputGain(DEF_OUTPUTGAIN));
 	}
 	for (unsigned int i = PARAM_OUTBYPASS_FIRST; i <= PARAM_OUTBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_OUTPUTBYPASS);
