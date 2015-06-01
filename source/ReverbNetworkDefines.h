@@ -37,6 +37,7 @@
 #define MIN_MIXERGAIN -1.0
 #define MAX_MIXERGAIN 1.0
 #define DEF_MIXERGAIN 0.0
+#define UNIT_MIXERGAIN ""
 
 // Mixer bypass in bool
 #define MIN_MIXERBYPASS 0.0
@@ -47,16 +48,12 @@
 #define MIN_QUANTIZERBITDEPTH 1.0
 #define MAX_QUANTIZERBITDEPTH 32.0
 #define DEF_QUANTIZERBITDEPTH 32.0
+#define UNIT_QUANTIZERBITDEPTH "bit"
 
 // Quantizer Bypass in bool
 #define MIN_QUANTIZERBYPASS 0.0
 #define MAX_QUANTIZERBYPASS 1.0
 #define DEF_QUANTIZERBYPASS 0.0
-
-// Equalizer Bypass in bool
-#define MIN_EQBYPASS 0.0
-#define MAX_EQBYPASS 1.0
-#define DEF_EQBYPASS 0.0
 
 // Equalizer filter type in menu indexes
 #define MIN_EQFILTERTYPE 0
@@ -67,36 +64,41 @@
 #define MIN_EQCENTERFREQ 20.0
 #define MAX_EQCENTERFREQ 20000.0
 #define DEF_EQCENTERFREQ 4000.0
+#define UNIT_EQCENTERFREQ "Hz"
 
 // Equalizer QFactor
 #define MIN_EQQFACTOR 0.01
 #define MAX_EQQFACTOR 16.0
 #define DEF_EQQFACTOR 1.0
+#define UNIT_EQQFACTOR ""
 
 // Equalizer Gain in dB
 #define MIN_EQGAIN -60.0
 #define MAX_EQGAIN 60.0
 #define DEF_EQGAIN 0.0
+#define UNIT_EQGAIN "dB"
 
 // Equalizer Bypass in bool
 #define MIN_EQBYPASS 0.0
 #define MAX_EQBYPASS 1.0
 #define DEF_EQBYPASS 0.0
 
-// Allpass delay in ms
+// Allpass delay in milliseconds
 #define MIN_ALLPASSDELAY 0.0
 #define MAX_ALLPASSDELAY 1000.0
 #define DEF_ALLPASSDELAY 0.0
+#define UNIT_ALLPASSDELAY "ms"
 
 //// Allpass delay in samples
 //#define MIN_ALLPASSDELAY 0.0
 //#define MAX_ALLPASSDELAY 1000.0
 //#define DEF_ALLPASSDELAY 0.0
 
-// Allpass decay in sec
+// Allpass decay in seconds
 #define MIN_ALLPASSDECAY 0.0
 #define MAX_ALLPASSDECAY 10.0
 #define DEF_ALLPASSDECAY 0.0
+#define UNIT_ALLPASSDECAY "s"
 
 // Allpass bypass in bool
 #define MIN_ALLPASSBYPASS 0.0
@@ -107,6 +109,7 @@
 #define MIN_OUTPUTGAIN -60.0
 #define MAX_OUTPUTGAIN 60.0
 #define DEF_OUTPUTGAIN 0.0
+#define UNIT_OUTPUTGAIN "dB"
 
 // Output bypass in bool
 #define MIN_OUTPUTBYPASS 0.0

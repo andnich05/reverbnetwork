@@ -12,5 +12,9 @@ enum FilterType
 	numberOfFilterTypes
 };
 
+struct valueToStringUserData{
+	int precision;
+	const char* unit;
+};
 
 #endif // REVERBNETWORKENUMS_H

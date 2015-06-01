@@ -119,16 +119,20 @@ double ValueConversion::logToLinear(const double& logValue) {
 }
 
 bool ValueConversion::textEditStringToValueConversion(const char* txt, float& result, void* userData) {
+	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
+	fclose(pFile);*/
 	result = (atof(txt));
 	return true;
 }
 
 bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
+
 	if (userData == nullptr) {
 		sprintf(utf8String, "%1.2f", value);
 		return true;
 	}
-	int* precision = (int*)userData;
+	valueToStringUserData* v = (valueToStringUserData*)userData;
 	/*
 	if (*precision == 0) {
 		sprintf(utf8String, "%d", (value));
@@ -140,12 +144,7 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 	sprintf(format + strlen(format), "f");
 	sprintf(utf8String, format, (value));*/
 
-	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(*((int*)(userData))).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
-	fclose(pFile);*/
-
-	switch (*precision) {
+	switch (v->precision) {
 	case 0:
 		sprintf(utf8String, "%1.0f", value);
 		break;
@@ -168,5 +167,7 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 		sprintf(utf8String, "%1.2f", value);
 		break;
 	}
+	sprintf(utf8String + strlen(utf8String), " ");
+	sprintf(utf8String + strlen(utf8String), v->unit);
 	return true;
 }

@@ -151,7 +151,7 @@
     <ClCompile Include="source\QuantizerModule.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiOnOffTextButton.cpp">
+    <ClCompile Include="source\GuiCustomTextEdit.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -324,7 +324,7 @@
     <ClInclude Include="source\QuantizerModule.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiOnOffTextButton.h">
+    <ClInclude Include="source\GuiCustomTextEdit.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>

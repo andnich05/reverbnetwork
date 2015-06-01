@@ -221,7 +221,7 @@
     <ClCompile Include="source\QuantizerModule.cpp" />
     <ClCompile Include="source\PresetReadWrite.cpp" />
     <ClCompile Include="source\GuiWorkspaceView.cpp" />
-    <ClCompile Include="source\GuiOnOffTextButton.cpp" />
+    <ClCompile Include="source\GuiCustomTextEdit.cpp" />
     <ClCompile Include="source\GuiBaseAPModule.cpp" />
     <ClCompile Include="source\ValueConversion.cpp" />
     <ClCompile Include="source\GainModule.cpp" />
@@ -261,7 +261,7 @@
     <ClInclude Include="source\QuantizerModule.h" />
     <ClInclude Include="source\PresetReadWrite.h" />
     <ClInclude Include="source\GuiWorkspaceView.h" />
-    <ClInclude Include="source\GuiOnOffTextButton.h" />
+    <ClInclude Include="source\GuiCustomTextEdit.h" />
     <ClInclude Include="source\GuiBaseAPModule.h" />
     <ClInclude Include="source\ReverbNetworkEnums.h" />
     <ClInclude Include="source\ValueConversion.h" />
