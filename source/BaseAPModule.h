@@ -19,9 +19,11 @@ public:
 	//double processModuleSamples(std::vector<double>& channelSamples);
 	double processSamples(double* moduleInputBuffer, std::vector<double>& vstInputBuffer);
 
-	// Update functions; all passed values are raw VST parameters so that they have to be transformed accordingly
+	// Update functions; all passed values are normalized VST parameters so that they have to be transformed accordingly
 	//void updateParameter(const unsigned int& pid, const double& normalizedValue);
-	void updateMixerGain(const unsigned int& inputNumber, const double& gain);
+	void updateMixerGain(const int& inputNumber, const double& gain);
+	void updateMixerMute(const int& inputNumber, const bool& mute);
+	void updateMixerSolo(const int& inputNumber, const bool& solo);
 	inline void switchMixerBypass(const double& bypass) { bypassMixer = (bypass != 0.0); }
 
 	void updateQuantizerQuantization(const double& quantization);

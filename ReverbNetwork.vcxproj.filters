@@ -154,6 +154,9 @@
     <ClCompile Include="source\GuiCustomTextEdit.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
+    <ClCompile Include="source\GuiOptionMenuInputSelector.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -325,6 +328,9 @@
       <Filter>Source Files\source</Filter>
     </ClInclude>
     <ClInclude Include="source\GuiCustomTextEdit.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiOptionMenuInputSelector.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>

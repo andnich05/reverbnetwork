@@ -18,11 +18,11 @@ void ValueConversion::setSampleRate(const unsigned long s) {
 }
 
 double ValueConversion::normToValueMixerInputSelect(const double& normValue) {
-	return normValue * ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS);
+	return normValue * ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS + 1.0);
 }
 
 double ValueConversion::valueToNormMixerInputSelect(const double& value) {
-	return value * (1 / ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS));
+	return value * (1 / ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS + 1.0));
 }
 
 double ValueConversion::normToValueInputGain(const double& normValue) {

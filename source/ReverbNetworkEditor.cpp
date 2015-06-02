@@ -2,6 +2,7 @@
 #include "ReverbNetworkDefines.h"
 #include "GuiBaseAPModule.h"
 #include "GuiCustomTextEdit.h"
+#include "GuiOptionMenuInputSelector.h"
 
 //#include "GuiHandleView.h"
 #include "ValueConversion.h"
@@ -89,13 +90,18 @@ namespace Vst {
 	const int32_t id_general_optionMenu_vstOutputFirst = id_general_checkBox_moduleVisibleLast + 1;
 	const int32_t id_general_optionMenu_vstOutputLast = id_general_optionMenu_vstOutputFirst + MAXVSTOUTPUTS - 1;
 
+// Contructor is called every time the editor is reopened
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
 , totalNumberOfCreatedModules(0)
 {
+
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
-	allpassModuleIdPool.resize(MAXMODULENUMBER, false);
-	savedGainValues.resize(MAXINPUTS * MAXMODULENUMBER, DEF_MIXERGAIN);
+	//allpassModuleIdPool.resize(MAXMODULENUMBER, false);
+	savedGainValues.resize(MAXINPUTS * MAXMODULENUMBER, ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
+	savedMuteValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
+	savedSoloValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
+	guiElements.resize(10000);
 	//ptrTextEditStringToValueConversion = &textEditStringToValueConversion;
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
@@ -111,16 +117,14 @@ ReverbNetworkEditor::~ReverbNetworkEditor() {
 }
 
 void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32_t& guiId) {
-	uint32 vectorSize = guiElements.size();
 	// Check for out of bounds
-	if (guiId < vectorSize) {
+	if (guiId < guiElements.size()) {
 		guiElements[guiId] = guiElement;
 	}
 	// If false: pushBack elements until the guiId is a valid index
 	else {
-		for (uint32 i = 0; i < (guiId - vectorSize + 1); ++i) {
-			guiElements.push_back(nullptr);
-		}
+		//guiElements.resize(guiId + 1);
+		//int size = guiElements.size();
 		guiElements[guiId] = guiElement;
 	}
 }
@@ -139,6 +143,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	ppmOff = new CBitmap("ppmOff.png");
 	ppmOn = new CBitmap("ppmOn.png");
 
+	allpassModuleIdPool.resize(MAXMODULENUMBER, false);
+
 	CRect editorSize(0, 0, 1200, 700);
 	frame = new CFrame(editorSize, parent, this);
 	frame->setBackgroundColor(CColor(110, 110, 110, 255));
@@ -148,6 +154,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
 	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+
+
 
 	// Create Module List
 	CRowColumnView* viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
@@ -201,7 +209,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		labelVstOutputTitle->setFrameColor(CColor(0, 0, 0, 0));
 		//labelVstOutputTitle->setHoriAlign(CHoriTxtAlign::kLeftText);
 		viewOutputSelectRow->addView(labelVstOutputTitle);
-		COptionMenu* menu = new COptionMenu(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_optionMenu_vstOutputFirst + i);
+		GuiOptionMenuInputSelector* menu = new GuiOptionMenuInputSelector(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_optionMenu_vstOutputFirst + i);
 		addGuiElementPointer(menu, id_general_optionMenu_vstOutputFirst + i);
 		menu->setFont(kNormalFontSmall);
 		menu->addEntry("<Not Connected>");
@@ -275,7 +283,6 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 		guiElements.clear(); // Clear the GUI pointer so that VST can delete the objects (=> refCounter is 0)
 		totalNumberOfCreatedModules = 0;
 		allpassModuleIdPool.clear();
-		allpassModuleIdPool.resize(MAXMODULENUMBER, false);
 		frame->forget();	// delete frame
 		frame = 0;
 	}
@@ -284,6 +291,9 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	// Get the GUI id
 	int32_t tag = pControl->getTag();
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(tag).c_str());
+	fclose(pFile);*/
 	double value = (double)pControl->getValue();
 	
 	if (tag == id_collapseModule) {
@@ -324,80 +334,119 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	// CAnimKnob accepts only normalized values (BUG?)
 	// Mixer
 	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
+
 		uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
+		int index = (int)(std::round(value));
 		// Update the VST parameter variable
 		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::valueToNormMixerInputSelect(value));
 		// Update the module member variable (is called in process()), BUT!!!: it also influences the VST parameter (why, Steinberg, why?) so it MUST be normalized!
 		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::valueToNormMixerInputSelect(value));
+
+		// Get the menu entry that was selected before the current one and enable it in all OptionMenus
+		int lastIndex = dynamic_cast<GuiOptionMenuInputSelector*>(guiElements[tag])->getLastIndex();
+		for (int i = 0; i < MAXMODULEINPUTS; ++i) {
+			dynamic_cast<GuiOptionMenuInputSelector*>(guiElements[id_mixer_optionMenu_inputSelectFirst + moduleNumber * MAXMODULEINPUTS + i])->getEntry(lastIndex)->setEnabled(true);
+		}
+
 		if (value == 0.0) {
+			// 0.0 means <Select> is selected in the dropdown menu
+			// Set default values for the GUI elements and disable them
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(DEF_MIXERGAIN);
+			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(0.0);
+			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(0.0);
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(false);
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(false);
+			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(false);
+			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(false);
 		}
 		else {
-			//uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXINPUTS;	// Calculate the module number
-			//uint16 moduleInput = (pid - PARAM_MIXERINPUTSELECT_FIRST) % MAXINPUTS;
+
+			
+			
 			uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
-			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedGainValues[moduleNumber * MAXINPUTS + (int)(value - 1.0)]);
-			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::normToValueInputGain(savedGainValues[moduleNumber * MAXINPUTS + (int)(value - 1.0)]));
+			// Restore the saved gain value and update the GUI
+			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedGainValues[moduleNumber * MAXINPUTS + index - 1]);
+			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::normToValueInputGain(savedGainValues[moduleNumber * MAXINPUTS + index - 1]));
+			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedMuteValues[moduleNumber * MAXINPUTS + index - 1]);
+			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedSoloValues[moduleNumber * MAXINPUTS + index - 1]);
+			// Enable the GUI elements in case they were disabled
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(true);
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(true);
+			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(true);
+			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(true);
+			// Get the selected menu entry and disable it in all OptionMenus
+			int currentIndex = dynamic_cast<GuiOptionMenuInputSelector*>(guiElements[tag])->getCurrentIndex();
+			for (int i = 0; i < MAXMODULEINPUTS; ++i) {
+				dynamic_cast<GuiOptionMenuInputSelector*>(guiElements[id_mixer_optionMenu_inputSelectFirst + moduleNumber * MAXMODULEINPUTS + i])->getEntry(currentIndex)->setEnabled(false);
+			}
 		}
 	}
 	else if (tag >= id_mixer_knob_gainFirst && tag <= id_mixer_knob_gainLast)  {
 		uint16 moduleNumber = (tag - id_mixer_knob_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
-		//uint16 inputSelected = 0;
+		int inputIndex = (int)(std::round(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue()));
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() != 0.0) {
+			// 0.0 means <Select> is selected
 			// Knob value already normalized => no conversion needed
-			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() - 1), value);
-			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() - 1), value);
-			// Update the text edit box under the knob => convert from normalized value to real value
-			savedGainValues[moduleNumber * MAXINPUTS + (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() - 1)] = value;
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
+			// Save the new gain value for later
+			savedGainValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value;
 		}
+		// Update the textEdit
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToValueInputGain(value));
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
-		for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
+		/*for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
 			if (guiElements[id_mixer_optionMenu_inputSelectFirst + i] != guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]) {
+				// Iterate over all GUI inputs and check if the same signal input is selected two or more times
 				if (guiElements[id_mixer_optionMenu_inputSelectFirst + i]->getValue() == guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue()) {
+					// Synchronize the GUI elements
 					guiElements[id_mixer_knob_gainFirst + i]->setValue(value);
 					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(ValueConversion::normToValueInputGain(value));
 				}
 			}
-		}
+		}*/
 	}
 	else if (tag >= id_mixer_textEdit_gainFirst && tag <= id_mixer_textEdit_gainLast)  {
 		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
 		fclose(pFile);*/
+		int inputIndex = (int)(std::round(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue()));
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() != 0.0) {
 			uint16 moduleNumber = (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
-			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue() - 1), ValueConversion::valueToNormInputGain(value));
-			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue() - 1), ValueConversion::valueToNormInputGain(value));
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::valueToNormInputGain(value));
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::valueToNormInputGain(value));
 			// Update the knob above the textEdit
-			savedGainValues[moduleNumber * MAXINPUTS + (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue() - 1)] = ValueConversion::valueToNormInputGain(value);
+			savedGainValues[moduleNumber * MAXINPUTS + inputIndex - 1] = ValueConversion::valueToNormInputGain(value);
 		}
 		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormInputGain(value));
 		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
-		for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
+		/*for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
 			if (guiElements[id_mixer_optionMenu_inputSelectFirst + i] != guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]) {
 				if (guiElements[id_mixer_optionMenu_inputSelectFirst + i]->getValue() == guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue()) {
 					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(value);
 					guiElements[id_mixer_knob_gainFirst + i]->setValue(ValueConversion::valueToNormInputGain(value));
 				}
 			}
+		}*/
+	}
+	else if (tag >= id_mixer_button_muteFirst && tag <= id_mixer_button_muteLast)  {
+		uint16 moduleNumber = (tag - id_mixer_button_muteFirst) / MAXMODULEINPUTS;
+		int inputIndex = (int)(std::round(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_button_muteFirst)]->getValue()));
+		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_button_muteFirst)]->getValue() != 0.0) {
+			controller->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
+			controller->performEdit(PARAM_MIXERINPUTMUTED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
+			savedMuteValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value;
 		}
 	}
-	//else if (tag >= id_mixer_button_muteFirst && tag <= id_mixer_button_muteLast)  {
-	//	controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_textEdit_gainFirst), ValueConversion::valueToNormGain(value));
-	//	controller->performEdit(PARAM_MIXERGAIN_FIRST + (tag - id_mixer_textEdit_gainFirst), ValueConversion::valueToNormGain(value));
-	//	// Update the knob above the textEdit
-	//	guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormGain(value));
-	//	guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
-	//}
-	else if (tag >= id_mixer_switch_bypassFirst && tag <= id_mixer_switch_bypassLast)  {
-		controller->setParamNormalized(PARAM_MIXERBYPASS_FIRST + (tag - id_mixer_switch_bypassFirst), value);
-		controller->performEdit(PARAM_MIXERBYPASS_FIRST + (tag - id_mixer_switch_bypassFirst), value);
+	else if (tag >= id_mixer_button_soloFirst && tag <= id_mixer_button_soloLast)  {
+		uint16 moduleNumber = (tag - id_mixer_button_soloFirst) / MAXMODULEINPUTS;
+		int inputIndex = (int)(std::round(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_button_soloFirst)]->getValue()));
+		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_button_soloFirst)]->getValue() != 0.0) {
+			controller->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
+			controller->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
+			savedSoloValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value;
+		}
 	}
 	// Quantizer
 	else if (tag >= id_quantizer_knob_quantizationFirst && tag <= id_quantizer_knob_quantizationLast)  {
@@ -633,7 +682,7 @@ void ReverbNetworkEditor::createAPModule() {
 	filterTypeTextLabel->setFont(CFontRef(kNormalFontSmall));
 	filterTypeTextLabel->setBackColor(CColor(0, 0, 0, 0));
 	filterTypeTextLabel->setFrameColor(CColor(0, 0, 0, 0));
-	COptionMenu* filterTypeMenu = new COptionMenu(CRect(0, 0, 85, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
+	GuiOptionMenuInputSelector* filterTypeMenu = new GuiOptionMenuInputSelector(CRect(0, 0, 85, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
 	addGuiElementPointer(filterTypeMenu, id_equalizer_optionMenu_filterTypeFirst + moduleId);
 	filterTypeMenu->setFont(CFontRef(kNormalFontSmall));
 	filterTypeMenu->addEntry("Low Pass");
@@ -782,10 +831,10 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	inputTitle->setBackColor(CColor(0, 0, 0, 0));
 	inputTitle->setFrameColor(CColor(0, 0, 0, 0));
 
-	COptionMenu* inputSelect = new COptionMenu(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_mixer_optionMenu_inputSelectFirst + idOffset);
+	GuiOptionMenuInputSelector* inputSelect = new GuiOptionMenuInputSelector(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_mixer_optionMenu_inputSelectFirst + idOffset);
 	addGuiElementPointer(inputSelect, id_mixer_optionMenu_inputSelectFirst + idOffset);
 	inputSelect->setFont(CFontRef(kNormalFontSmall));
-	inputSelect->addEntry("<Not Connected>");
+	inputSelect->addEntry("<Select>");
 	inputSelect->setCurrent(0);
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -817,12 +866,14 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	valueEdit->setFrameColor(CColor(0, 0, 0, 0));
 
 	CTextButton* buttonMute = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_muteFirst + idOffset, "M", CTextButton::kOnOffStyle);
+	addGuiElementPointer(buttonMute, id_mixer_button_muteFirst + idOffset);
 	buttonMute->setFont(CFontRef(kNormalFontSmall));
 	buttonMute->setTextColor(CColor(180, 0, 0, 255));
 	buttonMute->setGradientStartColorHighlighted(CColor(160, 0, 0, 255));
 	buttonMute->setGradientEndColorHighlighted(CColor(100, 0, 0, 255));
 	
 	CTextButton* buttonSolo = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_soloFirst + idOffset, "S", CTextButton::kOnOffStyle);
+	addGuiElementPointer(buttonSolo, id_mixer_button_soloFirst + idOffset);
 	buttonSolo->setFont(CFontRef(kNormalFontSmall));
 	buttonSolo->setTextColor(CColor(0, 180, 0, 255));
 	buttonSolo->setGradientStartColorHighlighted(CColor(0, 160, 0, 255));
@@ -851,24 +902,23 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	//updateGuiParameter(PARAM_MIXERINPUTSELECT_FIRST, PARAM_MIXERINPUTSELECT_LAST, id_mixer_optionMenu_inputSelectFirst, &ValueConversion::normToValueMixerInputSelect);
 	//updateGuiParameter(PARAM_MIXERGAIN_FIRST, PARAM_MIXERGAIN_LAST, id_mixer_knob_gainFirst, nullptr);
 
-	for (uint32 i = PARAM_MIXERINPUTSELECT_FIRST; i < PARAM_MIXERINPUTSELECT_LAST + 1; ++i) { // Iterate over all parameters
-		double menuIndex = ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(i));
-		guiElements[id_mixer_optionMenu_inputSelectFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setValue(menuIndex);
-		if (menuIndex == 0.0) {
-			guiElements[id_mixer_knob_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setValue(ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
-			guiElements[id_mixer_knob_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setMouseEnabled(false);
-			guiElements[id_mixer_textEdit_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setMouseEnabled(false);
-		}
-		else {
-			guiElements[id_mixer_knob_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setValue(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + (int)(menuIndex - 1)));
-			guiElements[id_mixer_knob_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setMouseEnabled(true);
-			guiElements[id_mixer_textEdit_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]->setMouseEnabled(true);
-		}
-		valueChanged(guiElements[id_mixer_knob_gainFirst + (i - PARAM_MIXERINPUTSELECT_FIRST)]);
-	}
-	for (uint32 i = PARAM_MIXERGAIN_FIRST; i < PARAM_MIXERGAIN_LAST + 1; ++i) {
+	for (auto i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
 		savedGainValues[i - PARAM_MIXERGAIN_FIRST] = getController()->getParamNormalized(i);
-		
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
+		fclose(pFile);*/
+	}
+	for (auto i = PARAM_MIXERINPUTMUTED_FIRST; i <= PARAM_MIXERINPUTMUTED_FIRST; ++i) {
+		savedMuteValues[i - PARAM_MIXERINPUTMUTED_FIRST] = getController()->getParamNormalized(i);
+	}
+	for (auto i = PARAM_MIXERINPUTSOLOED_FIRST; i <= PARAM_MIXERINPUTSOLOED_LAST; ++i) {
+		savedSoloValues[i - PARAM_MIXERINPUTSOLOED_FIRST] = getController()->getParamNormalized(i);
+	}
+
+	for (uint32 i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
+		int menuIndex = (int)(std::round(ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (i - id_mixer_optionMenu_inputSelectFirst)))));
+		guiElements[i]->setValue(menuIndex);
+		valueChanged(guiElements[i]);
 	}
 
 	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);

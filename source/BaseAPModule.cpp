@@ -85,8 +85,16 @@ double BaseAPModule::processSamples(double* moduleInputBuffer, std::vector<doubl
 	return outputSample;
 }
 
-void BaseAPModule::updateMixerGain(const unsigned int& inputNumber, const double& gain) {
+void BaseAPModule::updateMixerGain(const int& inputNumber, const double& gain) {
 	mixer->setInputGain(inputNumber, gain);
+}
+
+void BaseAPModule::updateMixerMute(const int& inputNumber, const bool& mute) { 
+	mixer->setInputMuted(inputNumber, mute); 
+}
+
+void BaseAPModule::updateMixerSolo(const int& inputNumber, const bool& solo) {
+	mixer->setInputSoloed(inputNumber, solo); 
 }
 
 void BaseAPModule::updateQuantizerQuantization(const double& quantization) {

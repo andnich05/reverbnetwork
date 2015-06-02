@@ -76,7 +76,9 @@ private:
 	// Holds pointers to all GUI elements which have their own GUI id; the index itself is the GUI id
 	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!
 	// Remove the pointers out of this vector manually => close()-function
+	//std::vector<SharedPointer<CControl>> guiElements;
 	std::vector<CControl*> guiElements;
+	//CControl* guiElements[10000];
 	// Add a GUI element pointer to the vector with the GUI-ID as the index
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
 
@@ -92,7 +94,10 @@ private:
 
 	std::vector<double> lastPpmValues;
 
+	// Saved mixer values
 	std::vector<double> savedGainValues;
+	std::vector<bool> savedMuteValues;
+	std::vector<bool> savedSoloValues;
 
 };
 

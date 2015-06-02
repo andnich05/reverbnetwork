@@ -5,58 +5,61 @@
 
 PresetReadWrite::PresetReadWrite() {
 	// Initialize the values with the default values (Must be in the same order as in ReverbNetworkDefines.h)
-	for (unsigned int i = PARAM_MIXERINPUTSELECT_FIRST; i <= PARAM_MIXERINPUTSELECT_LAST; ++i) {
+	for (auto i = PARAM_MIXERINPUTSELECT_FIRST; i <= PARAM_MIXERINPUTSELECT_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormMixerInputSelect(DEF_MIXERINPUT));
 	}
-	for (unsigned int i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
+	for (auto i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
 	}
-	for (unsigned int i = PARAM_MIXERBYPASS_FIRST; i <= PARAM_MIXERBYPASS_LAST; ++i) {
-		parameterValues.push_back(DEF_MIXERBYPASS);
+	for (auto i = PARAM_MIXERINPUTMUTED_FIRST; i <= PARAM_MIXERINPUTMUTED_LAST; ++i) {
+		parameterValues.push_back(0.0);
 	}
-	for (unsigned int i = PARAM_QUANTIZERBITDEPTH_FIRST; i <= PARAM_QUANTIZERBITDEPTH_LAST; ++i) {
+	for (auto i = PARAM_MIXERINPUTSOLOED_FIRST; i <= PARAM_MIXERINPUTSOLOED_LAST; ++i) {
+		parameterValues.push_back(0.0);
+	}
+	for (auto i = PARAM_QUANTIZERBITDEPTH_FIRST; i <= PARAM_QUANTIZERBITDEPTH_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormQuantization(DEF_QUANTIZERBITDEPTH));
 	}
-	for (unsigned int i = PARAM_QUANTIZERBYPASS_FIRST; i <= PARAM_QUANTIZERBYPASS_LAST; ++i) {
+	for (auto i = PARAM_QUANTIZERBYPASS_FIRST; i <= PARAM_QUANTIZERBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_QUANTIZERBYPASS);
 	}
-	for (unsigned int i = PARAM_EQFILTERTYPE_FIRST; i <= PARAM_EQFILTERTYPE_LAST; ++i) {
+	for (auto i = PARAM_EQFILTERTYPE_FIRST; i <= PARAM_EQFILTERTYPE_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormFilterTypeSelect(DEF_EQFILTERTYPE));
 	}
-	for (unsigned int i = PARAM_EQCENTERFREQ_FIRST; i <= PARAM_EQCENTERFREQ_LAST; ++i) {
+	for (auto i = PARAM_EQCENTERFREQ_FIRST; i <= PARAM_EQCENTERFREQ_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormCenterFreq(DEF_EQCENTERFREQ));
 	}
-	for (unsigned int i = PARAM_EQQFACTOR_FIRST; i <= PARAM_EQQFACTOR_LAST; ++i) {
+	for (auto i = PARAM_EQQFACTOR_FIRST; i <= PARAM_EQQFACTOR_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormQFactor(DEF_EQQFACTOR));
 	}
-	for (unsigned int i = PARAM_EQGAIN_FIRST; i <= PARAM_EQGAIN_LAST; ++i) {
+	for (auto i = PARAM_EQGAIN_FIRST; i <= PARAM_EQGAIN_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormEqGain(DEF_EQGAIN));
 	}
-	for (unsigned int i = PARAM_EQBYPASS_FIRST; i <= PARAM_EQBYPASS_LAST; ++i) {
+	for (auto i = PARAM_EQBYPASS_FIRST; i <= PARAM_EQBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_EQBYPASS);
 	}
-	for (unsigned int i = PARAM_ALLPASSDELAY_FIRST; i <= PARAM_ALLPASSDELAY_LAST; ++i) {
+	for (auto i = PARAM_ALLPASSDELAY_FIRST; i <= PARAM_ALLPASSDELAY_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormDelay(DEF_ALLPASSDELAY));
 	}
-	for (unsigned int i = PARAM_ALLPASSDECAY_FIRST; i <= PARAM_ALLPASSDECAY_LAST; ++i) {
+	for (auto i = PARAM_ALLPASSDECAY_FIRST; i <= PARAM_ALLPASSDECAY_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormDecay(DEF_ALLPASSDECAY));
 	}
-	for (unsigned int i = PARAM_ALLPASSBYPASS_FIRST; i <= PARAM_ALLPASSBYPASS_LAST; ++i) {
+	for (auto i = PARAM_ALLPASSBYPASS_FIRST; i <= PARAM_ALLPASSBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_ALLPASSBYPASS);
 	}
-	for (unsigned int i = PARAM_OUTGAIN_FIRST; i <= PARAM_OUTGAIN_LAST; ++i) {
+	for (auto i = PARAM_OUTGAIN_FIRST; i <= PARAM_OUTGAIN_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormOutputGain(DEF_OUTPUTGAIN));
 	}
-	for (unsigned int i = PARAM_OUTBYPASS_FIRST; i <= PARAM_OUTBYPASS_LAST; ++i) {
+	for (auto i = PARAM_OUTBYPASS_FIRST; i <= PARAM_OUTBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_OUTPUTBYPASS);
 	}
-	for (unsigned int i = PARAM_MODULEVISIBLE_FIRST; i <= PARAM_MODULEVISIBLE_LAST; ++i) {
+	for (auto i = PARAM_MODULEVISIBLE_FIRST; i <= PARAM_MODULEVISIBLE_LAST; ++i) {
 		parameterValues.push_back(DEF_MODULEVISIBLE);
 	}
-	for (unsigned int i = PARAM_PPMUPDATE_FIRST; i <= PARAM_PPMUPDATE_LAST; ++i) {
+	for (auto i = PARAM_PPMUPDATE_FIRST; i <= PARAM_PPMUPDATE_LAST; ++i) {
 		parameterValues.push_back(DEF_PPMVALUE);
 	}
-	for (unsigned int i = PARAM_GENERALVSTOUTPUTSELECT_FIRST; i <= PARAM_GENERALVSTOUTPUTSELECT_LAST; ++i) {
+	for (auto i = PARAM_GENERALVSTOUTPUTSELECT_FIRST; i <= PARAM_GENERALVSTOUTPUTSELECT_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::valueToNormMixerInputSelect(DEF_OUTPUTSELECT));
 	}
 }
