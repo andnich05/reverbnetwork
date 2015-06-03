@@ -8,7 +8,8 @@ const double min32bitValueSigned = pow(2, 32) / 2;
 // ToDo: AND Maske
 // ToDo: Bios Gain 
 
-QuantizerModule::QuantizerModule(unsigned int quantization) {
+QuantizerModule::QuantizerModule(unsigned int quantization) 
+	: mask(-1) {
 	setQuantization(quantization);
 }
 
@@ -25,12 +26,8 @@ void QuantizerModule::setQuantization(const double& q) {
 }
 
 void QuantizerModule::processSample(double& sample) {
+
 	// Convert to 32 bit signed integer
-
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(sample).c_str());
-	fclose(pFile);*/
-
 	long int temp = 0;
 	if (sample >= 0.0) {
 		// Check for out of range sample values
@@ -51,26 +48,27 @@ void QuantizerModule::processSample(double& sample) {
 		}
 	}
 
-	// Create bitset vector
-	std::bitset<32> s (temp);
+	
+	mask = -1; // ...111111
+	mask <<= bitsToReset; // ...111000
+	temp &= mask; // Reset bits
 
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(temp).c_str());
-	fprintf(pFile, "y(n): %s\n", (s.to_string()).c_str());
-	fclose(pFile);*/
-
-	// Set bits to zero
-	for (unsigned int i = 0; i < bitsToReset; ++i) {
-		s.reset(i);
-	}
-
-	// Convert back to an 32 bit integer
-	temp = (long int)(s.to_ulong());
-
-	// Convert the integer back to a double
+	// Convert the integer back to double
 	if (temp >= 0) {
 		if (temp <= (long int)(max32bitValueSigned)) {
+
+			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(temp).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(max32bitValueSigned).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(mask).c_str());*/
+
+			//temp = (long)(std::round((double)temp * ((double)max32bitValueSigned / (double)mask)));
+
 			sample = (double)temp / (double)max32bitValueSigned;
+			
+			/*fprintf(pFile, "y(n): %s\n", std::to_string(temp).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(8888).c_str());
+			fclose(pFile);*/
 		}
 		else {
 			sample = 1.0;
@@ -78,6 +76,7 @@ void QuantizerModule::processSample(double& sample) {
 	}
 	else {
 		if (temp >= (long int)(-min32bitValueSigned)) {
+			temp = (long)(std::round((double)temp * ((double)min32bitValueSigned / (double)mask)));
 			sample = (double)temp / (double)min32bitValueSigned;
 		}
 		else {

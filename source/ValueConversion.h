@@ -28,6 +28,7 @@ public:
 	static double valueToNormDelay(const double& value);
 	static double delayMillisecondsToSamples(const double& delaySeconds);
 	static double delaySamplesToMilliseconds(const double& delaySamples);
+	static double calculateDiffK(const double& delayInMs, const double& decayInS);
 	static double normToValueDecay(const double& normValue);
 	static double valueToNormDecay(const double& value);
 	static double normToValueOutputGain(const double& normValue);

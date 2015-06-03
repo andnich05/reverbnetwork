@@ -12,6 +12,8 @@ public:
 
 private:
 	unsigned int bitsToReset;
+	// (min.)32 bit mask
+	long int mask;
 
 };
 

@@ -89,6 +89,12 @@ double ValueConversion::delaySamplesToMilliseconds(const double& delaySamples) {
 	return delaySamples / sampleRate * 1000;
 }
 
+double ValueConversion::calculateDiffK(const double& delayInMs, const double& decayInS) {
+	if (decayInS == 0.0) return 0.0;
+	if (delayInMs == 0.0) return 1.0;
+	return pow(10, (-60 * (delayInMs / 1000 / decayInS) / 20));
+}
+
 double ValueConversion::normToValueDecay(const double& normValue) {
 	return (MIN_ALLPASSDECAY + (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY) * normValue);
 }

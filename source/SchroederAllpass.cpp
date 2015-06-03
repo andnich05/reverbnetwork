@@ -93,7 +93,7 @@ void SchroederAllpass::calculateGain() {
 	double dB = 0.0;
 	// Prevent division by zero
 	if (decayTime > 0.0) {
-		dB = -60 * (delayTime / decayTime);
+		dB = -60.0 * (delayTime / decayTime);
 		gain = pow(10.0, dB / 20);
 	}
 	else {

@@ -66,7 +66,9 @@ namespace Vst {
 	const int32_t id_allpass_knob_decayLast = id_allpass_knob_decayFirst + MAXMODULENUMBER - 1;
 	const int32_t id_allpass_textEdit_decayFirst = id_allpass_knob_decayLast + 1;
 	const int32_t id_allpass_textEdit_decayLast = id_allpass_textEdit_decayFirst + MAXMODULENUMBER - 1;
-	const int32_t id_allpass_switch_bypassFirst = id_allpass_textEdit_decayLast + 1;
+	const int32_t id_allpass_textEdit_diffKFirst = id_allpass_textEdit_decayLast + 1;
+	const int32_t id_allpass_textEdit_diffKLast = id_allpass_textEdit_diffKFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_switch_bypassFirst = id_allpass_textEdit_diffKLast + 1;
 	const int32_t id_allpass_switch_bypassLast = id_allpass_switch_bypassFirst + MAXMODULENUMBER - 1;
 
 	// Output gain GUI ids
@@ -101,7 +103,7 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 	savedGainValues.resize(MAXINPUTS * MAXMODULENUMBER, ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
 	savedMuteValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
 	savedSoloValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
-	guiElements.resize(10000);
+	//guiElements.resize(10000);
 	//ptrTextEditStringToValueConversion = &textEditStringToValueConversion;
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
@@ -123,7 +125,7 @@ void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32
 	}
 	// If false: pushBack elements until the guiId is a valid index
 	else {
-		//guiElements.resize(guiId + 1);
+		guiElements.resize(guiId + 1);
 		//int size = guiElements.size();
 		guiElements[guiId] = guiElement;
 	}
@@ -515,6 +517,13 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::normToValueDelay(value));
 		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::delayMillisecondsToSamples(ValueConversion::normToValueDelay(value)));
 		//guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->invalid();
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_knob_delayFirst)]
+			->setValue(ValueConversion::calculateDiffK(ValueConversion::normToValueDelay(value), guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue()));
+			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToValueDelay(value) / 1000).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToValueDelay(guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(-60.0 * ((ValueConversion::normToValueDelay(value) / 1000) / guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
+			fclose(pFile);*/
 	}
 	else if (tag >= id_allpass_textEdit_delayFirst && tag <= id_allpass_textEdit_delayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::valueToNormDelay(value));
@@ -522,6 +531,9 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(ValueConversion::valueToNormDelay(value));
 		//guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(value * sampleRate / 1000);
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_delayFirst)]
+			->setValue(ValueConversion::calculateDiffK(value, guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_textEdit_delayFirst)]->getValue()));
+
 	}
 	else if (tag >= id_allpass_textEdit_samplesDelayFirst && tag <= id_allpass_textEdit_samplesDelayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::valueToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
@@ -529,18 +541,25 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::valueToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
 		//guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::delaySamplesToMilliseconds(value));
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]
+			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->getValue(), 
+			guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->getValue()));
 	}
 	else if (tag >= id_allpass_knob_decayFirst && tag <= id_allpass_knob_decayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), value);
 		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), value);
 		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->setValue(ValueConversion::normToValueDecay(value));
 		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->invalid();
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_knob_decayFirst)]
+			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_decayFirst)]->getValue(), ValueConversion::normToValueDecay(value)));
 	}
 	else if (tag >= id_allpass_textEdit_decayFirst && tag <= id_allpass_textEdit_decayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::valueToNormDecay(value));
 		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::valueToNormDecay(value));
 		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setValue(ValueConversion::valueToNormDecay(value));
 		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setDirty();
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_decayFirst)]
+			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_decayFirst)]->getValue(), value));
 	}
 	else if (tag >= id_allpass_switch_bypassFirst && tag <= id_allpass_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + (tag - id_allpass_switch_bypassFirst), value);
@@ -639,16 +658,16 @@ void ReverbNetworkEditor::createAPModule() {
 	CRowColumnView* mixerMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(230, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
 	for (uint32 i = 0; i < MAXMODULEINPUTS; ++i) {
-		temp = "IN ";
+		/*temp = "IN ";
 		temp.append(std::to_string(i));
-		temp.append(":");
+		temp.append(":");*/
 		mixerView->addView(createMixerRow(temp.c_str(), mixerMainView->getWidth(), i + moduleId * MAXMODULEINPUTS));
 	}
 	mixerView->setBackgroundColor(CColor(50, 50, 50, 255));
 	mixerView->sizeToFit();
 	CScrollView* mixerScrollView = new CScrollView(CRect(CPoint(0, 0), CPoint(mixerMainView->getWidth(), controlView->getHeight() - 50)), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
 	mixerScrollView->addView(mixerView);
-	mixerScrollView->setBackgroundColor(CColor(0, 0, 0, 255));
+	mixerScrollView->setBackgroundColor(CColor(0, 0, 0, 0));
 	mixerScrollView->sizeToFit();
 	mixerScrollView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 
@@ -715,20 +734,50 @@ void ReverbNetworkEditor::createAPModule() {
 	addGuiElementPointer(checkBoxAllpassBypass, id_allpass_switch_bypassFirst + moduleId);
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
 	allpassView->addView(checkBoxAllpassBypass);
+	CRowColumnView* diffKView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	diffKView->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelDiffK = new CTextLabel(CRect(CPoint(0, 0), CPoint(30, 20)), "Gain:");
+	labelDiffK->setFont(CFontRef(kNormalFontSmall));
+	labelDiffK->setBackColor(CColor(0, 0, 0, 0));
+	labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomTextEdit* textEditDiffK = new GuiCustomTextEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth(), 20.0)), nullptr, id_allpass_textEdit_diffKFirst + moduleId);
+	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
+	valueToStringUserData* userData2 = new valueToStringUserData;
+	userData2->precision = 5;
+	userData2->unit = "";
+	textEditDiffK->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	textEditDiffK->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData2);
+	textEditDiffK->setMin(-100.0);
+	//textEditDiffK->setStringToTruncate("samples", true);
+	//textEditDiffK->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
+	textEditDiffK->setFont(CFontRef(kNormalFontSmall));
+	textEditDiffK->setBackColor(CColor(0, 0, 0, 0));
+	textEditDiffK->setFrameColor(CColor(0, 0, 0, 0));
+	textEditDiffK->setMouseEnabled(false);
+	diffKView->addView(labelDiffK);
+	diffKView->addView(textEditDiffK);
+	diffKView->sizeToFit();
+	allpassView->addView(diffKView);
 	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId, 
 		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
-	GuiCustomTextEdit* textEditDelayInSample = new GuiCustomTextEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
-	addGuiElementPointer(textEditDelayInSample, id_allpass_textEdit_samplesDelayFirst + moduleId);
-	textEditDelayInSample->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
-	textEditDelayInSample->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, nullptr);
-	textEditDelayInSample->setMin(0.0);
-	textEditDelayInSample->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
-	textEditDelayInSample->setFont(CFontRef(kNormalFontSmall));
-	textEditDelayInSample->setBackColor(CColor(0, 0, 0, 0));
-	textEditDelayInSample->setFrameColor(CColor(0, 0, 0, 0));
-	allpassView->addView(textEditDelayInSample);
+	GuiCustomTextEdit* textEditDelayInSamples = new GuiCustomTextEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
+	addGuiElementPointer(textEditDelayInSamples, id_allpass_textEdit_samplesDelayFirst + moduleId);
+	valueToStringUserData* userData = new valueToStringUserData;
+	userData->precision = 0;
+	userData->unit = "samples";
+	textEditDelayInSamples->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	textEditDelayInSamples->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData);
+	textEditDelayInSamples->setMin(0.0);
+	textEditDelayInSamples->setStringToTruncate("samples", true);
+	textEditDelayInSamples->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
+	textEditDelayInSamples->setFont(CFontRef(kNormalFontSmall));
+	textEditDelayInSamples->setBackColor(CColor(0, 0, 0, 0));
+	textEditDelayInSamples->setFrameColor(CColor(0, 0, 0, 0));
+	allpassView->addView(textEditDelayInSamples);
 	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
 		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
+	// read only, so no listener but needs still a gui id
+	
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
@@ -799,8 +848,8 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	groupTextEdit->setMin(valueEditMinValue);
 	groupTextEdit->setMax(valueEditMaxValue);
 	groupTextEdit->setFont(CFontRef(kNormalFontSmall));
-	groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
-	groupTextEdit->setFrameColor(CColor(0, 0, 0, 0));
+	//groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
+	//groupTextEdit->setFrameColor(CColor(0, 0, 0, 0));
 	groupTextEdit->setStringToTruncate(unit, true);
 	//CTextLabel* labelUnit = new CTextLabel()
 	groupView->addView(groupNameLabel);
@@ -859,8 +908,8 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	valueEdit->setMin(MIN_MIXERGAIN);
 	valueEdit->setMax(MAX_MIXERGAIN);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
-	valueEdit->setBackColor(CColor(0, 0, 0, 0));
-	valueEdit->setFrameColor(CColor(0, 0, 0, 0));
+	//valueEdit->setBackColor(CColor(0, 0, 0, 0));
+	//valueEdit->setFrameColor(CColor(0, 0, 0, 0));
 
 	CTextButton* buttonMute = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_muteFirst + idOffset, "M", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonMute, id_mixer_button_muteFirst + idOffset);
