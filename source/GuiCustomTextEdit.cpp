@@ -20,6 +20,7 @@ void GuiCustomTextEdit::takeFocus()
 #endif
 	bWasReturnPressed = false;
 
+	//--- Custom
 	char str[256];
 	strcpy(str, getText());
 	char* pos = strstr(str, stringToTruncate);
@@ -32,6 +33,7 @@ void GuiCustomTextEdit::takeFocus()
 		platformControl->setText(getText());
 
 	strcpy(oldString, getText());
+	//---
 
 	// calculate offset for CViewContainers
 	CRect rect (getViewSize ());
@@ -64,10 +66,12 @@ void GuiCustomTextEdit::looseFocus()
 	
 	updateText (_platformControl);
 	
+	//---
 	const char* newText = _platformControl->getText();
 	if (strcmp(newText, getText()) == 0) {
 		setText(newText);
 	}
+	//---
 
 	_platformControl->forget ();
 
@@ -82,11 +86,19 @@ void GuiCustomTextEdit::looseFocus()
 }
 	
 
-void GuiCustomTextEdit::setStringToTruncate(UTF8StringPtr string, bool truncateSpaceBeforeString) {
-	if (truncateSpaceBeforeString) {
-		stringToTruncate[0] = ' ';
+void GuiCustomTextEdit::setStringToTruncate(const std::string& str, bool truncateSpaceBeforeString) {
+	/*if (truncateSpaceBeforeString) {
+		std::string temp = " ";
+		temp.append(str);
+		strncpy(stringToTruncate, temp.c_str(), 256);
 	}
-	strncat(stringToTruncate, string, 10);
+	else {
+		strncpy(stringToTruncate, str.c_str(), 256);
+	}*/
+	if (truncateSpaceBeforeString) {
+		strncpy(stringToTruncate, " ", 2);
+	}
+	strncat(stringToTruncate, str.c_str(), 10);
 }
 
 }

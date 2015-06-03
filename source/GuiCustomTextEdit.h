@@ -13,7 +13,7 @@ namespace VSTGUI {
 		virtual	void takeFocus() VSTGUI_OVERRIDE_VMETHOD;
 		virtual	void looseFocus() VSTGUI_OVERRIDE_VMETHOD;
 
-		void setStringToTruncate(UTF8StringPtr string, bool truncateSpaceBeforeString);
+		void setStringToTruncate(const std::string& str, bool truncateSpaceBeforeString);
 
 	private:
 		char stringToTruncate[256];

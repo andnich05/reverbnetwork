@@ -39,7 +39,7 @@ public:
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
 	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag,
-		const float& valueEditMinValue, const float& valueEditMaxValue, const int& valueEditPrecision, const VSTGUI::UTF8StringPtr );
+		const float& valueEditMinValue, const float& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit);
 		//CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
 
 	// Create a text label with a title for a group

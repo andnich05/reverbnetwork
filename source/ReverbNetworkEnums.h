@@ -1,6 +1,8 @@
 #ifndef REVERBNETWORKENUMS_H
 #define REVERBNETWORKENUMS_H
 
+#include <string>
+
 // Possible equalizer filter types
 enum FilterType
 {
@@ -14,7 +16,7 @@ enum FilterType
 
 struct valueToStringUserData{
 	int precision;
-	const char* unit;
+	std::string unit;
 };
 
 #endif // REVERBNETWORKENUMS_H

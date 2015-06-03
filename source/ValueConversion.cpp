@@ -133,6 +133,7 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 		return true;
 	}
 	valueToStringUserData* v = (valueToStringUserData*)userData;
+
 	/*
 	if (*precision == 0) {
 		sprintf(utf8String, "%d", (value));
@@ -168,6 +169,6 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 		break;
 	}
 	sprintf(utf8String + strlen(utf8String), " ");
-	sprintf(utf8String + strlen(utf8String), v->unit);
+	sprintf(utf8String + strlen(utf8String), v->unit.c_str());
 	return true;
 }

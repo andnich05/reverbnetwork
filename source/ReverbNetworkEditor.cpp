@@ -361,9 +361,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(false);
 		}
 		else {
-
-			
-			
 			uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
 			// Restore the saved gain value and update the GUI
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedGainValues[moduleNumber * MAXINPUTS + index - 1]);
@@ -608,7 +605,7 @@ void ReverbNetworkEditor::createAPModule() {
 	CRect handleViewSize = handleView->getViewSize();
 	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + hideViewButton->getWidth() + 12));
 
-	CTextEdit* moduleTitle = new CTextEdit(handleViewSize, this, -1);
+	GuiCustomTextEdit* moduleTitle = new GuiCustomTextEdit(handleViewSize, this, -1);
 	moduleTitle->setBackColor(CColor(0, 0, 0, 0));
 	moduleTitle->setFrameColor(CColor(0, 0, 0, 0));
 	handleView->addView(moduleTitle);
@@ -720,7 +717,7 @@ void ReverbNetworkEditor::createAPModule() {
 	allpassView->addView(checkBoxAllpassBypass);
 	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId, 
 		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
-	CTextEdit* textEditDelayInSample = new CTextEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
+	GuiCustomTextEdit* textEditDelayInSample = new GuiCustomTextEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
 	addGuiElementPointer(textEditDelayInSample, id_allpass_textEdit_samplesDelayFirst + moduleId);
 	textEditDelayInSample->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	textEditDelayInSample->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, nullptr);
@@ -778,8 +775,8 @@ void ReverbNetworkEditor::createAPModule() {
 }
 
 CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, 
-	//const float& valueEditMinValue, const float& valueEditMaxValue, CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
-	const float& valueEditMinValue, const float& valueEditMaxValue, const int& valueEditPrecision, const VSTGUI::UTF8StringPtr unit) {
+	//const float& valueEditMinValue, const float& valueEditMaxValue, GuiCustomTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
+	const float& valueEditMinValue, const float& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit) {
 
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -855,7 +852,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 		this, id_mixer_knob_gainFirst + idOffset, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
 	addGuiElementPointer(knob, id_mixer_knob_gainFirst + idOffset);
 
-	CTextEdit* valueEdit = new CTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, id_mixer_textEdit_gainFirst + idOffset);
+	GuiCustomTextEdit* valueEdit = new GuiCustomTextEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, id_mixer_textEdit_gainFirst + idOffset);
 	addGuiElementPointer(valueEdit, id_mixer_textEdit_gainFirst + idOffset);
 	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, nullptr);
@@ -904,12 +901,12 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 
 	for (auto i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
 		savedGainValues[i - PARAM_MIXERGAIN_FIRST] = getController()->getParamNormalized(i);
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
-		fclose(pFile);*/
 	}
-	for (auto i = PARAM_MIXERINPUTMUTED_FIRST; i <= PARAM_MIXERINPUTMUTED_FIRST; ++i) {
+	for (auto i = PARAM_MIXERINPUTMUTED_FIRST; i <= PARAM_MIXERINPUTMUTED_LAST; ++i) {
 		savedMuteValues[i - PARAM_MIXERINPUTMUTED_FIRST] = getController()->getParamNormalized(i);
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(getController()->getParamNormalized(i)).c_str());
+		fclose(pFile);*/
 	}
 	for (auto i = PARAM_MIXERINPUTSOLOED_FIRST; i <= PARAM_MIXERINPUTSOLOED_LAST; ++i) {
 		savedSoloValues[i - PARAM_MIXERINPUTSOLOED_FIRST] = getController()->getParamNormalized(i);
