@@ -128,7 +128,7 @@ bool ValueConversion::textEditStringToValueConversion(const char* txt, float& re
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
 	fclose(pFile);*/
-	result = (atof(txt));
+	result = (float)(atof(txt));
 	return true;
 }
 

@@ -218,6 +218,7 @@
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_uidescription_win32.cpp" />
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
     <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
+    <ClCompile Include="pugixml-1.6\src\pugixml.cpp" />
     <ClCompile Include="source\GuiOptionMenuInputSelector.cpp" />
     <ClCompile Include="source\QuantizerModule.cpp" />
     <ClCompile Include="source\PresetReadWrite.cpp" />
@@ -251,6 +252,7 @@
     <ClCompile Include="..\..\..\..\..\pluginterfaces\base\funknown.cpp" />
     <ClCompile Include="..\..\..\..\..\pluginterfaces\base\ustring.cpp" />
     <ClCompile Include="source\VST2EntryPoint.cpp" />
+    <ClCompile Include="source\XmlPresetReadWrite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstnoteexpression.h" />
@@ -311,6 +313,7 @@
     <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\vstpresetkeys.h" />
     <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\vsttypes.h" />
     <ClInclude Include="..\..\..\..\..\pluginterfaces\gui\iplugview.h" />
+    <ClInclude Include="source\XmlPresetReadWrite.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ReverbNetwork.def" />

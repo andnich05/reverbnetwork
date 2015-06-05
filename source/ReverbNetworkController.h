@@ -39,6 +39,7 @@
 #define REVERBNETWORKCONTROLLER_H
 
 #include "public.sdk/source/vst/vsteditcontroller.h"
+#include "XmlPresetReadWrite.h"
 
 #if MAC
 #include <TargetConditionals.h>
@@ -70,6 +71,8 @@ public:
 	//---Internal functions-------
 	void addDependentView(ReverbNetworkEditor* view);
 	void removeDependentView(ReverbNetworkEditor* view);
+
+	void setParametersFromXml(const XmlPresetReadWrite::preset& presetStruct);
 
 	tresult PLUGIN_API setComponentState(IBStream* state);
 

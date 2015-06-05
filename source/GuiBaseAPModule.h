@@ -28,8 +28,8 @@ public:
 	inline bool isCollapsed() { return collapsed; }
 
 private:
-	int mousePressedX;
-	int mousePressedY;
+	double mousePressedX;
+	double mousePressedY;
 	bool mousePressed;
 	CRect handleRegion;
 	CRect viewSize;

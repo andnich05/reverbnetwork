@@ -8,7 +8,7 @@ public:
 	~GainModule();
 
 	inline void setGain(const double& g) { gain = g; }
-	void processSample(double& sample);
+	void processSample (double& sample) const;
 
 private:
 	double gain;

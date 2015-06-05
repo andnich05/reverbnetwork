@@ -157,6 +157,12 @@
     <ClCompile Include="source\GuiOptionMenuInputSelector.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
+    <ClCompile Include="source\XmlPresetReadWrite.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="pugixml-1.6\src\pugixml.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -332,6 +338,9 @@
     </ClInclude>
     <ClInclude Include="source\GuiOptionMenuInputSelector.h">
       <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\XmlPresetReadWrite.h">
+      <Filter>Source Files\source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

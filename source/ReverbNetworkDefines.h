@@ -28,7 +28,7 @@
 //---------------------
 // Minimum, Maxmimum, Default values and units
 
-// Mixer input select in menu indexes
+// Mixer input select (menu index)
 #define MIN_MIXERINPUT 0 // <Not Connected>
 #define MAX_MIXERINPUT (1 + MAXINPUTS) // Incl. <Not Connected>
 #define DEF_MIXERINPUT 0
@@ -45,9 +45,9 @@
 #define DEF_MIXERBYPASS 0.0
 
 // Quantizer bitdepth in bits
-#define MIN_QUANTIZERBITDEPTH 1.0
-#define MAX_QUANTIZERBITDEPTH 32.0
-#define DEF_QUANTIZERBITDEPTH 32.0
+#define MIN_QUANTIZERBITDEPTH 1
+#define MAX_QUANTIZERBITDEPTH 32
+#define DEF_QUANTIZERBITDEPTH 32
 #define UNIT_QUANTIZERBITDEPTH "bit"
 
 // Quantizer Bypass in bool
@@ -209,7 +209,7 @@
 
 
 // ---------------
-// Intern parameters which aren't added to the Controller
+// Intern parameters which aren't added to the Controller (must be at the end of this list!)
 
 // PPM update parameters
 #define PARAM_PPMUPDATE_FIRST (PARAM_GENERALVSTOUTPUTSELECT_LAST + 1)

@@ -353,6 +353,10 @@ void ReverbNetworkController::editorRemoved(EditorView* editor)
 	}
 }
 
+void ReverbNetworkController::setParametersFromXml(const XmlPresetReadWrite::preset& presetStruct) {
+	setParamNormalized(PARAM_ALLPASSDELAY_FIRST, presetStruct.modules[0].allpassParameters.delay);
+}
+
 tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 {
 	// Create object
@@ -362,7 +366,7 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 	if (result == kResultTrue) {
 
 		// Read the values from the file stream and update the parameters
-		for (uint32 i = 0; i < parameters.getParameterCount(); ++i) {
+		for (int32 i = 0; i < parameters.getParameterCount(); ++i) {
 			setParamNormalized(i, preset.getNormValueByParamId(i));
 		}
 		// Update the GUI with the loaded parameters

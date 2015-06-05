@@ -4,6 +4,8 @@
 #include "GuiCustomTextEdit.h"
 #include "GuiOptionMenuInputSelector.h"
 
+#include "XmlPresetReadWrite.h"
+
 //#include "GuiHandleView.h"
 #include "ValueConversion.h"
 #include "ReverbNetworkEnums.h"
@@ -92,7 +94,12 @@ namespace Vst {
 	const int32_t id_general_optionMenu_vstOutputFirst = id_general_checkBox_moduleVisibleLast + 1;
 	const int32_t id_general_optionMenu_vstOutputLast = id_general_optionMenu_vstOutputFirst + MAXVSTOUTPUTS - 1;
 
-// Contructor is called every time the editor is reopened
+	// 
+	const int32_t id_general_button_openPreset = id_general_optionMenu_vstOutputLast + 1;
+	const int32_t id_general_button_savePreset = id_general_button_openPreset + 1;
+	const int32_t id_general_textEdit_presetFilePath = id_general_button_savePreset + 1;
+
+// Contructor is called every time the editor is reopened => watch out for memory leaks!
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
 , totalNumberOfCreatedModules(0)
@@ -234,6 +241,16 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		viewVstOutputSelect->addView(viewOutputSelectRow);
 	}
 	viewVstOutputSelect->setBackgroundColor(CColor(0, 0, 0, 0));
+
+	CTextEdit* textEditPresetFilePath = new CTextEdit(CRect(CPoint(0, 0), CPoint(170, 20)), this, id_general_textEdit_presetFilePath, "No Preset selected");
+	textEditPresetFilePath->setFont(kNormalFontSmall);
+	textEditPresetFilePath->setHoriAlign(CHoriTxtAlign::kLeftText);
+	CTextButton* buttonOpenPreset = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_openPreset, "Open Preset");
+	CTextButton* buttonSavePreset = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_savePreset, "Save Preset");
+	viewVstOutputSelect->addView(textEditPresetFilePath);
+	viewVstOutputSelect->addView(buttonOpenPreset);
+	viewVstOutputSelect->addView(buttonSavePreset);
+
 	temp = "VST Inputs: ";
 	temp.append(std::to_string((int)(MAXVSTINPUTS)));
 	CTextLabel* labelNumberOfVstInputs = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
@@ -601,6 +618,18 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(value));
 		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(value));
 	}
+	else if (tag == id_general_button_openPreset) {
+		if (pControl->isDirty()) {
+			CNewFileSelector* fileSelector = CNewFileSelector::create(this->getFrame(), CNewFileSelector::kSelectFile);
+			if (fileSelector) {
+				fileSelector->addFileExtension(CFileExtension("*.xml", "xml"));
+				fileSelector->setDefaultExtension(CFileExtension("*.xml", "xml"));
+				fileSelector->setTitle("Choose Preset XML file");
+				fileSelector->run(this);
+				fileSelector->forget();
+			}
+		}
+	}
 }
 
 void ReverbNetworkEditor::createAPModule() {
@@ -825,7 +854,7 @@ void ReverbNetworkEditor::createAPModule() {
 
 CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, 
 	//const float& valueEditMinValue, const float& valueEditMaxValue, GuiCustomTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
-	const float& valueEditMinValue, const float& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit) {
+	const double& valueEditMinValue, const double& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit) {
 
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
 	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -1008,6 +1037,18 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 
 CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
 {
+	if (message == CNewFileSelector::kSelectEndMessage) {
+		CNewFileSelector* selector = dynamic_cast<CNewFileSelector*>(sender);
+		if (selector) {
+			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", selector->getSelectedFile(0));
+			fclose(pFile);*/
+			
+			return kMessageNotified;
+		}
+	}
+	return VSTGUIEditor::notify(sender, message);
+
 	if (message == CVSTGUITimer::kMsgTimer)
 	{
 		// GUI refresh timer, can be set with setIdleRate()

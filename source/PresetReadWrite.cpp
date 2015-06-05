@@ -103,7 +103,7 @@ Steinberg::tresult PresetReadWrite::setParamterState(Steinberg::IBStream* state)
 Steinberg::tresult PresetReadWrite::getParamterState(Steinberg::IBStream* state) {
 	Steinberg::IBStreamer streamer(state, kLittleEndian);
 
-	// These three parameters determine whether a preset is compatible with the current Build or not!
+	// These three parameters determine whether a preset is compatible with the current Build or not
 	if (!streamer.writeInt32u(MAXVSTINPUTS)) return Steinberg::kResultFalse;
 	if (!streamer.writeInt32u(MAXVSTOUTPUTS)) return Steinberg::kResultFalse;
 	if (!streamer.writeInt32u(MAXMODULENUMBER)) return Steinberg::kResultFalse;

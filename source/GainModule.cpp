@@ -10,7 +10,7 @@ GainModule::~GainModule() {
 
 }
 
-void GainModule::processSample(double& sample) {
+void GainModule::processSample(double& sample) const {
 	sample *= gain;
 
 #ifdef LIMITER
