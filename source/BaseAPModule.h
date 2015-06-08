@@ -22,8 +22,8 @@ public:
 	// Update functions; all passed values are normalized VST parameters so that they have to be transformed accordingly
 	//void updateParameter(const unsigned int& pid, const double& normalizedValue);
 	void updateMixerGain(const int& inputNumber, const double& gain);
-	void updateMixerMute(const int& inputNumber, const bool& mute);
-	void updateMixerSolo(const int& inputNumber, const bool& solo);
+	void updateMixerMute(const int& inputNumber, const double& mute);
+	void updateMixerSolo(const int& inputNumber, const double& solo);
 	inline void switchMixerBypass(const double& bypass) { bypassMixer = (bypass != 0.0); }
 
 	void updateQuantizerQuantization(const double& quantization);
@@ -50,7 +50,7 @@ private:
 	SchroederAllpass* allpass;
 	GainModule* gainOutput;
 
-	unsigned int sampleRate;
+	double sampleRate;
 
 	// Bypass variables
 	bool bypassMixer;

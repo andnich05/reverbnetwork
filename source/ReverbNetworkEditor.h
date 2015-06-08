@@ -5,11 +5,10 @@
 #include <memory>
 
 #include "GuiBaseAPModule.h"
+#include "XmlPresetReadWrite.h"
 
 namespace Steinberg {
 namespace Vst {
-
-	
 
 class ReverbNetworkEditor :
 	public VSTGUIEditor,
@@ -32,7 +31,7 @@ public:
 
 	
 	// Create the GUI for a Allpass module
-	void createAPModule();
+	GuiBaseAPModule* createAPModule();
 	// Remove the GUI for a specified Allpass module
 	void removeAPModule(uint16 moduleNumber);
 
@@ -55,8 +54,10 @@ public:
 	void updateEditorFromController(ParamID tag, ParamValue value);
 
 private:
+	
+
 	// Holds pointer to the module GUIs
-	//std::vector<GuiBaseAPModule*> apGuiModules;
+	std::vector<GuiBaseAPModule*> apGuiModules;
 
 	double sampleRate;
 
@@ -82,7 +83,7 @@ private:
 	// Add a GUI element pointer to the vector with the GUI-ID as the index
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
 
-	// Conversion function can be a nullptr if no conversion is needed
+	// Conversion function, can be a nullptr if no conversion is needed
 	typedef double(*ConversionFunction)(const double&);
 	void updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr);
 
@@ -98,6 +99,10 @@ private:
 	std::vector<double> savedGainValues;
 	std::vector<bool> savedMuteValues;
 	std::vector<bool> savedSoloValues;
+
+	// Set the loaded xml preset
+	void setXmlPreset(const XmlPresetReadWrite::preset& presetStruct);
+
 
 };
 

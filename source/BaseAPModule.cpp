@@ -89,12 +89,12 @@ void BaseAPModule::updateMixerGain(const int& inputNumber, const double& gain) {
 	mixer->setInputGain(inputNumber, gain);
 }
 
-void BaseAPModule::updateMixerMute(const int& inputNumber, const bool& mute) { 
-	mixer->setInputMuted(inputNumber, mute); 
+void BaseAPModule::updateMixerMute(const int& inputNumber, const double& mute) { 
+	mixer->setInputMuted(inputNumber, mute != 0.0);
 }
 
-void BaseAPModule::updateMixerSolo(const int& inputNumber, const bool& solo) {
-	mixer->setInputSoloed(inputNumber, solo); 
+void BaseAPModule::updateMixerSolo(const int& inputNumber, const double& solo) {
+	mixer->setInputSoloed(inputNumber, solo != 0.0); 
 }
 
 void BaseAPModule::updateQuantizerQuantization(const double& quantization) {

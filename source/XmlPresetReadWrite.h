@@ -9,15 +9,22 @@ public:
 	XmlPresetReadWrite();
 	~XmlPresetReadWrite();
 
-	struct inputSlot {
-		int optionMenuIndex;
+	struct moduleOutput {
+		double gainFactor;
+		bool muted;
+		bool soloed;
+	};
+
+	struct vstInput {
 		double gainFactor;
 		bool muted;
 		bool soloed;
 	};
 
 	struct mixer {
-		std::vector<inputSlot> inputSlots;
+		std::vector<moduleOutput> moduleOutputs;
+		std::vector<vstInput> vstInputs;
+		std::vector<int> inputSlots;
 	};
 
 	struct quantizer {
@@ -46,6 +53,7 @@ public:
 
 	struct module {
 		std::string name;
+		unsigned int id;
 		double positionX;
 		double positionY;
 		bool isVisible;
@@ -73,6 +81,7 @@ public:
 	};
 
 	static const preset& loadPreset(const char* filePath);
+	inline static void unloadPreset() { loadedPreset = {}; }
 
 	static preset loadedPreset;
 	

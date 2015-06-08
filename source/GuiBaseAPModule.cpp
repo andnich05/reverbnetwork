@@ -32,6 +32,10 @@ unsigned int GuiBaseAPModule::getModuleId() {
 }
 
 void GuiBaseAPModule::collapseView(const bool& collapse) {
+	// If already collapsed or not collapsed: do nothing
+	if (collapse == isCollapsed()) {
+		return;
+	}
 	if (collapse) {
 		viewSize = this->getViewSize();
 		viewSize.setTopLeft(frameToLocal(viewSize.getTopLeft()));

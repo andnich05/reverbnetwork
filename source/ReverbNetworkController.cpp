@@ -63,7 +63,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// Mixer input selection
 		uint32 pidCounter = 0;
 		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
-			for (auto j = 0; j < MAXINPUTS; ++j) {
+			for (auto j = 0; j < MAXMODULEINPUTS; ++j) {
 				std::string temp = "";
 				temp.append("Module ");
 				temp.append(std::to_string(i));
