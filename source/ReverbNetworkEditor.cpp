@@ -103,6 +103,7 @@ namespace Vst {
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
 , totalNumberOfCreatedModules(0)
+, fileSelectorStyle(CNewFileSelector::kSelectFile)
 {
 
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
@@ -148,6 +149,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	{
 		return false;
 	}
+
+	xmlPreset = new XmlPresetReadWrite();
 
 	sampleRate = ValueConversion::getSampleRate();
 
@@ -308,7 +311,9 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 	{
 		guiElements.clear(); // Clear the GUI pointer so that VST can delete the objects (=> refCounter is 0)
 		apGuiModules.clear();
-		XmlPresetReadWrite::unloadPreset();
+		if (xmlPreset) {
+			delete xmlPreset;
+		}
 		totalNumberOfCreatedModules = 0;
 		allpassModuleIdPool.clear();
 		frame->forget();	// delete frame
@@ -628,12 +633,29 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(value));
 	}
 	else if (tag == id_general_button_openPreset) {
-		if (pControl->isDirty()) {
+		if (pControl->getValue() == 1.0) {
 			CNewFileSelector* fileSelector = CNewFileSelector::create(this->getFrame(), CNewFileSelector::kSelectFile);
 			if (fileSelector) {
 				fileSelector->addFileExtension(CFileExtension("*.xml", "xml"));
 				fileSelector->setDefaultExtension(CFileExtension("*.xml", "xml"));
 				fileSelector->setTitle("Choose Preset XML file");
+				fileSelector->setAllowMultiFileSelection(false);
+				fileSelectorStyle = CNewFileSelector::kSelectFile;
+				fileSelector->run(this);
+				fileSelector->forget();
+				pControl->setDirty();
+			}
+		}
+	}
+	else if (tag == id_general_button_savePreset) {
+		if (pControl->getValue() == 1.0) {
+			CNewFileSelector* fileSelector = CNewFileSelector::create(this->getFrame(), CNewFileSelector::kSelectSaveFile);
+			if (fileSelector) {
+				fileSelector->addFileExtension(CFileExtension("*.xml", "xml"));
+				fileSelector->setDefaultExtension(CFileExtension("*.xml", "xml"));
+				fileSelector->setTitle("Save Preset XML file");
+				fileSelector->setAllowMultiFileSelection(false);
+				fileSelectorStyle = CNewFileSelector::kSelectSaveFile;
 				fileSelector->run(this);
 				fileSelector->forget();
 				pControl->setDirty();
@@ -1047,19 +1069,21 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 	if (message == CNewFileSelector::kSelectEndMessage) {
 		CNewFileSelector* selector = dynamic_cast<CNewFileSelector*>(sender);
 		if (selector) {
-			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", selector->getSelectedFile(0));
-			fclose(pFile);*/
-			
-			XmlPresetReadWrite::unloadPreset();
-			setXmlPreset(XmlPresetReadWrite::loadPreset(selector->getSelectedFile(0)));
-
-			return kMessageNotified;
+			if (fileSelectorStyle == CNewFileSelector::kSelectFile) {
+				/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+				fprintf(pFile, "y(n): %s\n", selector->getSelectedFile(0));
+				fclose(pFile);*/
+				setXmlPreset(xmlPreset->loadPreset(selector->getSelectedFile(0)));
+				return kMessageNotified;
+			}
+			else if (fileSelectorStyle == CNewFileSelector::kSelectSaveFile) {
+				xmlPreset->savePreset(selector->getSelectedFile(0), getXmlPreset());
+				return kMessageNotified;
+			}
 		}
 	}
-	return VSTGUIEditor::notify(sender, message);
 
-	if (message == CVSTGUITimer::kMsgTimer)
+	else if (message == CVSTGUITimer::kMsgTimer)
 	{
 		// GUI refresh timer, can be set with setIdleRate()
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
@@ -1154,14 +1178,90 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->setParamNormalized(PARAM_OUTGAIN_FIRST + i, ValueConversion::valueToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
 		getController()->performEdit(PARAM_OUTGAIN_FIRST + i, ValueConversion::valueToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
 		getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
+		getController()->performEdit(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 	}
 	
 	for (unsigned int i = 0; i < presetStruct.generalParamters.vstOutputMenuIndexes.size(); ++i) {
 		getController()->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::valueToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
+		getController()->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::valueToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
 	}
 
 	// Update the GUI with the new parameter values
 	updateGuiWithControllerParameters();
+}
+
+const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
+	XmlPresetReadWrite::preset p = {}; // Initialize
+	
+	// build info...
+	p.name = dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->getText();
+	p.maxModuleNumber = MAXMODULENUMBER;
+	p.maxVstInputs = MAXVSTINPUTS;
+	p.maxVstOutputs = MAXVSTOUTPUTS;
+
+	for (unsigned int i = 0; i < apGuiModules.size(); ++i) {
+		XmlPresetReadWrite::module m = {};
+		// name...
+		m.id = apGuiModules[i]->getModuleId();
+		m.positionX = apGuiModules[i]->getViewSize().getTopLeft().x;
+		m.positionY = apGuiModules[i]->getViewSize().getTopLeft().y;
+		m.isVisible = apGuiModules[i]->isVisible();
+		m.isCollapsed = apGuiModules[i]->isCollapsed();
+
+		XmlPresetReadWrite::mixer mixer = {};
+		for (unsigned int j = 0; j < MAXMODULENUMBER; ++j) {
+			XmlPresetReadWrite::moduleOutput mo = {};
+			mo.gainFactor = ValueConversion::normToValueInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j));
+			mo.muted = getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + j);
+			mo.soloed = getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + j);
+			mixer.moduleOutputs.push_back(mo);
+		}
+		for (unsigned int j = 0; j < MAXVSTINPUTS; ++j) {
+			XmlPresetReadWrite::vstInput vi = {};
+			vi.gainFactor = ValueConversion::normToValueInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER));
+			vi.muted = getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER);
+			vi.soloed = getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER);
+			mixer.vstInputs.push_back(vi);
+		}
+		for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
+			mixer.inputSlots.push_back(ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + j)));
+		}
+		m.mixerParamters = mixer;
+
+		XmlPresetReadWrite::quantizer q = {};
+		q.quantization = ValueConversion::normToValueQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i));
+		q.bypass = getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i);
+		m.quantizerParamters = q;
+
+		XmlPresetReadWrite::equalizer e = {};
+		e.filterTypeIndex = ValueConversion::normToValueFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
+		e.frequency = ValueConversion::normToValueCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
+		e.qFactor = ValueConversion::normToValueQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
+		e.gain = ValueConversion::normToValueEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + i));
+		e.bypass = getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + i);
+		m.equalizerParameters = e;
+
+		XmlPresetReadWrite::allpass a = {};
+		a.delay = ValueConversion::normToValueDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + i));
+		a.decay = ValueConversion::normToValueDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
+		a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i);
+		m.allpassParameters = a;
+
+		XmlPresetReadWrite::output o = {};
+		o.gain = ValueConversion::normToValueOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + i));
+		o.bypass = getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + i);
+		m.outputParameters = o;
+
+		p.modules.push_back(m);
+	}
+
+	XmlPresetReadWrite::general g = {};
+	for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
+		g.vstOutputMenuIndexes.push_back(ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i)));
+	}
+	p.generalParamters = g;
+
+	return p;
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

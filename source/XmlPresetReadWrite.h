@@ -80,10 +80,10 @@ public:
 		general generalParamters;
 	};
 
-	static const preset& loadPreset(const char* filePath);
-	inline static void unloadPreset() { loadedPreset = {}; }
+	const preset loadPreset(const char* filePath);
+	void savePreset(const char* filePath, const preset& p);
 
-	static preset loadedPreset;
+private:
 	
 };
 

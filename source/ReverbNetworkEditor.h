@@ -2,10 +2,10 @@
 #define REVERBNETWORKEDITOR_H
 
 #include "public.sdk/source/vst/vstguieditor.h"
-#include <memory>
 
 #include "GuiBaseAPModule.h"
 #include "XmlPresetReadWrite.h"
+
 
 namespace Steinberg {
 namespace Vst {
@@ -100,8 +100,13 @@ private:
 	std::vector<bool> savedMuteValues;
 	std::vector<bool> savedSoloValues;
 
-	// Set the loaded xml preset
+	XmlPresetReadWrite* xmlPreset;
+	// Apply the loaded xml preset structure to the Vst plug-in
 	void setXmlPreset(const XmlPresetReadWrite::preset& presetStruct);
+	// Build the xml preset structure with all plugin-in parameters
+	const XmlPresetReadWrite::preset getXmlPreset();
+	// Differ between the possible file selector styles (no other possibility right now...)
+	CNewFileSelector::Style fileSelectorStyle;
 
 
 };

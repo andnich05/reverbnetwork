@@ -8,7 +8,7 @@ SchroederAllpass::SchroederAllpass(double sampleRate, double delay, double decay
 	, outputBuffer(nullptr)
 	, bufferPos(0) 
 	, sampleRate(sampleRate)
-	, delaySamples(sampleRate * delay)
+	, delaySamples((unsigned long)sampleRate * delay)
 	, delayTime(delay)
 	, decayTime(decay)
 {
