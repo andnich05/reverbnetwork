@@ -285,7 +285,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERGAIN_FIRST) % MAXINPUTS;
-						apModules[moduleNumber]->updateMixerGain(moduleInput, ValueConversion::normToValueInputGain(value));
+						apModules[moduleNumber]->updateMixerGain(moduleInput, ValueConversion::normToPlainInputGain(value));
 					}
 				}
 				else if (pid >= PARAM_MIXERINPUTMUTED_FIRST && pid <= PARAM_MIXERINPUTMUTED_LAST) {
@@ -313,7 +313,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_QUANTIZERBITDEPTH_FIRST && pid <= PARAM_QUANTIZERBITDEPTH_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_QUANTIZERBITDEPTH_FIRST]->updateQuantizerQuantization(ValueConversion::normToValueQuantization(value));
+						apModules[pid - PARAM_QUANTIZERBITDEPTH_FIRST]->updateQuantizerQuantization(ValueConversion::normToPlainQuantization(value));
 					}
 				}
 				else if (pid >= PARAM_QUANTIZERBYPASS_FIRST && pid <= PARAM_QUANTIZERBYPASS_LAST) {
@@ -323,23 +323,23 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						value = ValueConversion::normToValueFilterTypeSelect(value);
+						value = ValueConversion::normToPlainFilterTypeSelect(value);
 						apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateEqualizerFilterType(value);
 					}
 				}
 				else if (pid >= PARAM_EQCENTERFREQ_FIRST && pid <= PARAM_EQCENTERFREQ_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToValueCenterFreq(value));
+						apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToPlainCenterFreq(value));
 					}
 				}
 				else if (pid >= PARAM_EQQFACTOR_FIRST && pid <= PARAM_EQQFACTOR_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(ValueConversion::normToValueQFactor(value));
+						apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(ValueConversion::normToPlainQFactor(value));
 					}
 				}
 				else if (pid >= PARAM_EQGAIN_FIRST && pid <= PARAM_EQGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToValueEqGain(value));
+						apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToPlainEqGain(value));
 					}
 				}
 				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
@@ -349,12 +349,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_ALLPASSDELAY_FIRST && pid <= PARAM_ALLPASSDELAY_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateAllpassDelay(ValueConversion::normToValueDelay(value));
+						apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateAllpassDelay(ValueConversion::normToPlainDelay(value));
 					}
 				}
 				else if (pid >= PARAM_ALLPASSDECAY_FIRST && pid <= PARAM_ALLPASSDECAY_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(ValueConversion::normToValueDecay(value));
+						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(ValueConversion::normToPlainDecay(value));
 					}
 				}
 				else if (pid >= PARAM_ALLPASSBYPASS_FIRST && pid <= PARAM_ALLPASSBYPASS_LAST) {
@@ -364,7 +364,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid >= PARAM_OUTGAIN_FIRST && pid <= PARAM_OUTGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToValueOutputGain(value));
+						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToPlainOutputGain(value));
 					}
 				}
 				else if (pid >= PARAM_OUTBYPASS_FIRST && pid <= PARAM_OUTBYPASS_LAST) {
@@ -376,7 +376,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				else if (pid >= PARAM_GENERALVSTOUTPUTSELECT_FIRST && pid <= PARAM_GENERALVSTOUTPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						int index = (int)(std::round(ValueConversion::normToValueMixerInputSelect(value)));
+						int index = (int)(ValueConversion::normToPlainMixerInputSelect(value));
 						if (index == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectVstOutput(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
 						}
@@ -518,7 +518,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 			}
 		
-
+		
 		/*if (paramChanges && fVuPPMOld != fVuPPM)
 		{
 			int32 index = 0;

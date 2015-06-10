@@ -105,14 +105,10 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 , totalNumberOfCreatedModules(0)
 , fileSelectorStyle(CNewFileSelector::kSelectFile)
 {
-
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
-	//allpassModuleIdPool.resize(MAXMODULENUMBER, false);
-	savedGainValues.resize(MAXINPUTS * MAXMODULENUMBER, ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
+	savedGainValues.resize(MAXINPUTS * MAXMODULENUMBER, ValueConversion::plainToNormInputGain(DEF_MIXERGAIN));
 	savedMuteValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
 	savedSoloValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
-	//guiElements.resize(10000);
-	//ptrTextEditStringToValueConversion = &textEditStringToValueConversion;
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
 
@@ -369,11 +365,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
 
 		uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
-		int index = (int)(std::round(value));
 		// Update the VST parameter variable
-		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::valueToNormMixerInputSelect(value));
-		// Update the module member variable (is called in process() in processor), BUT!!!: it also influences the VST parameter (why, Steinberg, why?) so it MUST be normalized!
-		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::valueToNormMixerInputSelect(value));
+		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::plainToNormMixerInputSelect(value));
+		// Update the module member variable (is called in process() in processor), BUT!!!: it also influences the VST parameter so it MUST be normalized!
+		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::plainToNormMixerInputSelect(value));
 
 		// Get the menu entry that was selected before the current one and enable it in all OptionMenus
 		int lastIndex = dynamic_cast<GuiOptionMenuInputSelector*>(guiElements[tag])->getLastIndex();
@@ -384,7 +379,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		if (value == 0.0) {
 			// 0.0 means <Select> is selected in the dropdown menu
 			// Set default values for the GUI elements and disable them
-			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::valueToNormInputGain(DEF_MIXERGAIN));
+			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::plainToNormInputGain(DEF_MIXERGAIN));
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(DEF_MIXERGAIN);
 			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(0.0);
 			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(0.0);
@@ -396,10 +391,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		else {
 			uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
 			// Restore the saved gain value and update the GUI
-			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedGainValues[moduleNumber * MAXINPUTS + index - 1]);
-			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::normToValueInputGain(savedGainValues[moduleNumber * MAXINPUTS + index - 1]));
-			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedMuteValues[moduleNumber * MAXINPUTS + index - 1]);
-			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedSoloValues[moduleNumber * MAXINPUTS + index - 1]);
+			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedGainValues[moduleNumber * MAXINPUTS + value - 1]);
+			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(ValueConversion::normToPlainInputGain(savedGainValues[moduleNumber * MAXINPUTS + value - 1]));
+			guiElements[id_mixer_button_muteFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedMuteValues[moduleNumber * MAXINPUTS + value - 1]);
+			guiElements[id_mixer_button_soloFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setValue(savedSoloValues[moduleNumber * MAXINPUTS + value - 1]);
 			// Enable the GUI elements in case they were disabled
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(true);
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_optionMenu_inputSelectFirst)]->setMouseEnabled(true);
@@ -414,7 +409,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	else if (tag >= id_mixer_knob_gainFirst && tag <= id_mixer_knob_gainLast)  {
 		uint16 moduleNumber = (tag - id_mixer_knob_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
-		int inputIndex = (int)(std::round(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue()));
+		int inputIndex = (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue());
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() != 0.0) {
 			// 0.0 means <Select> is selected
 			// Knob value already normalized => no conversion needed
@@ -424,7 +419,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			savedGainValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value;
 		}
 		// Update the textEdit
-		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToValueInputGain(value));
+		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToPlainInputGain(value));
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
 		/*for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
 			if (guiElements[id_mixer_optionMenu_inputSelectFirst + i] != guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]) {
@@ -432,7 +427,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				if (guiElements[id_mixer_optionMenu_inputSelectFirst + i]->getValue() == guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue()) {
 					// Synchronize the GUI elements
 					guiElements[id_mixer_knob_gainFirst + i]->setValue(value);
-					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(ValueConversion::normToValueInputGain(value));
+					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(ValueConversion::normToPlainInputGain(value));
 				}
 			}
 		}*/
@@ -441,21 +436,21 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
 		fclose(pFile);*/
-		int inputIndex = (int)(std::round(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue()));
+		int inputIndex = (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue());
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue() != 0.0) {
 			uint16 moduleNumber = (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
-			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::valueToNormInputGain(value));
-			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::valueToNormInputGain(value));
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::plainToNormInputGain(value));
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::plainToNormInputGain(value));
 			// Update the knob above the textEdit
-			savedGainValues[moduleNumber * MAXINPUTS + inputIndex - 1] = ValueConversion::valueToNormInputGain(value);
+			savedGainValues[moduleNumber * MAXINPUTS + inputIndex - 1] = ValueConversion::plainToNormInputGain(value);
 		}
-		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormInputGain(value));
+		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormInputGain(value));
 		guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
 		/*for (uint16 i = 0; i < MAXMODULEINPUTS; ++i) {
 			if (guiElements[id_mixer_optionMenu_inputSelectFirst + i] != guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]) {
 				if (guiElements[id_mixer_optionMenu_inputSelectFirst + i]->getValue() == guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue()) {
 					guiElements[id_mixer_textEdit_gainFirst + i]->setValue(value);
-					guiElements[id_mixer_knob_gainFirst + i]->setValue(ValueConversion::valueToNormInputGain(value));
+					guiElements[id_mixer_knob_gainFirst + i]->setValue(ValueConversion::plainToNormInputGain(value));
 				}
 			}
 		}*/
@@ -482,13 +477,13 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_quantizer_knob_quantizationFirst && tag <= id_quantizer_knob_quantizationLast)  {
 		controller->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_knob_quantizationFirst), value);
 		controller->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_knob_quantizationFirst), value);
-		guiElements[id_quantizer_textEdit_quantizationFirst + (tag - id_quantizer_knob_quantizationFirst)]->setValue(ValueConversion::normToValueQuantization(value));
+		guiElements[id_quantizer_textEdit_quantizationFirst + (tag - id_quantizer_knob_quantizationFirst)]->setValue(ValueConversion::normToPlainQuantization(value));
 		guiElements[id_quantizer_textEdit_quantizationFirst + (tag - id_quantizer_knob_quantizationFirst)]->invalid();
 	}
 	else if (tag >= id_quantizer_textEdit_quantizationFirst && tag <= id_quantizer_textEdit_quantizationLast)  {
-		controller->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_textEdit_quantizationFirst), ValueConversion::valueToNormQuantization(value));
-		controller->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_textEdit_quantizationFirst), ValueConversion::valueToNormQuantization(value));
-		guiElements[id_quantizer_knob_quantizationFirst + (tag - id_quantizer_textEdit_quantizationFirst)]->setValue(ValueConversion::valueToNormQuantization(value));
+		controller->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_textEdit_quantizationFirst), ValueConversion::plainToNormQuantization(value));
+		controller->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_textEdit_quantizationFirst), ValueConversion::plainToNormQuantization(value));
+		guiElements[id_quantizer_knob_quantizationFirst + (tag - id_quantizer_textEdit_quantizationFirst)]->setValue(ValueConversion::plainToNormQuantization(value));
 		guiElements[id_quantizer_knob_quantizationFirst + (tag - id_quantizer_textEdit_quantizationFirst)]->setDirty();
 		pControl->sizeToFit();
 	}
@@ -498,43 +493,43 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	// Equalizer
 	else if (tag >= id_equalizer_optionMenu_filterTypeFirst && tag <= id_equalizer_optionMenu_filterTypeLast)  {
-		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::valueToNormFilterTypeSelect(value));
-		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::valueToNormFilterTypeSelect(value));
+		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
+		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
 	}
 	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
 		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
 		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
-		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(ValueConversion::normToValueCenterFreq(value));
+		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(ValueConversion::normToPlainCenterFreq(value));
 		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_centerFreqFirst && tag <= id_equalizer_textEdit_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::valueToNormCenterFreq(value));
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::valueToNormCenterFreq(value));
-		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::valueToNormCenterFreq(value));
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormCenterFreq(value));
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormCenterFreq(value));
+		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::plainToNormCenterFreq(value));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_knob_qFactorFirst && tag <= id_equalizer_knob_qFactorLast)  {
 		controller->setParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_knob_qFactorFirst), value);
 		controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_knob_qFactorFirst), value);
-		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - id_equalizer_knob_qFactorFirst)]->setValue(ValueConversion::normToValueQFactor(value));
+		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - id_equalizer_knob_qFactorFirst)]->setValue(ValueConversion::normToPlainQFactor(value));
 		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - id_equalizer_knob_qFactorFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_qFactorFirst && tag <= id_equalizer_textEdit_qFactorLast)  {
-		controller->setParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), ValueConversion::valueToNormQFactor(value));
-		controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), ValueConversion::valueToNormQFactor(value));
-		guiElements[id_equalizer_knob_qFactorFirst + (tag - id_equalizer_textEdit_qFactorFirst)]->setValue(ValueConversion::valueToNormQFactor(value));
+		controller->setParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), ValueConversion::plainToNormQFactor(value));
+		controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_textEdit_qFactorFirst), ValueConversion::plainToNormQFactor(value));
+		guiElements[id_equalizer_knob_qFactorFirst + (tag - id_equalizer_textEdit_qFactorFirst)]->setValue(ValueConversion::plainToNormQFactor(value));
 		guiElements[id_equalizer_knob_qFactorFirst + (tag - id_equalizer_textEdit_qFactorFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_knob_gainFirst && tag <= id_equalizer_knob_gainLast)  {
 		controller->setParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_knob_gainFirst), value);
 		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_knob_gainFirst), value);
-		guiElements[id_equalizer_textEdit_gainFirst + (tag - id_equalizer_knob_gainFirst)]->setValue(ValueConversion::normToValueEqGain(value));
+		guiElements[id_equalizer_textEdit_gainFirst + (tag - id_equalizer_knob_gainFirst)]->setValue(ValueConversion::normToPlainEqGain(value));
 		guiElements[id_equalizer_textEdit_gainFirst + (tag - id_equalizer_knob_gainFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_gainFirst && tag <= id_equalizer_textEdit_gainLast)  {
-		controller->setParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), ValueConversion::valueToNormEqGain(value));
-		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), ValueConversion::valueToNormEqGain(value));
-		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormEqGain(value));
+		controller->setParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), ValueConversion::plainToNormEqGain(value));
+		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), ValueConversion::plainToNormEqGain(value));
+		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormEqGain(value));
 		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_switch_bypassFirst && tag <= id_equalizer_switch_bypassLast)  {
@@ -545,21 +540,21 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_allpass_knob_delayFirst && tag <= id_allpass_knob_delayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_knob_delayFirst), value);
 		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_knob_delayFirst), value);
-		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::normToValueDelay(value));
-		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::delayMillisecondsToSamples(ValueConversion::normToValueDelay(value)));
+		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::normToPlainDelay(value));
+		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::delayMillisecondsToSamples(ValueConversion::normToPlainDelay(value)));
 		//guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->invalid();
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_knob_delayFirst)]
-			->setValue(ValueConversion::calculateDiffK(ValueConversion::normToValueDelay(value), guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue()));
+			->setValue(ValueConversion::calculateDiffK(ValueConversion::normToPlainDelay(value), guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue()));
 			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToValueDelay(value) / 1000).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToValueDelay(guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string(-60.0 * ((ValueConversion::normToValueDelay(value) / 1000) / guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(value) / 1000).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(-60.0 * ((ValueConversion::normToPlainDelay(value) / 1000) / guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
 			fclose(pFile);*/
 	}
 	else if (tag >= id_allpass_textEdit_delayFirst && tag <= id_allpass_textEdit_delayLast)  {
-		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::valueToNormDelay(value));
-		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::valueToNormDelay(value));
-		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(ValueConversion::valueToNormDelay(value));
+		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::plainToNormDelay(value));
+		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::plainToNormDelay(value));
+		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(ValueConversion::plainToNormDelay(value));
 		//guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(value * sampleRate / 1000);
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_delayFirst)]
@@ -567,9 +562,9 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 
 	}
 	else if (tag >= id_allpass_textEdit_samplesDelayFirst && tag <= id_allpass_textEdit_samplesDelayLast)  {
-		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::valueToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
-		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::valueToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
-		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::valueToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
+		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::plainToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
+		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::plainToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
+		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::plainToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
 		//guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::delaySamplesToMilliseconds(value));
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]
@@ -579,15 +574,15 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_allpass_knob_decayFirst && tag <= id_allpass_knob_decayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), value);
 		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_knob_decayFirst), value);
-		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->setValue(ValueConversion::normToValueDecay(value));
+		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->setValue(ValueConversion::normToPlainDecay(value));
 		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_decayFirst)]->invalid();
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_knob_decayFirst)]
-			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_decayFirst)]->getValue(), ValueConversion::normToValueDecay(value)));
+			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_decayFirst)]->getValue(), ValueConversion::normToPlainDecay(value)));
 	}
 	else if (tag >= id_allpass_textEdit_decayFirst && tag <= id_allpass_textEdit_decayLast)  {
-		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::valueToNormDecay(value));
-		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::valueToNormDecay(value));
-		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setValue(ValueConversion::valueToNormDecay(value));
+		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::plainToNormDecay(value));
+		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_decayFirst), ValueConversion::plainToNormDecay(value));
+		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setValue(ValueConversion::plainToNormDecay(value));
 		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_decayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_decayFirst)]
 			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_decayFirst)]->getValue(), value));
@@ -600,13 +595,13 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_output_knob_gainFirst && tag <= id_output_knob_gainLast)  {
 		controller->setParamNormalized(PARAM_OUTGAIN_FIRST + (tag - id_output_knob_gainFirst), value);
 		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_knob_gainFirst), value);
-		guiElements[id_output_textEdit_gainFirst + (tag - id_output_knob_gainFirst)]->setValue(ValueConversion::normToValueOutputGain(value));
+		guiElements[id_output_textEdit_gainFirst + (tag - id_output_knob_gainFirst)]->setValue(ValueConversion::normToPlainOutputGain(value));
 		guiElements[id_output_textEdit_gainFirst + (tag - id_output_knob_gainFirst)]->invalid();
 	}
 	else if (tag >= id_output_textEdit_gainFirst && tag <= id_output_textEdit_gainLast)  {
-		controller->setParamNormalized(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), ValueConversion::valueToNormOutputGain(value));
-		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), ValueConversion::valueToNormOutputGain(value));
-		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setValue(ValueConversion::valueToNormOutputGain(value));
+		controller->setParamNormalized(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), ValueConversion::plainToNormOutputGain(value));
+		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), ValueConversion::plainToNormOutputGain(value));
+		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormOutputGain(value));
 		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setDirty();
 	}
 	else if (tag >= id_output_switch_bypassFirst && tag <= id_output_switch_bypassLast)  {
@@ -629,8 +624,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
-		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(value));
-		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::valueToNormMixerInputSelect(value));
+		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
+		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
 	}
 	else if (tag == id_general_button_openPreset) {
 		if (pControl->getValue() == 1.0) {
@@ -914,6 +909,8 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	groupView->addView(knob);
 	groupView->addView(groupTextEdit);
 	groupView->sizeToFit();
+	getController()->getParamNormalized(2);
+
 	return groupView;
 }
 
@@ -1003,7 +1000,7 @@ void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
 //bool textEditStringToValueConversion(UTF8StringPtr txt, float& result, void* userData);
 
 void ReverbNetworkEditor::updateGuiWithControllerParameters() {
-	//updateGuiParameter(PARAM_MIXERINPUTSELECT_FIRST, PARAM_MIXERINPUTSELECT_LAST, id_mixer_optionMenu_inputSelectFirst, &ValueConversion::normToValueMixerInputSelect);
+	//updateGuiParameter(PARAM_MIXERINPUTSELECT_FIRST, PARAM_MIXERINPUTSELECT_LAST, id_mixer_optionMenu_inputSelectFirst, &ValueConversion::normToPlainMixerInputSelect);
 	//updateGuiParameter(PARAM_MIXERGAIN_FIRST, PARAM_MIXERGAIN_LAST, id_mixer_knob_gainFirst, nullptr);
 
 	for (auto i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
@@ -1020,7 +1017,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	}
 
 	for (uint32 i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
-		int menuIndex = (int)(std::round(ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (i - id_mixer_optionMenu_inputSelectFirst)))));
+		int menuIndex = ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (i - id_mixer_optionMenu_inputSelectFirst)));
 		guiElements[i]->setValue(menuIndex);
 		valueChanged(guiElements[i]);
 	}
@@ -1028,7 +1025,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBITDEPTH_FIRST, PARAM_QUANTIZERBITDEPTH_LAST, id_quantizer_knob_quantizationFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBYPASS_FIRST, PARAM_QUANTIZERBYPASS_LAST, id_quantizer_switch_bypassFirst, nullptr);
-	updateGuiParameter(PARAM_EQFILTERTYPE_FIRST, PARAM_EQFILTERTYPE_LAST, id_equalizer_optionMenu_filterTypeFirst, &ValueConversion::normToValueFilterTypeSelect);
+	updateGuiParameter(PARAM_EQFILTERTYPE_FIRST, PARAM_EQFILTERTYPE_LAST, id_equalizer_optionMenu_filterTypeFirst, &ValueConversion::normToPlainFilterTypeSelect);
 	updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
 	updateGuiParameter(PARAM_EQQFACTOR_FIRST, PARAM_EQQFACTOR_LAST, id_equalizer_knob_qFactorFirst, nullptr);
 	updateGuiParameter(PARAM_EQGAIN_FIRST, PARAM_EQGAIN_LAST, id_equalizer_knob_gainFirst, nullptr);
@@ -1038,7 +1035,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_ALLPASSBYPASS_FIRST, PARAM_ALLPASSBYPASS_LAST, id_allpass_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_OUTGAIN_FIRST, PARAM_OUTGAIN_LAST, id_output_knob_gainFirst, nullptr);
 	updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
-	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToValueMixerInputSelect);
+	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToPlainMixerInputSelect);
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
 }
 
@@ -1070,9 +1067,6 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		CNewFileSelector* selector = dynamic_cast<CNewFileSelector*>(sender);
 		if (selector) {
 			if (fileSelectorStyle == CNewFileSelector::kSelectFile) {
-				/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-				fprintf(pFile, "y(n): %s\n", selector->getSelectedFile(0));
-				fclose(pFile);*/
 				setXmlPreset(xmlPreset->loadPreset(selector->getSelectedFile(0)));
 				return kMessageNotified;
 			}
@@ -1091,9 +1085,6 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			{
 				guiElements[id_output_ppmFirst + i]->setValue(1.0 - ((lastPpmValues[i] - 1.0) * (lastPpmValues[i] - 1.0)));
 				//lastPpmValues[i] = 0.0;
-				/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-				fprintf(pFile, "y(n): %s\n", std::to_string(lastPpmValues[i]).c_str());
-				fclose(pFile);*/
 			}
 		}
 	}
@@ -1126,8 +1117,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		// Set mixer parameters	
 		// Module outputs first
 		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.moduleOutputs.size(); ++k) {
-			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::valueToNormInputGain(presetStruct.modules[i].mixerParamters.moduleOutputs[k].gainFactor));
-			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::valueToNormInputGain(presetStruct.modules[i].mixerParamters.moduleOutputs[k].gainFactor));
+			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.moduleOutputs[k].gainFactor));
+			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.moduleOutputs[k].gainFactor));
 			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].muted);
 			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].muted);
 			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].soloed);
@@ -1135,8 +1126,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		}
 		// Then the Vst inputs
 		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.vstInputs.size(); ++k) {
-			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), ValueConversion::valueToNormInputGain(presetStruct.modules[i].mixerParamters.vstInputs[k].gainFactor));
-			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), ValueConversion::valueToNormInputGain(presetStruct.modules[i].mixerParamters.vstInputs[k].gainFactor));
+			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.vstInputs[k].gainFactor));
+			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.vstInputs[k].gainFactor));
 			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].muted);
 			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].muted);
 			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].soloed);
@@ -1144,46 +1135,46 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		}
 		// Finally the input slots
 		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.inputSlots.size(); ++k) {
-			getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::valueToNormMixerInputSelect(presetStruct.modules[i].mixerParamters.inputSlots[k]));
-			getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::valueToNormMixerInputSelect(presetStruct.modules[i].mixerParamters.inputSlots[k]));
+			getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(presetStruct.modules[i].mixerParamters.inputSlots[k]));
+			getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(presetStruct.modules[i].mixerParamters.inputSlots[k]));
 		}
 
 		// Set quantizer parameters
-		getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::valueToNormQuantization(presetStruct.modules[i].quantizerParamters.quantization));
-		getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::valueToNormQuantization(presetStruct.modules[i].quantizerParamters.quantization));
+		getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::plainToNormQuantization(presetStruct.modules[i].quantizerParamters.quantization));
+		getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::plainToNormQuantization(presetStruct.modules[i].quantizerParamters.quantization));
 		getController()->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i, presetStruct.modules[i].quantizerParamters.bypass);
 		getController()->performEdit(PARAM_QUANTIZERBYPASS_FIRST + i, presetStruct.modules[i].quantizerParamters.bypass);
 
 		// Set equalizer parameters
-		getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::valueToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
-		getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::valueToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
-		getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::valueToNormCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
-		getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::valueToNormCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
-		getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + i, ValueConversion::valueToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
-		getController()->performEdit(PARAM_EQQFACTOR_FIRST + i, ValueConversion::valueToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
-		getController()->setParamNormalized(PARAM_EQGAIN_FIRST + i, ValueConversion::valueToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
-		getController()->performEdit(PARAM_EQGAIN_FIRST + i, ValueConversion::valueToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
+		getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
+		getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
+		getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
+		getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
+		getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
+		getController()->performEdit(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
+		getController()->setParamNormalized(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
+		getController()->performEdit(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
 		getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.gain);
 		getController()->performEdit(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.gain);
 
 		// Set allpass parameters
-		getController()->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::valueToNormDelay(presetStruct.modules[i].allpassParameters.delay));
-		getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::valueToNormDelay(presetStruct.modules[i].allpassParameters.delay));
-		getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::valueToNormDecay(presetStruct.modules[i].allpassParameters.decay));
-		getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::valueToNormDecay(presetStruct.modules[i].allpassParameters.decay));
+		getController()->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::plainToNormDelay(presetStruct.modules[i].allpassParameters.delay));
+		getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::plainToNormDelay(presetStruct.modules[i].allpassParameters.delay));
+		getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::plainToNormDecay(presetStruct.modules[i].allpassParameters.decay));
+		getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::plainToNormDecay(presetStruct.modules[i].allpassParameters.decay));
 		getController()->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i, presetStruct.modules[i].allpassParameters.bypass);
 		getController()->performEdit(PARAM_ALLPASSBYPASS_FIRST + i, presetStruct.modules[i].allpassParameters.bypass);
 
 		// Set output parameters
-		getController()->setParamNormalized(PARAM_OUTGAIN_FIRST + i, ValueConversion::valueToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
-		getController()->performEdit(PARAM_OUTGAIN_FIRST + i, ValueConversion::valueToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
+		getController()->setParamNormalized(PARAM_OUTGAIN_FIRST + i, ValueConversion::plainToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
+		getController()->performEdit(PARAM_OUTGAIN_FIRST + i, ValueConversion::plainToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
 		getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 		getController()->performEdit(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 	}
 	
 	for (unsigned int i = 0; i < presetStruct.generalParamters.vstOutputMenuIndexes.size(); ++i) {
-		getController()->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::valueToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
-		getController()->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::valueToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
+		getController()->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
+		getController()->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
 	}
 
 	// Update the GUI with the new parameter values
@@ -1211,44 +1202,44 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		XmlPresetReadWrite::mixer mixer = {};
 		for (unsigned int j = 0; j < MAXMODULENUMBER; ++j) {
 			XmlPresetReadWrite::moduleOutput mo = {};
-			mo.gainFactor = ValueConversion::normToValueInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j));
+			mo.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j));
 			mo.muted = getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + j);
 			mo.soloed = getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + j);
 			mixer.moduleOutputs.push_back(mo);
 		}
 		for (unsigned int j = 0; j < MAXVSTINPUTS; ++j) {
 			XmlPresetReadWrite::vstInput vi = {};
-			vi.gainFactor = ValueConversion::normToValueInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER));
+			vi.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER));
 			vi.muted = getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER);
 			vi.soloed = getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER);
 			mixer.vstInputs.push_back(vi);
 		}
 		for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
-			mixer.inputSlots.push_back(ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + j)));
+			mixer.inputSlots.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + j)));
 		}
 		m.mixerParamters = mixer;
 
 		XmlPresetReadWrite::quantizer q = {};
-		q.quantization = ValueConversion::normToValueQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i));
+		q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i));
 		q.bypass = getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i);
 		m.quantizerParamters = q;
 
 		XmlPresetReadWrite::equalizer e = {};
-		e.filterTypeIndex = ValueConversion::normToValueFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
-		e.frequency = ValueConversion::normToValueCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
-		e.qFactor = ValueConversion::normToValueQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
-		e.gain = ValueConversion::normToValueEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + i));
+		e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
+		e.frequency = ValueConversion::normToPlainCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
+		e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
+		e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + i));
 		e.bypass = getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + i);
 		m.equalizerParameters = e;
 
 		XmlPresetReadWrite::allpass a = {};
-		a.delay = ValueConversion::normToValueDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + i));
-		a.decay = ValueConversion::normToValueDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
+		a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + i));
+		a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
 		a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i);
 		m.allpassParameters = a;
 
 		XmlPresetReadWrite::output o = {};
-		o.gain = ValueConversion::normToValueOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + i));
+		o.gain = ValueConversion::normToPlainOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + i));
 		o.bypass = getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + i);
 		m.outputParameters = o;
 
@@ -1257,7 +1248,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 	XmlPresetReadWrite::general g = {};
 	for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
-		g.vstOutputMenuIndexes.push_back(ValueConversion::normToValueMixerInputSelect(getController()->getParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i)));
+		g.vstOutputMenuIndexes.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i)));
 	}
 	p.generalParamters = g;
 

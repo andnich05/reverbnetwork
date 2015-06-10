@@ -87,8 +87,6 @@ private:
 	typedef double(*ConversionFunction)(const double&);
 	void updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr);
 
-	// http://www.kvraudio.com/forum/viewtopic.php?p=5432847
-	//typedef bool(*CTextEditStringToValueProc) (UTF8StringPtr txt, float& result, void* userData);
 	
 	// Messages to Editor
 	CMessageResult notify(CBaseObject* sender, const char* message);
