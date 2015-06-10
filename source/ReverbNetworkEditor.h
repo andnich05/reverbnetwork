@@ -106,6 +106,12 @@ private:
 	// Differ between the possible file selector styles (no other possibility right now...)
 	CNewFileSelector::Style fileSelectorStyle;
 
+	XmlPresetReadWrite::module tempModuleParameters;
+	XmlPresetReadWrite::module defaultModuleParamters;
+	// Copy parameters of specified module into the specified module structure
+	void copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::module& m);
+	// Paste the parameters from the specified structure into the specified module (can be the 'defaultModuleParamters' => set to default)
+	void pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::module& m);
 
 };
 

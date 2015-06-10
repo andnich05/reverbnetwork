@@ -14,11 +14,19 @@ namespace Steinberg {
 namespace Vst {
 
 	// Title bar GUI ids (identification through dynamic_cast)
-	const int32_t id_collapseModule = 0;
-	const int32_t id_closeModule = id_collapseModule + 1;
+	const int32_t id_module_button_collapseFirst = 0;
+	const int32_t id_module_button_collapseLast = id_module_button_collapseFirst + MAXMODULENUMBER - 1;
+	const int32_t id_module_button_hideFirst = id_module_button_collapseLast + 1;
+	const int32_t id_module_button_hideLast = id_module_button_hideFirst + MAXMODULENUMBER - 1;
+	const int32_t id_module_button_copyParametersFirst = id_module_button_hideLast + 1;
+	const int32_t id_module_button_copyParametersLast = id_module_button_copyParametersFirst + MAXMODULENUMBER - 1;
+	const int32_t id_module_button_pasteParametersFirst = id_module_button_copyParametersLast + 1;
+	const int32_t id_module_button_pasteParametersLast = id_module_button_pasteParametersFirst + MAXMODULENUMBER - 1;
+	const int32_t id_module_button_defaultParametersFirst = id_module_button_pasteParametersLast + 1;
+	const int32_t id_module_button_defaultParametersLast = id_module_button_defaultParametersFirst + MAXMODULENUMBER - 1;
 
 	// Mixer GUI ids
-	const int32_t id_mixer_optionMenu_inputSelectFirst = id_closeModule + 1;
+	const int32_t id_mixer_optionMenu_inputSelectFirst = id_module_button_defaultParametersLast + 1;
 	const int32_t id_mixer_optionMenu_inputSelectLast = id_mixer_optionMenu_inputSelectFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
 	const int32_t id_mixer_knob_gainFirst = id_mixer_optionMenu_inputSelectLast + 1;
 	const int32_t id_mixer_knob_gainLast = id_mixer_knob_gainFirst + MAXMODULENUMBER*MAXMODULEINPUTS - 1;
@@ -105,6 +113,8 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 , totalNumberOfCreatedModules(0)
 , fileSelectorStyle(CNewFileSelector::kSelectFile)
 {
+	tempModuleParameters = {};
+	defaultModuleParamters = {};
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
 	savedGainValues.resize(MAXINPUTS * MAXMODULENUMBER, ValueConversion::plainToNormInputGain(DEF_MIXERGAIN));
 	savedMuteValues.resize(MAXINPUTS * MAXMODULENUMBER, 0.0);
@@ -205,6 +215,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewModuleListMain->setBackgroundColor(CColor(0, 0, 0, 0));
 	viewModuleScrollList->setBackgroundColor(CColor(50, 50, 50, 255));
 	viewModuleList->setBackgroundColor(CColor(0, 0, 0, 0));
+
+	// Save the default module parameters for later
+	if (apGuiModules.size() > 0) {
+		copyModuleParameters(0, defaultModuleParamters);
+	}
 
 	// Create VST output selection 
 	CRowColumnView* viewVstOutputSelect = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
@@ -325,40 +340,28 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	fclose(pFile);*/
 	double value = (double)pControl->getValue();
 	
-	if (tag == id_collapseModule) {
-		// Make sure create function is called only one time (without it it would be two times)
-		//if (pControl->isDirty()) {
-			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
-				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
-					//allpassModuleIdPool[dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->getModuleId()] = false;
-					if (dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->isCollapsed()) {
-						dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->collapseView(false);
-					}
-					else {
-						dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->collapseView(true);
-					}
-					break;
-				}
-			}
-		//}
-	}
-	else if (tag == id_closeModule) {	// Close button of AP module pressed
-		if (pControl->isDirty()) {
-			// Find the right module
-			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
-				if (workspaceView->getView(i) == pControl->getParentView()->getParentView()) {
-					// Update check box in the module list
-					guiElements[id_general_checkBox_moduleVisibleFirst + i]->setValue(0.f);
-					// Update parameter
-					valueChanged(guiElements[id_general_checkBox_moduleVisibleFirst + i]);
-					break;
-				}
-			}
-
-			//workspaceView->removeView(pControl->getParentView()->getParentView());
-			// Update the workspace view
-			//workspaceView->setDirty();
+	if (tag >= id_module_button_collapseFirst && tag <= id_module_button_collapseLast) {
+		if (apGuiModules[tag - id_module_button_collapseFirst]->isCollapsed()) {
+			apGuiModules[tag - id_module_button_collapseFirst]->collapseView(false);
 		}
+		else {
+			apGuiModules[tag - id_module_button_collapseFirst]->collapseView(true);
+		}
+	}
+	else if (tag >= id_module_button_hideFirst && tag <= id_module_button_hideLast) {	// Close button of AP module pressed
+		// Update check box in the module list
+		guiElements[id_general_checkBox_moduleVisibleFirst + (tag - id_module_button_hideFirst)]->setValue(0.f);
+		// Update parameter
+		valueChanged(guiElements[id_general_checkBox_moduleVisibleFirst + (tag - id_module_button_hideFirst)]);
+	}
+	else if (tag >= id_module_button_copyParametersFirst && tag <= id_module_button_copyParametersLast) {
+		copyModuleParameters(tag - id_module_button_copyParametersFirst, tempModuleParameters);
+	}
+	else if (tag >= id_module_button_pasteParametersFirst && tag <= id_module_button_pasteParametersLast) {
+		pasteModuleParameters(tag - id_module_button_pasteParametersFirst, tempModuleParameters);
+	}
+	else if (tag >= id_module_button_defaultParametersFirst && tag <= id_module_button_defaultParametersLast) {
+		pasteModuleParameters(tag - id_module_button_defaultParametersFirst, defaultModuleParamters);
 	}
 	// CAnimKnob accepts only normalized values (BUG?)
 	// Mixer
@@ -485,7 +488,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + (tag - id_quantizer_textEdit_quantizationFirst), ValueConversion::plainToNormQuantization(value));
 		guiElements[id_quantizer_knob_quantizationFirst + (tag - id_quantizer_textEdit_quantizationFirst)]->setValue(ValueConversion::plainToNormQuantization(value));
 		guiElements[id_quantizer_knob_quantizationFirst + (tag - id_quantizer_textEdit_quantizationFirst)]->setDirty();
-		pControl->sizeToFit();
 	}
 	else if (tag >= id_quantizer_switch_bypassFirst && tag <= id_quantizer_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + (tag - id_quantizer_switch_bypassFirst), value);
@@ -660,27 +662,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 }
 
 GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
-	// Handle view to grab and move the module with the mouse
-	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 650, 25));
-	handleView->setBackgroundColor(CColor(0, 0, 0, 0));
 
-	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_closeModule, "X");
-	addGuiElementPointer(closeViewButton, id_closeModule);
-	handleView->addView(closeViewButton);
-	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 40, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_collapseModule, "^");
-	addGuiElementPointer(hideViewButton, id_collapseModule);
-	hideViewButton->setStyle(CTextButton::kOnOffStyle);
-	handleView->addView(hideViewButton);
-
-	CRect handleViewSize = handleView->getViewSize();
-	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + hideViewButton->getWidth() + 12));
-
-	GuiCustomTextEdit* moduleTitle = new GuiCustomTextEdit(handleViewSize, this, -1);
-	moduleTitle->setBackColor(CColor(0, 0, 0, 0));
-	moduleTitle->setFrameColor(CColor(0, 0, 0, 0));
-	handleView->addView(moduleTitle);
-
-	// Id in order to identify the module in the valueChanged() function
+	// Id in order to identify the module
 	uint32 moduleId = 0;
 	// Find the lowest id number which is not already taken
 	for (uint32 i = 0; i < allpassModuleIdPool.size(); ++i) {
@@ -691,6 +674,38 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 			break;
 		}
 	}
+
+	// Handle view to grab and move the module with the mouse
+	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 650, 25));
+	handleView->setBackgroundColor(CColor(0, 0, 0, 0));
+
+	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_module_button_hideFirst + moduleId, "X");
+	addGuiElementPointer(closeViewButton, id_module_button_hideFirst + moduleId);
+	handleView->addView(closeViewButton);
+	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 40, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_module_button_collapseFirst + moduleId, "^");
+	addGuiElementPointer(hideViewButton, id_module_button_collapseFirst + moduleId);
+	hideViewButton->setStyle(CTextButton::kOnOffStyle);
+	handleView->addView(hideViewButton);
+	CTextButton* defaultParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 220, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_defaultParametersFirst + moduleId, "Default");
+	addGuiElementPointer(defaultParametersButton, id_module_button_defaultParametersFirst + moduleId);
+	handleView->addView(defaultParametersButton);
+	CTextButton* copyParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 160, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_copyParametersFirst + moduleId, "Copy");
+	addGuiElementPointer(copyParametersButton, id_module_button_copyParametersFirst + moduleId);
+	handleView->addView(copyParametersButton);
+	CTextButton* pasteParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 100, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_pasteParametersFirst + moduleId, "Paste");
+	addGuiElementPointer(pasteParametersButton, id_module_button_pasteParametersFirst + moduleId);
+	handleView->addView(pasteParametersButton);
+
+	CRect handleViewSize = handleView->getViewSize();
+	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + hideViewButton->getWidth() + defaultParametersButton->getWidth() + 
+		copyParametersButton->getWidth() + pasteParametersButton->getWidth() + 26));
+
+	GuiCustomTextEdit* moduleTitle = new GuiCustomTextEdit(handleViewSize, this, -1);
+	moduleTitle->setBackColor(CColor(0, 0, 0, 0));
+	moduleTitle->setFrameColor(CColor(0, 0, 0, 0));
+	handleView->addView(moduleTitle);
+
+	
 	
 	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
 		CPoint(0, 0)), handleViewSize, moduleId);
@@ -1104,7 +1119,6 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		// Set position
 		apGuiModules[i]->setViewSize(CRect(CPoint(presetStruct.modules[i].positionX, presetStruct.modules[i].positionY), CPoint(apGuiModules[i]->getWidth(), apGuiModules[i]->getHeight())));
 		apGuiModules[i]->setMouseableArea(apGuiModules[i]->getViewSize());
-		apGuiModules[i]->setDirty();
 		// Set Visible
 		//apGuiModules[i]->setVisible(presetStruct.modules[i].isVisible);
 		getController()->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + i, presetStruct.modules[i].isVisible);
@@ -1170,6 +1184,9 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->performEdit(PARAM_OUTGAIN_FIRST + i, ValueConversion::plainToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
 		getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 		getController()->performEdit(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
+
+		apGuiModules[i]->setDirty();
+		workspaceView->setDirty();
 	}
 	
 	for (unsigned int i = 0; i < presetStruct.generalParamters.vstOutputMenuIndexes.size(); ++i) {
@@ -1179,6 +1196,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 
 	// Update the GUI with the new parameter values
 	updateGuiWithControllerParameters();
+
 }
 
 const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
@@ -1253,6 +1271,115 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 	p.generalParamters = g;
 
 	return p;
+}
+
+void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::module& m) {
+	XmlPresetReadWrite::mixer mixer = {};
+	for (unsigned int j = 0; j < MAXMODULENUMBER; ++j) {
+		XmlPresetReadWrite::moduleOutput mo = {};
+		mo.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + sourceModuleId * MAXINPUTS + j));
+		mo.muted = getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + sourceModuleId * MAXINPUTS + j);
+		mo.soloed = getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + sourceModuleId * MAXINPUTS + j);
+		mixer.moduleOutputs.push_back(mo);
+	}
+	for (unsigned int j = 0; j < MAXVSTINPUTS; ++j) {
+		XmlPresetReadWrite::vstInput vi = {};
+		vi.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + sourceModuleId * MAXINPUTS + j + MAXMODULENUMBER));
+		vi.muted = getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + sourceModuleId * MAXINPUTS + j + MAXMODULENUMBER);
+		vi.soloed = getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + sourceModuleId * MAXINPUTS + j + MAXMODULENUMBER);
+		mixer.vstInputs.push_back(vi);
+	}
+	for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
+		mixer.inputSlots.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + sourceModuleId * MAXMODULEINPUTS + j)));
+	}
+	m.mixerParamters = mixer;
+
+	XmlPresetReadWrite::quantizer q = {};
+	q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + sourceModuleId));
+	q.bypass = getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId);
+	m.quantizerParamters = q;
+
+	XmlPresetReadWrite::equalizer e = {};
+	e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + sourceModuleId));
+	e.frequency = ValueConversion::normToPlainCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
+	e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + sourceModuleId));
+	e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + sourceModuleId));
+	e.bypass = getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + sourceModuleId);
+	m.equalizerParameters = e;
+
+	XmlPresetReadWrite::allpass a = {};
+	a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + sourceModuleId));
+	a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + sourceModuleId));
+	a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + sourceModuleId);
+	m.allpassParameters = a;
+
+	XmlPresetReadWrite::output o = {};
+	o.gain = ValueConversion::normToPlainOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + sourceModuleId));
+	o.bypass = getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + sourceModuleId);
+	m.outputParameters = o;
+}
+
+void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::module& m) {
+	// Set mixer parameters	
+	// Module outputs first
+	for (unsigned int k = 0; k < m.mixerParamters.moduleOutputs.size(); ++k) {
+		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k, ValueConversion::plainToNormInputGain(m.mixerParamters.moduleOutputs[k].gainFactor));
+		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k, ValueConversion::plainToNormInputGain(m.mixerParamters.moduleOutputs[k].gainFactor));
+		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].muted);
+		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].muted);
+		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].soloed);
+		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].soloed);
+	}
+	// Then the Vst inputs
+	for (unsigned int k = 0; k < m.mixerParamters.vstInputs.size(); ++k) {
+		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.vstInputs[k].gainFactor));
+		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.vstInputs[k].gainFactor));
+		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].muted);
+		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].muted);
+		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].soloed);
+		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].soloed);
+	}
+	// Finally the input slots
+	for (unsigned int k = 0; k < m.mixerParamters.inputSlots.size(); ++k) {
+		getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParamters.inputSlots[k]));
+		getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParamters.inputSlots[k]));
+	}
+
+	// Set quantizer parameters
+	getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + destModuleId, ValueConversion::plainToNormQuantization(m.quantizerParamters.quantization));
+	getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + destModuleId, ValueConversion::plainToNormQuantization(m.quantizerParamters.quantization));
+	getController()->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + destModuleId, m.quantizerParamters.bypass);
+	getController()->performEdit(PARAM_QUANTIZERBYPASS_FIRST + destModuleId, m.quantizerParamters.bypass);
+
+	// Set equalizer parameters
+	getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));
+	getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));
+	getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormCenterFreq(m.equalizerParameters.frequency));
+	getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormCenterFreq(m.equalizerParameters.frequency));
+	getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
+	getController()->performEdit(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
+	getController()->setParamNormalized(PARAM_EQGAIN_FIRST + destModuleId, ValueConversion::plainToNormEqGain(m.equalizerParameters.gain));
+	getController()->performEdit(PARAM_EQGAIN_FIRST + destModuleId, ValueConversion::plainToNormEqGain(m.equalizerParameters.gain));
+	getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + destModuleId, m.equalizerParameters.gain);
+	getController()->performEdit(PARAM_EQBYPASS_FIRST + destModuleId, m.equalizerParameters.gain);
+
+	// Set allpass parameters
+	getController()->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + destModuleId, ValueConversion::plainToNormDelay(m.allpassParameters.delay));
+	getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + destModuleId, ValueConversion::plainToNormDelay(m.allpassParameters.delay));
+	getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + destModuleId, ValueConversion::plainToNormDecay(m.allpassParameters.decay));
+	getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + destModuleId, ValueConversion::plainToNormDecay(m.allpassParameters.decay));
+	getController()->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + destModuleId, m.allpassParameters.bypass);
+	getController()->performEdit(PARAM_ALLPASSBYPASS_FIRST + destModuleId, m.allpassParameters.bypass);
+
+	// Set output parameters
+	getController()->setParamNormalized(PARAM_OUTGAIN_FIRST + destModuleId, ValueConversion::plainToNormOutputGain(m.outputParameters.gain));
+	getController()->performEdit(PARAM_OUTGAIN_FIRST + destModuleId, ValueConversion::plainToNormOutputGain(m.outputParameters.gain));
+	getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + destModuleId, m.outputParameters.bypass);
+	getController()->performEdit(PARAM_OUTBYPASS_FIRST + destModuleId, m.outputParameters.bypass);
+
+	apGuiModules[destModuleId]->setDirty();
+	workspaceView->setDirty();
+	updateGuiWithControllerParameters();
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

@@ -243,12 +243,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 #endif
 	// If the user changed a control in the plugin (e.g. Delay Time) => update values
 	if (data.inputParameterChanges)
-	{
-		// Hier nix anlegen weil totale Verschwendung (wird aufgerufen auch wenn nix geändert wurde)
-		
+	{	
 		// Number of changed parameters in the parameter list
 		//int32 paramChangeCount = data.inputParameterChanges->getParameterCount ();
 		// For each parameter change
+		// !!! Get paramter count seems to be host dependent: e.g. VST3PluginTestHost caps the maximum number at 256 (WHY???), Adobe Audition and Reaper and probably all other VST Hosts on this planet do not 
+		// Adobe Audition does not call the process() Function until for example 'Play' is pressed => until then the paramters are not updated
 		for (int32 index = 0; index < data.inputParameterChanges->getParameterCount(); index++)
 		{
 			IParamValueQueue* queue = data.inputParameterChanges->getParameterData (index);
@@ -281,6 +281,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						}
 					}
 				}*/
+
 				if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXINPUTS;	// Calculate the module number

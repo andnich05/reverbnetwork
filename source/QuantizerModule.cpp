@@ -78,21 +78,21 @@ void QuantizerModule::processSample(double& sample) {
 
 // Method 2: Without bit shifting
 //------------------------------------
-	// Convert signed to unsigned
-	long unsigned tu = temp + (long unsigned)min32bitValueSigned;
-
-	// Those variables are fixed for the specified bitsToReset! => needs to be done only one time!
-	unsigned long newMax = (pow(2, 32 - bitsToReset) - 1) * (pow(2, bitsToReset) - 1);
-	double factor = (pow(2, 32) - 1) / newMax;
-	//double lg2f = log2f(factor);
-	unsigned long n = factor * (pow(2, bitsToReset) - 1);
-	//---
-
-	// Divide the sample, round it and multiply it again
-	tu = (long unsigned)(std::round((double)tu / n)) * n;
 	
-	// Convert back to signed
-	temp = tu - min32bitValueSigned;
+	if (bitsToReset < 32) {
+		// Convert signed to unsigned
+		long unsigned tu = temp + (long unsigned)min32bitValueSigned;
+		
+		double n = (pow(2.0, 32.0) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1);
+
+		// Divide the sample by the new number n, round it and multiply it with n again
+		tu = (long unsigned)(std::round((double)tu / n)) * n;
+
+		// Convert back to signed
+		temp = tu - min32bitValueSigned;
+	}
+	
+	
 //-----------------------------------
 
 	// Convert the integer back to double
