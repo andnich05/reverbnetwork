@@ -9,8 +9,10 @@ class GuiWorkspaceView :
 	public CScrollView
 {
 public:
-	GuiWorkspaceView();
+	GuiWorkspaceView(const CRect& size, const CRect& containerSize, int32_t style, CCoord scrollbarWidth = 16, CBitmap* pBackground = 0);
 	~GuiWorkspaceView();
+
+	bool changeViewZOrder(CView* view, int32_t newIndex);	///< change view z order position
 };
 
 } 

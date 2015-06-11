@@ -15,7 +15,7 @@ class GuiBaseAPModule :
 {
 public:
 	// Handle region is the region where the user can drag the module by pressing and holding the mouse button
-	GuiBaseAPModule(const CRect& size, const CRect& handleRegion, unsigned int moduleId);
+	GuiBaseAPModule(const CRect& size, const CRect& handleRegion, unsigned int moduleId, CBaseObject* editor);
 
 	virtual CMouseEventResult onMouseDown(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMouseEventResult onMouseMoved(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
@@ -27,6 +27,8 @@ public:
 	void collapseView(const bool& collapse);
 	inline bool isCollapsed() { return collapsed; }
 
+	static const char* kModuleWantsFocus;
+
 private:
 	double mousePressedX;
 	double mousePressedY;
@@ -35,6 +37,7 @@ private:
 	CRect viewSize;
 	unsigned int moduleId;
 	bool collapsed;
+	CBaseObject* editor;
 };
 
 }

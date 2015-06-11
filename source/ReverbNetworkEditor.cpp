@@ -619,6 +619,9 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
 				if (dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->getModuleId() == tag - id_general_checkBox_moduleVisibleFirst) {
 					workspaceView->getView(i)->setVisible(value != 0.0);
+					if (value == 1.0) {
+						dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(workspaceView->getView(i), workspaceView->getNbViews() - 1);
+					}
 					break;
 				}
 			}
@@ -708,7 +711,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	
 	
 	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
-		CPoint(0, 0)), handleViewSize, moduleId);
+		CPoint(0, 0)), handleViewSize, moduleId, this);
 	baseModuleView->setBackgroundColor(CColor(50, 50, 50, 255));
 
 	std::string temp = "Allpass Module ";
@@ -1078,6 +1081,19 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 
 CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
 {
+	if (message == GuiBaseAPModule::kModuleWantsFocus) {
+		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", message);
+		fclose(pFile);*/
+		for (auto&& module : apGuiModules) {
+			if (module == dynamic_cast<GuiBaseAPModule*>(sender)) {
+				// GetView() called on a scrollview returns the view of the scrollCONTAINER, so getParentView on the returned view returns the scrollcontainer
+				// There seems to be no other possibility to get Container of the ScrollView
+				// Since the Container has no function changeViewZOrder, this function has to be called on the scrollContainer!
+				dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(dynamic_cast<GuiBaseAPModule*>(sender), workspaceView->getNbViews() - 1);
+			}
+		}
+	}
 	if (message == CNewFileSelector::kSelectEndMessage) {
 		CNewFileSelector* selector = dynamic_cast<CNewFileSelector*>(sender);
 		if (selector) {
@@ -1091,10 +1107,10 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			}
 		}
 	}
-
 	else if (message == CVSTGUITimer::kMsgTimer)
 	{
 		// GUI refresh timer, can be set with setIdleRate()
+		// Update PPMs of the modules
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			if (guiElements[id_output_ppmFirst + i])
 			{

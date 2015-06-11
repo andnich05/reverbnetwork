@@ -11,11 +11,14 @@
 
 namespace VSTGUI {
 
-GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int moduleId)
+const char* GuiBaseAPModule::kModuleWantsFocus = "Module wants focus";
+
+GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int moduleId, CBaseObject* editor)
 : CViewContainer(rect)
 , handleRegion(handleRegion)
 , viewSize(rect)
 , moduleId(moduleId)
+, editor(editor)
 {
 	this->handleRegion.offset(-1, -1);
 	backgroundOffset (0, 0);
@@ -49,13 +52,13 @@ void GuiBaseAPModule::collapseView(const bool& collapse) {
 	}
 	collapsed = collapse;
 	this->setMouseableArea(this->getViewSize());
-	this->getParentView()->invalid();
-	this->invalid();
+	this->getParentView()->setDirty();
 }
 
 CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 {
 	this->setDirty();
+	editor->notify(this, kModuleWantsFocus);
 	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "mouse down");
 	fclose(pFile);*/
@@ -113,7 +116,6 @@ CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState
 
 CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
 {	
-
 	if (mousePressed) {
 		//this->size.moveTo(where.x - mousePressedX, where.y - mousePressedY);
 		this->setViewSize(CRect(CPoint(where.x - mousePressedX, where.y - mousePressedY), CPoint(this->getWidth(), this->getHeight())));
