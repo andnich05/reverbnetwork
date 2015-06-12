@@ -151,9 +151,6 @@
     <ClCompile Include="source\QuantizerModule.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiCustomTextEdit.cpp">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClCompile>
     <ClCompile Include="source\GuiOptionMenuInputSelector.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
@@ -162,6 +159,12 @@
     </ClCompile>
     <ClCompile Include="pugixml-1.6\src\pugixml.cpp">
       <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiCustomValueEdit.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiCustomTextEdit.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -333,14 +336,17 @@
     <ClInclude Include="source\QuantizerModule.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiCustomTextEdit.h">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClInclude>
     <ClInclude Include="source\GuiOptionMenuInputSelector.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
     <ClInclude Include="source\XmlPresetReadWrite.h">
       <Filter>Source Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiCustomValueEdit.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiCustomTextEdit.h">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

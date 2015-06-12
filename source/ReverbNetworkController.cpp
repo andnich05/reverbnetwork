@@ -51,6 +51,8 @@
 namespace Steinberg {
 namespace Vst {
 
+std::string ReverbNetworkController::pluginVersion = "0";
+
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 {
@@ -309,6 +311,7 @@ IPlugView* PLUGIN_API ReverbNetworkController::createView(const char* name)
 	if (name && strcmp (name, "editor") == 0)
 	{
 		ReverbNetworkEditor* view = new ReverbNetworkEditor(this);
+		view->setPluginVersion(pluginVersion);
 		return view;
 	}
 	return 0;
@@ -353,9 +356,7 @@ void ReverbNetworkController::editorRemoved(EditorView* editor)
 	}
 }
 
-void ReverbNetworkController::setParametersFromXml(const XmlPresetReadWrite::preset& presetStruct) {
-	setParamNormalized(PARAM_ALLPASSDELAY_FIRST, presetStruct.modules[0].allpassParameters.delay);
-}
+
 
 tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 {
@@ -412,6 +413,14 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	}
 
 	return result;
+}
+
+void ReverbNetworkController::setVersion(std::string version) {
+	pluginVersion = version;
+}
+
+std::string ReverbNetworkController::getVersion() {
+	return pluginVersion;
 }
 
 

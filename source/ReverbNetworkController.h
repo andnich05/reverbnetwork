@@ -72,15 +72,19 @@ public:
 	void addDependentView(ReverbNetworkEditor* view);
 	void removeDependentView(ReverbNetworkEditor* view);
 
-	void setParametersFromXml(const XmlPresetReadWrite::preset& presetStruct);
 
 	tresult PLUGIN_API setComponentState(IBStream* state);
 
 	tresult PLUGIN_API setParamNormalized(ParamID tag, ParamValue value);
 	tresult PLUGIN_API setParamNormalizedFromPreset(ParamID tag, ParamValue value);
 
+	static void setVersion(std::string version);
+	static std::string getVersion();
+
 private:
 	TArray <ReverbNetworkEditor*> viewsArray;
+
+	static std::string pluginVersion;
 };
 
 }} // namespaces

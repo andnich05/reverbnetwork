@@ -18,6 +18,7 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 	pugi::xml_parse_result result = doc.load_file(filePath);
 	if (result) {
 		pugi::xml_node tool = doc.child("reverbNetwork").child("preset").child("buildInformation");
+		loadedPreset.buildVersion = tool.child("version").text().as_string();
 		loadedPreset.buildDate = (long)tool.child("date").text().as_llong();
 		loadedPreset.buildTime = (long)tool.child("time").text().as_llong();
 		loadedPreset.name = doc.child("reverbNetwork").child("preset").child("name").text().as_string();
@@ -109,6 +110,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) {
 	pugi::xml_node presetNode = doc.append_child("reverbNetwork").append_child("preset");
 
 	pugi::xml_node infoNode = presetNode.append_child("buildInformation");
+	infoNode.append_child("version").text().set(p.buildVersion.c_str());
 	infoNode.append_child("date").text().set(p.buildDate);
 	infoNode.append_child("time").text().set(p.buildTime);
 	infoNode.append_child("maxModuleNumber").text().set(p.maxModuleNumber);

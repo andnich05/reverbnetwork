@@ -53,8 +53,11 @@ public:
 	// Update GUI from Controller (and/or from Processor with e.g. sample values)
 	void updateEditorFromController(ParamID tag, ParamValue value);
 
+	inline void setPluginVersion(std::string version) { pluginVersion = version; }
+
 private:
 	
+	std::string pluginVersion;
 
 	// Holds pointer to the module GUIs
 	std::vector<GuiBaseAPModule*> apGuiModules;
@@ -92,11 +95,6 @@ private:
 	CMessageResult notify(CBaseObject* sender, const char* message);
 
 	std::vector<double> lastPpmValues;
-
-	// Saved mixer values
-	std::vector<double> savedGainValues;
-	std::vector<bool> savedMuteValues;
-	std::vector<bool> savedSoloValues;
 
 	XmlPresetReadWrite* xmlPreset;
 	// Apply the loaded xml preset structure to the Vst plug-in

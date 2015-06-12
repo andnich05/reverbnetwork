@@ -71,6 +71,7 @@ public:
 
 	struct preset {
 		std::string name;
+		std::string buildVersion;
 		long int buildDate;
 		long int buildTime;
 		int maxModuleNumber;

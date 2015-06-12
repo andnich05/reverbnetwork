@@ -45,9 +45,14 @@
 #define stringPluginName "ReverbNetwork"
 
 
-BEGIN_FACTORY_DEF ("Hochschule RheinMain", 
-				   "http://www.hs-rm.de", 
-				   "mailto:a@b.de")
+BEGIN_FACTORY_DEF("Hochschule RheinMain",
+	"http://www.hs-rm.de",
+	"mailto:a@b.de")
+
+	//---
+	// Set plugin version 
+	Steinberg::Vst::ReverbNetworkController::setVersion(FULL_VERSION_STR);
+	//---
 
 	DEF_CLASS2 (INLINE_UID_FROM_FUID(Steinberg::Vst::ReverbNetworkProcessorUID),
 				PClassInfo::kManyInstances,

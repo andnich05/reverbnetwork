@@ -43,17 +43,6 @@ public:
 	// userData contains the precision for the value to be displayed
 	static bool textEditValueToStringConversion(float value, char utf8String[256], void* userData);
 
-	/*static bool textEditStringToValueConversionQFactor(const char* txt, float& result, void* userData);
-	static bool textEditValueToStringConversionQFactor(float value, char utf8String[256], void* userData);
-	static bool textEditStringToValueConversionEqGain(const char* txt, float& result, void* userData);
-	static bool textEditValueToStringConversionEqGain(float value, char utf8String[256], void* userData);
-	static bool textEditStringToValueConversionDelay(const char* txt, float& result, void* userData);
-	static bool textEditValueToStringConversionDelay(float value, char utf8String[256], void* userData);
-	static bool textEditStringToValueConversionDecay(const char* txt, float& result, void* userData);
-	static bool textEditValueToStringConversionDecay(float value, char utf8String[256], void* userData);
-	static bool textEditStringToValueConversionGain(const char* txt, float& result, void* userData);
-	static bool textEditValueToStringConversionGain(float value, char utf8String[256], void* userData);*/
-
 private:
 	static double sampleRate;
 

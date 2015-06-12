@@ -13,13 +13,12 @@ namespace VSTGUI {
 		virtual	void takeFocus() VSTGUI_OVERRIDE_VMETHOD;
 		virtual	void looseFocus() VSTGUI_OVERRIDE_VMETHOD;
 
-		void setStringToTruncate(const std::string& str, bool truncateSpaceBeforeString);
+		void setStringToTruncate(const std::string& str);
 
 	private:
 		char stringToTruncate[256];
-		char oldString[256];
 	};
-	
+
 }
 
 #endif // GUICUSTOMTEXTEDIT_H
