@@ -11,9 +11,12 @@ public:
 	void setQuantization(const double& q);
 
 private:
+	void calculateFactor();
+
 	unsigned int bitsToReset;
 	// (min.)32 bit mask
 	long int mask;
+	double factor;
 
 };
 

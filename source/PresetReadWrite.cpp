@@ -56,9 +56,6 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_MODULEVISIBLE_FIRST; i <= PARAM_MODULEVISIBLE_LAST; ++i) {
 		parameterValues.push_back(DEF_MODULEVISIBLE);
 	}
-	for (auto i = PARAM_PPMUPDATE_FIRST; i <= PARAM_PPMUPDATE_LAST; ++i) {
-		parameterValues.push_back(DEF_PPMVALUE);
-	}
 	for (auto i = PARAM_GENERALVSTOUTPUTSELECT_FIRST; i <= PARAM_GENERALVSTOUTPUTSELECT_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormMixerInputSelect(DEF_OUTPUTSELECT));
 	}

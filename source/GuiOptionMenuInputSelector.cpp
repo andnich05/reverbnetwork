@@ -30,6 +30,8 @@ void GuiOptionMenuInputSelector::setValue(float val)
 
 	// to force the redraw
 	setDirty();
+
 }
+
 
 }

@@ -29,7 +29,14 @@ void GuiCustomValueEdit::takeFocus()
 	char* pos = strstr(str, stringToTruncate);
 	// If the string was found (means pos is not a nullpointer) => clear the string by setting it to zero
 	if (pos) {
-		*pos = 0;
+		pos[0] = 0;
+		char temp[256];
+		strncpy(temp, pos, 256);
+
+		// Set the new text without the string
+		CTextLabel::setText(temp);
+		if (platformControl)
+			platformControl->setText(getText());
 	}
 	
 	// Set the new text without the string

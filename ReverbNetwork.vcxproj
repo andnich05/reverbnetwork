@@ -218,6 +218,7 @@
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_uidescription_win32.cpp" />
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
     <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
+    <ClCompile Include="source\GuiCustomSplashScreen.cpp" />
     <ClCompile Include="source\GuiCustomTextEdit.cpp" />
     <ClCompile Include="pugixml-1.6\src\pugixml.cpp" />
     <ClCompile Include="source\GuiOptionMenuInputSelector.cpp" />
@@ -262,6 +263,7 @@
     <ClInclude Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstguieditor.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
+    <ClInclude Include="source\GuiCustomSplashScreen.h" />
     <ClInclude Include="source\GuiCustomTextEdit.h" />
     <ClInclude Include="source\GuiOptionMenuInputSelector.h" />
     <ClInclude Include="source\QuantizerModule.h" />

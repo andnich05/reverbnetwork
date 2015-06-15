@@ -15,7 +15,7 @@ namespace VSTGUI {
 			strncpy(stringToTruncate, " ", 2);
 		}*/
 		// Save the string
-		strncat(stringToTruncate, str.c_str(), 256);
+		strncpy(stringToTruncate, str.c_str(), 256);
 	}
 
 	void GuiCustomTextEdit::takeFocus()

@@ -5,8 +5,16 @@
 const double max32bitValueSigned = pow(2, 32) / 2 - 1;
 const double min32bitValueSigned = pow(2, 32) / 2;
 
+enum BitCorrectionMethod {
+	withBitShifting,
+	withoutBitShifting,
+	withoutScaling
+};
+
+#define BITCORRECTIONMETHOD withoutScaling
+
 QuantizerModule::QuantizerModule(unsigned int quantization) 
-	: mask(-1) {
+	: mask(-1), factor(0.0) {
 	setQuantization(quantization);
 }
 
@@ -16,6 +24,7 @@ QuantizerModule::~QuantizerModule() {
 
 void QuantizerModule::setQuantization(const double& q) {
 	bitsToReset = 32 - (unsigned int)(std::round(q));
+	calculateFactor();
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(q).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(bitsToReset).c_str());
@@ -23,7 +32,6 @@ void QuantizerModule::setQuantization(const double& q) {
 }
 
 void QuantizerModule::processSample(double& sample) {
-
 	// Convert to 32 bit signed integer
 	long int temp = 0;
 	if (sample >= 0.0) {
@@ -45,55 +53,50 @@ void QuantizerModule::processSample(double& sample) {
 		}
 	}
 
-// Method 1: with bit shifting
-//--------------------------------
-	// Convert signed to unsigned
-	/*long unsigned tu = temp + min32bitValueSigned;
-
-	// Reset bits
-	mask = -1; // ...111111
-	mask <<= bitsToReset; // ...111000
-	tu &= mask;
-
-	// Calculate "spread factor"
-	double factor = (pow(2.0, (double)bitsToReset) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1.0);
-
-	// Shift bits which has not been resetted to the right
-	long int temp2 = tu >> bitsToReset;
-	if (tu < 0) {
-		// Make sure zeros are added when shifting right
-		long int shift = -1;
-		shift <<= (32 - bitsToReset);
-		temp2 ^= shift;
-	}
-
-	// Mulitply spread factor with shifted samples
-	long int toOr = (long int)(std::round(factor * (double)(temp2)));
-	// unsigned masked sample OR spreaded number
-	tu = tu | toOr;
-	
-	// Convert back to signed
-	temp = tu - min32bitValueSigned;*/
-//------------------------------------
-
-// Method 2: Without bit shifting
-//------------------------------------
-	
-	if (bitsToReset < 32) {
+	if (BITCORRECTIONMETHOD == withBitShifting) {
+		// Method 1: with bit shifting
+		//--------------------------------
 		// Convert signed to unsigned
-		long unsigned tu = temp + (long unsigned)min32bitValueSigned;
-		
-		double n = (pow(2.0, 32.0) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1);
+		unsigned long tu = temp + (unsigned long)min32bitValueSigned;
 
-		// Divide the sample by the new number n, round it and multiply it with n again
-		tu = (long unsigned)(std::round((double)tu / n)) * n;
+		tu &= mask;
+
+		// Shift bits which has not been resetted to the right
+		unsigned long int shifted = tu >> bitsToReset;
+
+		// Mulitply spread factor with shifted samples
+		unsigned long int toOr = (long int)(std::round(factor * (double)(shifted)));
+		// unsigned masked sample OR spreaded number
+		tu = tu | toOr;
 
 		// Convert back to signed
-		temp = tu - min32bitValueSigned;
+		temp = tu - (unsigned long)min32bitValueSigned;
+		//------------------------------------
 	}
-	
-	
-//-----------------------------------
+	else if (BITCORRECTIONMETHOD == withoutBitShifting) {
+		// Method 2: Without bit shifting
+		//------------------------------------
+		if (bitsToReset < 32) {
+			// Convert signed to unsigned
+			unsigned long tu = temp + (unsigned long)min32bitValueSigned;
+
+			// Divide the sample by the new number n, round it and multiply it with n again
+			tu = (unsigned long)((unsigned long)(std::round((double)tu / factor)) * factor);
+
+			// Convert back to signed
+			temp = tu - (unsigned long)min32bitValueSigned;
+		}
+		//-----------------------------------
+	}
+	else if (BITCORRECTIONMETHOD == withoutScaling) {
+		// Method 3: with bit shifting, without scaling (only shifting)
+		//--------------------------------
+		// Clear the bits of the sample
+		temp &= mask;
+		// Shift the sample relative to 0.0 (remove DC offset)
+		temp += (long int)factor;
+		//------------------------------------
+	}
 
 	// Convert the integer back to double
 	if (temp >= 0) {
@@ -113,7 +116,29 @@ void QuantizerModule::processSample(double& sample) {
 		}
 	}
 
-	/*pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(sample).c_str());
-	fclose(pFile);*/
+		/*pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(sample).c_str());
+		fclose(pFile);*/
+}
+
+void QuantizerModule::calculateFactor() {
+	switch (BITCORRECTIONMETHOD) {
+	case withBitShifting: 
+		// Reset bits
+		mask = -1; // ...111111
+		mask <<= bitsToReset; // ...111000
+		// Calculate "spread factor"
+		factor = (pow(2.0, (double)bitsToReset) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1.0);
+		break;
+	case withoutBitShifting: 
+		factor = (pow(2.0, 32.0) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1);
+		break;
+	case withoutScaling:
+		// Set the mask back to default
+		mask = -1; // ...111111
+		// Shift the mask
+		mask <<= bitsToReset; // ...111000
+		factor = pow(2, 32) / (4 * (32 - bitsToReset));
+		break;
+	}
 }

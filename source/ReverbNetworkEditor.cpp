@@ -4,6 +4,7 @@
 #include "GuiCustomValueEdit.h"
 #include "GuiCustomTextEdit.h"
 #include "GuiOptionMenuInputSelector.h"
+#include "GuiCustomSplashScreen.h"
 
 //#include "XmlPresetReadWrite.h"
 
@@ -13,6 +14,11 @@
 
 namespace Steinberg {
 namespace Vst {
+
+	struct overrideParametersQuery {
+		int moduleId;
+		XmlPresetReadWrite::module *moduleStruct;
+	};
 
 	// Gui elements in the titlebar of the modules
 	const int32_t id_module_textEdit_titleFirst = 0;
@@ -110,6 +116,10 @@ namespace Vst {
 	const int32_t id_general_button_savePreset = id_general_button_openPreset + 1;
 	const int32_t id_general_textEdit_presetFilePath = id_general_button_savePreset + 1;
 
+	const int32_t id_general_splashScreen_overrideParametersQuery = id_general_textEdit_presetFilePath + 1;
+	const int32_t id_general_button_splashViewOk = id_general_splashScreen_overrideParametersQuery + 1;
+	const int32_t id_general_button_splashViewCancel = id_general_button_splashViewOk + 1;
+
 // Contructor is called every time the editor is reopened => watch out for memory leaks!
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
@@ -118,7 +128,7 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 {
 	pluginVersion = "0";
 	tempModuleParameters = {};
-	defaultModuleParamters = {};
+	defaultModuleParameters = {};
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
@@ -178,7 +188,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 
-
+	////CViewContainer* blaView = new CViewContainer(CRect(0, 0, 800, 600));
+	//CTextLabel* labelBla = new CTextLabel(CRect(0, 0, 100, 20), "BLAAAAAAAAA");
+	//CSplashScreen* splash = new CSplashScreen(CRect(0, 0, 800, 600), this, -1, labelBla);
+	//frame->addView(splash);
+	//// To make the SplashScreen appear you must click in the 800,600 area
 
 	// Create Module List
 	CRowColumnView* viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
@@ -219,7 +233,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	// Save the default module parameters for later
 	if (apGuiModules.size() > 0) {
-		copyModuleParameters(0, defaultModuleParamters);
+		copyModuleParameters(0, defaultModuleParameters);
 	}
 
 	// Create VST output selection 
@@ -244,7 +258,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		for (uint32 j = 0; j < MAXMODULENUMBER; ++j) {
 			temp = "APM";
 			temp.append(std::to_string(j));
-			temp.append(" OUT");
+			//temp.append(" OUT");
 			menu->addEntry((temp).c_str());
 		}
 		for (uint32 j = 0; j < MAXVSTINPUTS; ++j) {
@@ -305,6 +319,24 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	mainView->sizeToFit();
 	mainView->setBackgroundColor(CColor(0, 0, 0, 0));
 	frame->addView(mainView);
+
+	CTextLabel* labelQueryMessage = new CTextLabel(CRect(CPoint(0, 0), CPoint(300, 20)), "Do you really want to override the current parameters?");
+	CTextButton* buttonOk = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_splashViewOk, "Yes");
+	addGuiElementPointer(buttonOk, id_general_button_splashViewOk);
+	CTextButton* buttonCancel = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_splashViewCancel, "No");
+	addGuiElementPointer(buttonCancel, id_general_button_splashViewCancel);
+	CRowColumnView* buttonView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	buttonView->addView(buttonOk);
+	buttonView->addView(buttonCancel);
+	buttonView->sizeToFit();
+	CRowColumnView* queryView = new CRowColumnView(workspaceView->getViewSize(), CRowColumnView::kRowStyle);
+	queryView->setBackgroundColor(CColor(0,0,0,100));
+	queryView->addView(labelQueryMessage);
+	queryView->addView(buttonView);
+	GuiCustomSplashScreen* splashOverrideParametersQuery = new GuiCustomSplashScreen(CRect(CPoint(0, 0), CPoint(0, 0)), this, id_general_splashScreen_overrideParametersQuery, queryView);
+	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
+	frame->addView(splashOverrideParametersQuery);
+
 	frame->sizeToFit();
 	
 	knobBackground->forget();
@@ -342,7 +374,14 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	
 	if (tag >= id_module_textEdit_titleFirst && tag <= id_module_textEdit_titleLast) {
 		for (int i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
-			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(tag - id_module_textEdit_titleFirst + 1)->setTitle("BLA");
+			std::string temp = "APM";
+			temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
+			temp.append(" ");
+			temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
+			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(tag - id_module_textEdit_titleFirst + 1)->setTitle(temp.c_str());
+			for (int i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
+				guiElements[i]->setDirty();
+			}
 		}
 	}
 	else if (tag >= id_module_button_collapseFirst && tag <= id_module_button_collapseLast) {
@@ -363,10 +402,30 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		copyModuleParameters(tag - id_module_button_copyParametersFirst, tempModuleParameters);
 	}
 	else if (tag >= id_module_button_pasteParametersFirst && tag <= id_module_button_pasteParametersLast) {
-		pasteModuleParameters(tag - id_module_button_pasteParametersFirst, tempModuleParameters);
+		overrideParametersQuery* userData = new overrideParametersQuery;
+		userData->moduleId = tag - id_module_button_pasteParametersFirst;
+		userData->moduleStruct = &tempModuleParameters;
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash();
+		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize());
 	}
 	else if (tag >= id_module_button_defaultParametersFirst && tag <= id_module_button_defaultParametersLast) {
-		pasteModuleParameters(tag - id_module_button_defaultParametersFirst, defaultModuleParamters);
+		overrideParametersQuery* userData = new overrideParametersQuery;
+		userData->moduleId = tag - id_module_button_defaultParametersFirst;
+		userData->moduleStruct = &defaultModuleParameters;
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash();
+		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize());
+	}
+	else if (tag == id_general_button_splashViewOk) {
+		overrideParametersQuery* userData = (overrideParametersQuery*)(dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->getUserData());
+		pasteModuleParameters(userData->moduleId, XmlPresetReadWrite::module(*userData->moduleStruct));
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash();
+		frame->setMouseableArea(frame->getViewSize());
+	}
+	else if (tag == id_general_button_splashViewCancel) {
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash();
+		frame->setMouseableArea(frame->getViewSize());
 	}
 	// CAnimKnob accepts only normalized values (BUG?)
 	// Mixer
@@ -956,7 +1015,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	inputTitle->setBackColor(CColor(0, 0, 0, 0));
 	inputTitle->setFrameColor(CColor(0, 0, 0, 0));
 
-	GuiOptionMenuInputSelector* inputSelect = new GuiOptionMenuInputSelector(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_mixer_optionMenu_inputSelectFirst + idOffset);
+	GuiOptionMenuInputSelector* inputSelect = new GuiOptionMenuInputSelector(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_mixer_optionMenu_inputSelectFirst + idOffset);
 	addGuiElementPointer(inputSelect, id_mixer_optionMenu_inputSelectFirst + idOffset);
 	inputSelect->setFont(CFontRef(kNormalFontSmall));
 	inputSelect->addEntry("<Select>");
@@ -965,7 +1024,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 		temp = "APM";
 		temp.append(std::to_string(i));
-		temp.append(" OUT");
+		//temp.append(" OUT");
 		inputSelect->addEntry((temp).c_str());
 	}
 	for (uint32 i = 0; i < MAXVSTINPUTS; ++i) {
@@ -980,7 +1039,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 		this, id_mixer_knob_gainFirst + idOffset, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
 	addGuiElementPointer(knob, id_mixer_knob_gainFirst + idOffset);
 
-	GuiCustomValueEdit* valueEdit = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(40, 20)), this, id_mixer_textEdit_gainFirst + idOffset);
+	GuiCustomValueEdit* valueEdit = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(30, 20)), this, id_mixer_textEdit_gainFirst + idOffset);
 	addGuiElementPointer(valueEdit, id_mixer_textEdit_gainFirst + idOffset);
 	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, nullptr);
