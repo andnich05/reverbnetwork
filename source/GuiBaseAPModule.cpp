@@ -15,12 +15,12 @@ const char* GuiBaseAPModule::kModuleWantsFocus = "Module wants focus";
 
 GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, const unsigned int moduleId, CBaseObject* editor)
 : CViewContainer(rect)
-, handleRegion(handleRegion)
-, viewSize(rect)
+, handleSize(handleRegion.getWidth(), handleRegion.getHeight())
+, viewSize(rect.getWidth(), getHeight())
 , moduleId(moduleId)
 , editor(editor)
 {
-	this->handleRegion.offset(-1, -1);
+	//this->handleRegion.offset(-1, -1);
 	backgroundOffset (0, 0);
 	backgroundColor = kBlackCColor;
 	setAutosizingEnabled (true);
@@ -40,15 +40,15 @@ void GuiBaseAPModule::collapseView(const bool& collapse) {
 		return;
 	}
 	if (collapse) {
-		viewSize = this->getViewSize();
-		viewSize.setTopLeft(frameToLocal(viewSize.getTopLeft()));
-		viewSize.setBottomRight(frameToLocal(viewSize.getBottomRight()));
-		this->setViewSize(CRect(localToFrame(handleRegion.getTopLeft()).x, localToFrame(handleRegion.getTopLeft()).y, 
-			localToFrame(viewSize.getBottomRight()).x, localToFrame(handleRegion.getBottomRight()).y));
+		viewSize = CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight()); // Save for uncollapse
+		CRect newSize = this->getViewSize();
+		newSize.setBottomRight(CPoint(this->getViewSize().getTopRight().x, this->getViewSize().getTopRight().y + handleSize.y));
+		this->setViewSize(newSize);
 	}
 	else {
-		this->setViewSize(CRect(localToFrame(viewSize.getTopLeft()).x, localToFrame(viewSize.getTopLeft()).y,
-			localToFrame(viewSize.getBottomRight()).x, localToFrame(viewSize.getBottomRight()).y));
+		CRect newSize = this->getViewSize();
+		newSize.setBottomRight(CPoint(this->getViewSize().getTopLeft().x + viewSize.x, this->getViewSize().getTopLeft().y + viewSize.y));
+		this->setViewSize(newSize);
 	}
 	collapsed = collapse;
 	this->setMouseableArea(this->getViewSize());
@@ -66,16 +66,17 @@ CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState
 	// where are global coordinates of the parent (?) view
 
 	// frameToLocal changes the global coordinates (e.g. 1200) to local coordinates of this frame (e.g. 50)
-	
+	CRect handleRegion(CRect(CPoint(0, 0), CPoint(handleSize)));
 	CPoint whereCopy = where;
-	frameToLocal(whereCopy);
-	// Check whether the mouse click is inside the handle region
-	//if (coordinates.x <= handleRegion.right && coordinates.y <= handleRegion.bottom && coordinates.x >= handleRegion.left && coordinates.y >= handleRegion.top && buttons.isLeftButton()) {
+	whereCopy.offset(-getViewSize().left, -getViewSize().top);
+	// Check if the mouse click is inside the handle region
+	//if (coordinates.x <= handleRegion.right && coordinates.y <= handleRegion.bottom && coordinates.x >= handleRegion.left && coordinates.y >= handleRegion.top && buttons.isLeftButton()) 
+
 	if (whereCopy.isInside(handleRegion) && buttons.isLeftButton()) {
+		//&& (mousePressedX != whereCopy.x || mousePressedY != whereCopy.y)
 		mousePressed = true;
 		mousePressedX = whereCopy.x;
 		mousePressedY = whereCopy.y;
-		
 	}
 	else {
 
@@ -173,48 +174,124 @@ CMouseEventResult GuiBaseAPModule::onMouseUp(CPoint &where, const CButtonState& 
 	return kMouseEventNotHandled;
 }
 
-void GuiBaseAPModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
+void GuiBaseAPModule::setViewSize(const CRect &rect, bool invalid)
 {
-	if (getDrawBackground())
+	if (rect == getViewSize())
+		return;
+
+	CRect oldSize(getViewSize());
+	CView::setViewSize(rect, invalid);
+
+	if (getAutosizingEnabled())
 	{
-		CRect oldClip;
-		pContext->getClipRect(oldClip);
-		CRect newClip(_updateRect);
-		newClip.bound(oldClip);
-		pContext->setClipRect(newClip);
-		CRect tr(0, 0, getViewSize().getWidth(), getViewSize().getHeight());
-		getDrawBackground()->draw(pContext, tr, backgroundOffset);
-		pContext->setClipRect(oldClip);
-	}
-	else if ((backgroundColor.alpha != 255 && getTransparency()) || !getTransparency())
-	{
-		pContext->setDrawMode(kAliasing);
-		pContext->setLineWidth(1);
-		pContext->setFillColor(backgroundColor);
-		pContext->setFrameColor(CColor(100, 100, 100, 255));
-		pContext->setLineStyle(kLineSolid);
-		/*CRect r;
-		if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
+		CCoord widthDelta = rect.getWidth() - oldSize.getWidth();
+		CCoord heightDelta = rect.getHeight() - oldSize.getHeight();
+
+		if (widthDelta != 0 || heightDelta != 0)
 		{
-			r = _updateRect;
-			r.inset(-1, -1);
+			int32_t numSubviews = getNbViews();
+			int32_t counter = 0;
+			bool treatAsColumn = (getAutosizeFlags() & kAutosizeColumn) != 0;
+			bool treatAsRow = (getAutosizeFlags() & kAutosizeRow) != 0;
+			FOREACHSUBVIEW
+				int32_t autosize = pV->getAutosizeFlags();
+			CRect viewSize(pV->getViewSize());
+			CRect mouseSize(pV->getMouseableArea());
+			if (treatAsColumn)
+			{
+				if (counter)
+				{
+					viewSize.offset(counter * (widthDelta / (numSubviews)), 0);
+					mouseSize.offset(counter * (widthDelta / (numSubviews)), 0);
+				}
+				viewSize.setWidth(viewSize.getWidth() + (widthDelta / (numSubviews)));
+				mouseSize.setWidth(mouseSize.getWidth() + (widthDelta / (numSubviews)));
+			}
+			else if (widthDelta != 0 && autosize & kAutosizeRight)
+			{
+				viewSize.right += widthDelta;
+				mouseSize.right += widthDelta;
+				if (!(autosize & kAutosizeLeft))
+				{
+					viewSize.left += widthDelta;
+					mouseSize.left += widthDelta;
+				}
+			}
+			if (treatAsRow)
+			{
+				if (counter)
+				{
+					viewSize.offset(0, counter * (heightDelta / (numSubviews)));
+					mouseSize.offset(0, counter * (heightDelta / (numSubviews)));
+				}
+				viewSize.setHeight(viewSize.getHeight() + (heightDelta / (numSubviews)));
+				mouseSize.setHeight(mouseSize.getHeight() + (heightDelta / (numSubviews)));
+			}
+			else if (heightDelta != 0 && autosize & kAutosizeBottom)
+			{
+				viewSize.bottom += heightDelta;
+				mouseSize.bottom += heightDelta;
+				if (!(autosize & kAutosizeTop))
+				{
+					viewSize.top += heightDelta;
+					mouseSize.top += heightDelta;
+				}
+			}
+			if (viewSize != pV->getViewSize())
+			{
+				pV->setViewSize(viewSize);
+				pV->setMouseableArea(mouseSize);
+			}
+			counter++;
+			ENDFOREACHSUBVIEW
 		}
-		else
-		{
-			r = getViewSize();
-			r.offset(-r.left, -r.top);
-		}*/
-
-		CRect s = this->getViewSize();
-		s.setTopLeft(frameToLocal(s.getTopLeft()));
-		s.setBottomRight(frameToLocal(s.getBottomRight()));
-		s.offset(1, 0);
-		pContext->drawRect(s, backgroundColorDrawStyle);
-
-		pContext->setLineWidth(1);
-		pContext->setFillColor(CColor(30, 30, 30, 255));
-		pContext->drawRect(handleRegion, backgroundColorDrawStyle);
 	}
+	parentSizeChanged();
 }
+
+
+//void GuiBaseAPModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
+//{
+//	if (getDrawBackground())
+//	{
+//		CRect oldClip;
+//		pContext->getClipRect(oldClip);
+//		CRect newClip(_updateRect);
+//		newClip.bound(oldClip);
+//		pContext->setClipRect(newClip);
+//		CRect tr(0, 0, getViewSize().getWidth(), getViewSize().getHeight());
+//		getDrawBackground()->draw(pContext, tr, backgroundOffset);
+//		pContext->setClipRect(oldClip);
+//	}
+//	else if ((backgroundColor.alpha != 255 && getTransparency()) || !getTransparency())
+//	{
+//		pContext->setDrawMode(kAliasing);
+//		pContext->setLineWidth(1);
+//		pContext->setFillColor(backgroundColor);
+//		pContext->setFrameColor(CColor(100, 100, 100, 255));
+//		pContext->setLineStyle(kLineSolid);
+//		/*CRect r;
+//		if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
+//		{
+//			r = _updateRect;
+//			r.inset(-1, -1);
+//		}
+//		else
+//		{
+//			r = getViewSize();
+//			r.offset(-r.left, -r.top);
+//		}*/
+//
+//		CRect s = this->getViewSize();
+//		s.setTopLeft(frameToLocal(s.getTopLeft()));
+//		s.setBottomRight(frameToLocal(s.getBottomRight()));
+//		s.offset(1, 0);
+//		pContext->drawRect(s, backgroundColorDrawStyle);
+//
+//		pContext->setLineWidth(1);
+//		pContext->setFillColor(CColor(30, 30, 30, 255));
+//		pContext->drawRect(handleRegion, backgroundColorDrawStyle);
+//	}
+//}
 
 }

@@ -169,6 +169,12 @@
     <ClCompile Include="source\GuiCustomSplashScreen.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
+    <ClCompile Include="source\GuiOpenGLGraphicsView.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiGraphicsView.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -352,6 +358,12 @@
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
     <ClInclude Include="source\GuiCustomSplashScreen.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiOpenGLGraphicsView.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiGraphicsView.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>

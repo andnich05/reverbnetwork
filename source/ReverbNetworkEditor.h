@@ -5,6 +5,7 @@
 
 #include "GuiBaseAPModule.h"
 #include "XmlPresetReadWrite.h"
+#include "GuiGraphicsView.h"
 
 
 namespace Steinberg {
@@ -28,7 +29,6 @@ public:
 	char controlModifierClicked(CControl* pControl, long button);
 	void controlBeginEdit(CControl* pControl);
 	void controlEndEdit(CControl* pControl);
-
 	
 	// Create the GUI for a Allpass module
 	GuiBaseAPModule* createAPModule();
@@ -57,6 +57,7 @@ public:
 
 private:
 	
+
 	std::string pluginVersion;
 
 	// Holds pointer to the module GUIs

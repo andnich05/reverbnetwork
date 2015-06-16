@@ -5,6 +5,7 @@
 #include "GuiCustomTextEdit.h"
 #include "GuiOptionMenuInputSelector.h"
 #include "GuiCustomSplashScreen.h"
+#include "GuiGraphicsView.h"
 
 //#include "XmlPresetReadWrite.h"
 
@@ -182,7 +183,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	frame = new CFrame(editorSize, parent, this);
 	frame->setBackgroundColor(CColor(110, 110, 110, 255));
 
-	workspaceView = new CScrollView(CRect(0, 0, 800, 600), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
+	workspaceView = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
 	workspaceView->setBackgroundColor(CColor(80, 80, 80, 255));
 	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
 	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
@@ -312,31 +313,50 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(labelNumberOfModules);
 	viewVstOutputSelect->sizeToFit();
 
+	CSplitView* splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
+
+	GuiGraphicsView* graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(800, 300)));
+	graphicsView->setBackgroundColor(CColor(100, 100, 100));
+	splitView->addView(graphicsView);
+	splitView->addView(workspaceView);
+
+
 	CRowColumnView* mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
-	mainView->addView(workspaceView);
+	mainView->addView(splitView);
 	mainView->addView(viewModuleListMain);
 	mainView->addView(viewVstOutputSelect);
 	mainView->sizeToFit();
 	mainView->setBackgroundColor(CColor(0, 0, 0, 0));
 	frame->addView(mainView);
 
-	CTextLabel* labelQueryMessage = new CTextLabel(CRect(CPoint(0, 0), CPoint(300, 20)), "Do you really want to override the current parameters?");
-	CTextButton* buttonOk = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_splashViewOk, "Yes");
+	CTextLabel* labelQueryMessage = new CTextLabel(CRect(CPoint(0, 0), CPoint(200, 20)), "Override the current parameters?");
+	labelQueryMessage->setHoriAlign(CHoriTxtAlign::kLeftText);
+	labelQueryMessage->setBackColor(CColor(0, 0, 0, 0));
+	labelQueryMessage->setFrameColor(CColor(0, 0, 0, 0));
+	CTextButton* buttonOk = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewOk, "Yes");
 	addGuiElementPointer(buttonOk, id_general_button_splashViewOk);
-	CTextButton* buttonCancel = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_splashViewCancel, "No");
+	CTextButton* buttonCancel = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewCancel, "No");
 	addGuiElementPointer(buttonCancel, id_general_button_splashViewCancel);
 	CRowColumnView* buttonView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
 	buttonView->addView(buttonOk);
 	buttonView->addView(buttonCancel);
 	buttonView->sizeToFit();
-	CRowColumnView* queryView = new CRowColumnView(workspaceView->getViewSize(), CRowColumnView::kRowStyle);
-	queryView->setBackgroundColor(CColor(0,0,0,100));
-	queryView->addView(labelQueryMessage);
-	queryView->addView(buttonView);
+	buttonView->setBackgroundColor(CColor(0, 0, 0, 0));
+	CRowColumnView* querySubView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	querySubView->setBackgroundColor(CColor(0, 0, 0, 0));
+	querySubView->addView(labelQueryMessage);
+	querySubView->addView(buttonView);
+	querySubView->sizeToFit();
+	querySubView->setViewSize(CRect(CPoint(mainView->getViewSize().getCenter().x - querySubView->getViewSize().getWidth() / 2, mainView->getViewSize().getCenter().y - querySubView->getViewSize().getHeight() / 2), CPoint(querySubView->getViewSize().getSize())));
+	querySubView->setMouseableArea(querySubView->getViewSize());
+	CViewContainer* queryView = new CViewContainer(mainView->getViewSize());
+	queryView->addView(querySubView);
+	queryView->setBackgroundColor(CColor(0, 0, 0, 150));
 	GuiCustomSplashScreen* splashOverrideParametersQuery = new GuiCustomSplashScreen(CRect(CPoint(0, 0), CPoint(0, 0)), this, id_general_splashScreen_overrideParametersQuery, queryView);
+	splashOverrideParametersQuery->sizeToFit();
 	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
-	frame->addView(splashOverrideParametersQuery);
-
+	
+	mainView->addView(splashOverrideParametersQuery);
 	frame->sizeToFit();
 	
 	knobBackground->forget();
@@ -348,6 +368,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	return true;
 }
+
 
 void PLUGIN_API ReverbNetworkEditor::close() {
 	if (frame)
@@ -729,7 +750,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 }
 
 GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
-
 	// Id in order to identify the module
 	uint32 moduleId = 0;
 	// Find the lowest id number which is not already taken
