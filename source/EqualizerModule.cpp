@@ -34,7 +34,13 @@ EqualizerModule::~EqualizerModule()
 // Alle WURZEL(2)-Terme werden durch 1/qFactor ersetzt!
 void EqualizerModule::calculateCoefficients() {
 
-	K = tan((centerFreq / samplingFreq) * M_PI);
+	// tan() has a discontinuity at 0.5*PI
+	if ((centerFreq / samplingFreq) < 0.5) {
+		K = tan((centerFreq / samplingFreq) * M_PI);
+	}
+	else {
+		K = tan(0.4999 * M_PI);
+	}
 
 	switch (filterType) {
 	case FilterType::lowPass: {

@@ -62,7 +62,7 @@
 
 // Equalizer Center frequency in Hertz
 #define MIN_EQCENTERFREQ 20.0
-#define MAX_EQCENTERFREQ 20000.0
+#define MAX_EQCENTERFREQ 24000.0
 #define DEF_EQCENTERFREQ 4000.0
 #define UNIT_EQCENTERFREQ "Hz"
 

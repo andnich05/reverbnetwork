@@ -32,7 +32,7 @@ void SchroederAllpass::doProcessing(double& sample) {
 
 	// Difference equation
 	yn = -gain * sample + xnD + gain * ynD;
-	// Normal delay would be FIR: yn = sample + gain * xnD; or IIR: yn = sample + gain * ynD;
+	// Normal delay would be IIR: yn = sample - gain * ynD;
 
 	// Store current input sample in circular buffer
 	inputBuffer[bufferPos] = sample;
