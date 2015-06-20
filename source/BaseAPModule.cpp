@@ -15,7 +15,7 @@ BaseAPModule::BaseAPModule(double sampleRate)
 	, mixer(new MixerModule(DEF_MIXERGAIN))
 	, quantizer(new QuantizerModule(DEF_QUANTIZERBITDEPTH))
 	, equalizer(new EqualizerModule(FilterType::lowPass, sampleRate, DEF_EQCENTERFREQ, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
-	, allpass(new SchroederAllpass(sampleRate, DEF_ALLPASSDELAY, DEF_ALLPASSDECAY))
+	, allpass(new SchroederAllpass(sampleRate, DEF_ALLPASSDELAY / 1000.0, DEF_ALLPASSDECAY / 1000.0))
 	, gainOutput(new GainModule(ValueConversion::logToLinear(DEF_OUTPUTGAIN)))
 	, bypassMixer(false)
 	, bypassQuantizer(false)
@@ -119,10 +119,10 @@ void BaseAPModule::updateEqualizerGain(const double& gain) {
 }
 
 void BaseAPModule::updateAllpassDelay(const double& delay) {
-	allpass->setDelayTimeMsec(delay);
+	allpass->setDelayTimeSec(delay / 1000.0);
 }
 void BaseAPModule::updateAllpassDecay(const double& decay) {
-	allpass->setDecayTime(decay);
+	allpass->setDecayTimeSec(decay / 1000.0);
 }
 
 void BaseAPModule::updateOutputGain(const double& gain) {

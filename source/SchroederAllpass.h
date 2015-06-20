@@ -4,7 +4,7 @@
 class SchroederAllpass
 {
 public:
-	SchroederAllpass(double sampleRate, double delay, double decay);
+	SchroederAllpass(double sampleRate, double delaySec, double decaySec);
 	~SchroederAllpass();
 
 	// Process input sample by reference => saving speed
@@ -18,9 +18,9 @@ public:
 	inline void setSampleRate(const unsigned long& s) { sampleRate = s; freeBuffers(); createBuffers(); }; // Recreate buffers when sample rate changes
 	// Set delay time
 	//inline void setDelayTimeSec(const double& sec) { delayTime = sec; delaySamples = (unsigned long)(sec * sampleRate); };
-	void setDelayTimeMsec(const double& ms);
+	void setDelayTimeSec(const double& sec);
 	// Set decay time
-	void setDecayTime(const double& sec);
+	void setDecayTimeSec (const double& sec);
 	// Set Allpass gain
 	//inline void setGain(const double& g) { gain = g; };
 
@@ -33,8 +33,8 @@ private:
 	long writePointer;
 	double sampleRate; // Used for buffer creation
 	long delaySamples; // Delay value in samples for processing
-	double delayTime; // Delay time in seconds
-	double decayTime; // Decay time in seconds
+	double delayTimeSec; // Delay time in seconds
+	double decayTimeSec; // Decay time in seconds
 	double gain; // Gain vaulue for processing
 
 	// Temp values for processing

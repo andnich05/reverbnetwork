@@ -674,6 +674,12 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_decayFirst)]
 			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_decayFirst)]->getValue(), value));
 	}
+	else if (tag >= id_allpass_textEdit_diffKFirst && tag <= id_allpass_textEdit_diffKLast) {
+		controller->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_diffKFirst), ValueConversion::plainToNormDecay(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue())));
+		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_diffKFirst), ValueConversion::plainToNormDecay(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue())));
+		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_diffKFirst)]->setValue(ValueConversion::plainToNormDecay(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue())));
+		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_textEdit_diffKFirst)]->setValue(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue()));
+	}
 	else if (tag >= id_allpass_switch_bypassFirst && tag <= id_allpass_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + (tag - id_allpass_switch_bypassFirst), value);
 		controller->performEdit(PARAM_ALLPASSBYPASS_FIRST + (tag - id_allpass_switch_bypassFirst), value);
@@ -893,7 +899,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
 	labelDiffK->setBackColor(CColor(0, 0, 0, 0));
 	labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
-	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth(), 20.0)), nullptr, id_allpass_textEdit_diffKFirst + moduleId);
+	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth(), 20.0)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
 	textEditDiffK->setHoriAlign(CHoriTxtAlign::kLeftText);
 	valueToStringUserData* userData2 = new valueToStringUserData;
@@ -901,17 +907,16 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	userData2->unit = "";
 	textEditDiffK->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	textEditDiffK->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData2);
-	textEditDiffK->setMin(-100.0);
-	//textEditDiffK->setStringToTruncate("samples", true);
+	textEditDiffK->setMin(0.0);
+	textEditDiffK->setMax(1.0);
+	//textEditDiffK->setStringToTruncate("", true);
 	//textEditDiffK->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	textEditDiffK->setFont(CFontRef(kNormalFontSmall));
-	textEditDiffK->setBackColor(CColor(0, 0, 0, 0));
+	//textEditDiffK->setBackColor(CColor(0, 0, 0, 0));
 	textEditDiffK->setFrameColor(CColor(0, 0, 0, 0));
-	textEditDiffK->setMouseEnabled(false);
 	diffKView->addView(labelDiffK);
 	diffKView->addView(textEditDiffK);
 	diffKView->sizeToFit();
-	allpassView->addView(diffKView);
 	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId, 
 		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
 	GuiCustomValueEdit* textEditDelayInSamples = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
@@ -930,6 +935,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	allpassView->addView(textEditDelayInSamples);
 	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
 		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
+	allpassView->addView(diffKView);
 	// read only, so no listener but needs still a gui id
 	
 
@@ -1013,7 +1019,6 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	groupView->addView(groupTextEdit);
 	groupView->sizeToFit();
 	getController()->getParamNormalized(2);
-
 	return groupView;
 }
 
@@ -1061,8 +1066,13 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 
 	GuiCustomValueEdit* valueEdit = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(30, 20)), this, id_mixer_textEdit_gainFirst + idOffset);
 	addGuiElementPointer(valueEdit, id_mixer_textEdit_gainFirst + idOffset);
-	valueEdit->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
-	valueEdit->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, nullptr);
+	valueEdit->setStringToValueProc(ValueConversion::textEditStringToValueConversion);
+	//valueEdit->setStringToTruncate("", true);
+	//int* precision = new int(valueEditPrecision);
+	valueToStringUserData* userData = new valueToStringUserData;
+	userData->precision = 2;
+	userData->unit = "";
+	valueEdit->setValueToStringProc(ValueConversion::textEditValueToStringConversion, userData);
 	valueEdit->setMin(MIN_MIXERGAIN);
 	valueEdit->setMax(MAX_MIXERGAIN);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));

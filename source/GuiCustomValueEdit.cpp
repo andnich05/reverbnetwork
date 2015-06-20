@@ -6,7 +6,7 @@ namespace VSTGUI {
 GuiCustomValueEdit::GuiCustomValueEdit (const CRect& size, CControlListener* listener, int32_t tag, UTF8StringPtr txt, CBitmap* background, const int32_t style)
 	: CTextEdit(size, listener, tag, txt, background, style) {
 	
-
+	stringToTruncate[0] = 0;
 }
 
 void GuiCustomValueEdit::takeFocus()
@@ -20,30 +20,31 @@ void GuiCustomValueEdit::takeFocus()
 #endif
 	bWasReturnPressed = false;
 
-	//--- CustomGuiCustomValueEdit
-	// When user clicks in the text field
-	char str[256];
-	// Get the text from the TextEdit
-	strcpy(str, getText());
-	// Search the text for the string to truncate
-	char* pos = strstr(str, stringToTruncate);
-	// If the string was found (means pos is not a nullpointer) => clear the string by setting it to zero
-	if (pos) {
-		pos[0] = 0;
-		char temp[256];
-		strncpy(temp, pos, 256);
+	if (stringToTruncate == 0) {
+		//--- CustomGuiCustomValueEdit
+		// When user clicks in the text field
+		char str[256];
+		// Get the text from the TextEdit
+		strcpy(str, getText());
+		// Search the text for the string to truncate
+		char* pos = strstr(str, stringToTruncate);
+		// If the string was found (means pos is not a nullpointer) => clear the string by setting it to zero
+		if (pos) {
+			pos[0] = 0;
+			/*char temp[256];
+			strncpy(temp, pos, 256);*/
 
+			//// Set the new text without the string
+			//CTextLabel::setText(temp);
+			//if (platformControl)
+			//	platformControl->setText(getText());
+		}
 		// Set the new text without the string
-		CTextLabel::setText(temp);
+		CTextLabel::setText(str);
 		if (platformControl)
 			platformControl->setText(getText());
+		//---
 	}
-	
-	// Set the new text without the string
-	CTextLabel::setText(str);
-	if (platformControl)
-		platformControl->setText(getText());
-	//---
 
 	// calculate offset for CViewContainers
 	CRect rect (getViewSize ());
@@ -101,12 +102,14 @@ void GuiCustomValueEdit::looseFocus()
 	
 
 void GuiCustomValueEdit::setStringToTruncate(const std::string& str, bool truncateSpaceBeforeString) {
-	// Additional blank before the string
-	if (truncateSpaceBeforeString) {
-		strncpy(stringToTruncate, " ", 2);
+	if (!str.empty()) {
+		// Additional blank before the string
+		if (truncateSpaceBeforeString) {
+			strncpy(stringToTruncate, " ", 2);
+		}
+		// Save the string
+		strncat(stringToTruncate, str.c_str(), 254);
 	}
-	// Save the string
-	strncat(stringToTruncate, str.c_str(), 254);
 }
 
 }

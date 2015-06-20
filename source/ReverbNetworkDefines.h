@@ -94,11 +94,11 @@
 //#define MAX_ALLPASSDELAY 1000.0
 //#define DEF_ALLPASSDELAY 0.0
 
-// Allpass decay in seconds
+// Allpass decay in milliseconds
 #define MIN_ALLPASSDECAY 0.0
-#define MAX_ALLPASSDECAY 10.0
+#define MAX_ALLPASSDECAY 10000.0
 #define DEF_ALLPASSDECAY 0.0
-#define UNIT_ALLPASSDECAY "s"
+#define UNIT_ALLPASSDECAY "ms"
 
 // Allpass bypass in bool
 #define MIN_ALLPASSBYPASS 0.0

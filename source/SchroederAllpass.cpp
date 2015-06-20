@@ -3,21 +3,21 @@
 #include <cmath>
 #include <string>
 
-SchroederAllpass::SchroederAllpass(double sampleRate, double delay, double decay)
+SchroederAllpass::SchroederAllpass(double sampleRate, double delaySec, double decaySec)
 	: buffer(nullptr)
 	, readPointer(0)
 	, writePointer(0)
 	, sampleRate(sampleRate)
-	, delaySamples((long int)(sampleRate * delay))
-	, delayTime(delay)
-	, decayTime(decay)
+	, delaySamples((long int)(sampleRate * delaySec))
+	, delayTimeSec(delaySec)
+	, decayTimeSec(decaySec)
 {
 	/*yn = 0;
 	xnD = 0;
 	ynD = 0;*/
 	nodeLeft = 0.0;
 	nodeRight = 0.0;
-	setDecayTime(decay);
+	setDecayTimeSec(decaySec);
 	createBuffers();
 }
 
@@ -68,22 +68,22 @@ void SchroederAllpass::freeBuffers() {
 	}
 }
 
-void SchroederAllpass::setDelayTimeMsec(const double& ms) {
-	delayTime = ms / 1000; 
-	delaySamples = (long int)(delayTime * sampleRate); 
+void SchroederAllpass::setDelayTimeSec(const double& sec) {
+	delayTimeSec = sec; 
+	delaySamples = (long int)(delayTimeSec * sampleRate); 
 	calculateGain();
 }
 
-void SchroederAllpass::setDecayTime(const double& sec) {
-	decayTime = sec;
+void SchroederAllpass::setDecayTimeSec(const double& sec) {
+	decayTimeSec = sec;
 	calculateGain();
 }
 
 void SchroederAllpass::calculateGain() {
 	double dB = 0.0;
 	// Prevent division by zero
-	if (decayTime > 0.0) {
-		dB = -60.0 * (delayTime / decayTime);
+	if (decayTimeSec > 0.0) {
+		dB = -60.0 * (delayTimeSec / decayTimeSec);
 		gain = pow(10.0, dB / 20);
 	}
 	else {
