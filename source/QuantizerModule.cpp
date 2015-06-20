@@ -138,7 +138,10 @@ void QuantizerModule::calculateFactor() {
 		mask = -1; // ...111111
 		// Shift the mask
 		mask <<= bitsToReset; // ...111000
-		factor = pow(2, 32) / (4 * (32 - bitsToReset));
+		// Get the maximum value which can occur
+		unsigned long maxValue = 0 | mask;
+		// Calculate the value wich has to be added to every sample in order to correct the asymmetry
+		factor = ((pow(2, 32) - 1) - maxValue) / 2;
 		break;
 	}
 }

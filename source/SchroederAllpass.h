@@ -25,20 +25,25 @@ public:
 	//inline void setGain(const double& g) { gain = g; };
 
 private:
-	double* inputBuffer; // Circular buffer for input samples x(n)
-	double* outputBuffer; // Circular buffer for output samples y(n)
-	unsigned long bufferPos; // Combined read/write index for both circular buffers
-	unsigned long sampleRate; // Used for buffer creation
-	unsigned long delaySamples; // Delay value in samples for processing
+	//double* inputBuffer; // Circular buffer for input samples x(n)
+	//double* outputBuffer; // Circular buffer for output samples y(n)
+	double* buffer;
+	//unsigned long bufferPos; // Combined read/write index for both circular buffers
+	long readPointer;
+	long writePointer;
+	double sampleRate; // Used for buffer creation
+	long delaySamples; // Delay value in samples for processing
 	double delayTime; // Delay time in seconds
 	double decayTime; // Decay time in seconds
 	double gain; // Gain vaulue for processing
 
 	// Temp values for processing
 	//double xn; // = sample
-	double yn;
+	/*double yn;
 	double xnD;
-	double ynD;
+	double ynD;*/
+	double nodeLeft;
+	double nodeRight;
 
 	void calculateGain();
 };

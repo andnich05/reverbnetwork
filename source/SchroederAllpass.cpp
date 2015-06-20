@@ -4,17 +4,19 @@
 #include <string>
 
 SchroederAllpass::SchroederAllpass(double sampleRate, double delay, double decay)
-	: inputBuffer(nullptr)
-	, outputBuffer(nullptr)
-	, bufferPos(0) 
+	: buffer(nullptr)
+	, readPointer(0)
+	, writePointer(0)
 	, sampleRate(sampleRate)
-	, delaySamples((unsigned long)sampleRate * delay)
+	, delaySamples((long int)(sampleRate * delay))
 	, delayTime(delay)
 	, decayTime(decay)
 {
-	yn = 0;
+	/*yn = 0;
 	xnD = 0;
-	ynD = 0;
+	ynD = 0;*/
+	nodeLeft = 0.0;
+	nodeRight = 0.0;
 	setDecayTime(decay);
 	createBuffers();
 }
@@ -24,63 +26,51 @@ SchroederAllpass::~SchroederAllpass() {
 }
 
 void SchroederAllpass::doProcessing(double& sample) {
-	// Read current sample
-	//xn = sample; // x(n)
-	// Read stored samples from circular buffers
-	xnD = inputBuffer[bufferPos]; // x(n-D)
-	ynD = outputBuffer[bufferPos]; // y(n-D)
-
-	// Difference equation
-	yn = -gain * sample + xnD + gain * ynD;
-	// Normal delay would be IIR: yn = sample - gain * ynD;
-
-	// Store current input sample in circular buffer
-	inputBuffer[bufferPos] = sample;
-
-	// Write output sample
-	sample = yn;
-
-	// Store current output sample in circular buffer
-	outputBuffer[bufferPos] = yn;
-
-	// Increment index of circular buffers
-	++bufferPos;
-
-	// Reset index if it has exceeded the delay in samples
-	if (bufferPos >= delaySamples) {
-		bufferPos = 0;
+	// Version 2: Without difference equation, short version of Schroeder's Allpass filter
+	// Only half the memory consumption compared to version 1
+	// Only the left node is saved in the ring buffer (left node in this picture: https://ccrma.stanford.edu/~jos/Delay/Schroeder_Allpass_Filters.html)
+	// When the next sample arrives the left node becomes the right node
+	// Source: apdiff by K. M. Indlekofer
+	
+	// Read the left node value from last time, it is now the right node value
+	nodeRight = buffer[readPointer];
+	// Calculate the current left node value
+	nodeLeft = sample - gain * nodeRight;
+	// Calculate the output value
+	sample = gain * nodeLeft + nodeRight;
+	// Save left node value (it will become the right node value next time)
+	buffer[writePointer] = nodeLeft;
+	// Increment write pointer
+	++writePointer;
+	// Reset pointer if it exceeds the delay in samples
+	if (writePointer >= delaySamples) {
+		writePointer = 0;
 	}
-	//FILE* pFile = fopen("E:\\logVst.txt", "a");
-	////fprintf(pFile, "y(n): %s\n", std::to_string(delayTime).c_str());
-	////fprintf(pFile, "y(n): %s\n", std::to_string(decayTime).c_str());
-	//fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
-	//fclose(pFile);
+	// Set the distance between the read and write pointer
+	readPointer = writePointer - delaySamples;
+	// If the read pointer is negative, loop it back
+	if (readPointer < 0) {
+		readPointer += delaySamples;
+	}
 }
 
 void SchroederAllpass::createBuffers() {
 	freeBuffers(); // just in case...
 
 	// Create pre-initialized arrays for maximum delay value (round up)
-	inputBuffer = new double[(int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0)))]();
-	outputBuffer = new double[(int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0)))]();
+	buffer = new double[(long int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0) + 10))]();
 }
 
 void SchroederAllpass::freeBuffers() {
-	bufferPos = 0;
-
-	if (inputBuffer) {
-		delete[] inputBuffer;
-		inputBuffer = nullptr; // !!! Otherwise crash when checking if (inputBuffer)
-	}
-	if (outputBuffer) {
-		delete[] outputBuffer;
-		outputBuffer = nullptr; // !!!
+	if (buffer) {
+		delete[] buffer;
+		buffer = nullptr; // !!! Otherwise crash when checking if (inputBuffer)
 	}
 }
 
 void SchroederAllpass::setDelayTimeMsec(const double& ms) {
 	delayTime = ms / 1000; 
-	delaySamples = (unsigned long)(delayTime * sampleRate); 
+	delaySamples = (long int)(delayTime * sampleRate); 
 	calculateGain();
 }
 
@@ -106,3 +96,117 @@ void SchroederAllpass::calculateGain() {
 	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
 	fclose(pFile);*/
 }
+
+
+
+
+
+//--- Backup: First version with difference equation (two buffers and one pointer):
+//#include "SchroederAllpass.h"
+//#include "ReverbNetworkDefines.h"
+//#include <cmath>
+//#include <string>
+//
+//SchroederAllpass::SchroederAllpass(double sampleRate, double delay, double decay)
+//	: inputBuffer(nullptr)
+//	, outputBuffer(nullptr)
+//	, bufferPos(0)
+//	, sampleRate(sampleRate)
+//	, delaySamples((unsigned long)sampleRate * delay)
+//	, delayTime(delay)
+//	, decayTime(decay)
+//{
+//	yn = 0;
+//	xnD = 0;
+//	ynD = 0;
+//	setDecayTime(decay);
+//	createBuffers();
+//}
+//
+//SchroederAllpass::~SchroederAllpass() {
+//	freeBuffers();
+//}
+//
+//void SchroederAllpass::doProcessing(double& sample) {
+//	// Read current sample
+//	//xn = sample; // x(n)
+//	// Read stored samples from circular buffers
+//	xnD = inputBuffer[bufferPos]; // x(n-D)
+//	ynD = outputBuffer[bufferPos]; // y(n-D)
+//
+//	// Difference equation
+//	yn = -gain * sample + xnD + gain * ynD;
+//	// Normal delay would be IIR: yn = sample - gain * ynD;
+//
+//	// Store current input sample in circular buffer
+//	inputBuffer[bufferPos] = sample;
+//
+//	// Write output sample
+//	sample = yn;
+//
+//	// Store current output sample in circular buffer
+//	outputBuffer[bufferPos] = yn;
+//
+//	// Increment index of circular buffers
+//	++bufferPos;
+//
+//	// Reset index if it has exceeded the delay in samples
+//	if (bufferPos >= delaySamples) {
+//		bufferPos = 0;
+//	}
+//	//FILE* pFile = fopen("E:\\logVst.txt", "a");
+//	////fprintf(pFile, "y(n): %s\n", std::to_string(delayTime).c_str());
+//	////fprintf(pFile, "y(n): %s\n", std::to_string(decayTime).c_str());
+//	//fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
+//	//fclose(pFile);
+//}
+//
+//void SchroederAllpass::createBuffers() {
+//	freeBuffers(); // just in case...
+//
+//	// Create pre-initialized arrays for maximum delay value (round up)
+//	inputBuffer = new double[(int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0)))]();
+//	outputBuffer = new double[(int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0)))]();
+//}
+//
+//void SchroederAllpass::freeBuffers() {
+//	bufferPos = 0;
+//
+//	if (inputBuffer) {
+//		delete[] inputBuffer;
+//		inputBuffer = nullptr; // !!! Otherwise crash when checking if (inputBuffer)
+//	}
+//	if (outputBuffer) {
+//		delete[] outputBuffer;
+//		outputBuffer = nullptr; // !!!
+//	}
+//}
+//
+//void SchroederAllpass::setDelayTimeMsec(const double& ms) {
+//	delayTime = ms / 1000;
+//	delaySamples = (unsigned long)(delayTime * sampleRate);
+//	calculateGain();
+//}
+//
+//void SchroederAllpass::setDecayTime(const double& sec) {
+//	decayTime = sec;
+//	calculateGain();
+//}
+//
+//void SchroederAllpass::calculateGain() {
+//	double dB = 0.0;
+//	// Prevent division by zero
+//	if (decayTime > 0.0) {
+//		dB = -60.0 * (delayTime / decayTime);
+//		gain = pow(10.0, dB / 20);
+//	}
+//	else {
+//		// If decay time is zero gain should be zero also => samples are simply delayed by the specified delay time
+//		gain = 0.0;
+//	}
+//
+//
+//	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+//	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
+//	fclose(pFile);*/
+//}
