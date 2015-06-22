@@ -33,6 +33,7 @@ public:
 	void updateEqualizerCenterFrequency(const double& freq);
 	void updateEqualizerQFactor(const double& qFactor);
 	void updateEqualizerGain(const double& gain);
+	void updateEqualizerCoefficients(const double& value, const long int& paramId);
 	inline void switchEqualizerBypass(const double& bypass) { bypassEqualizer = (bypass != 0.0); }
 
 	void updateAllpassDelay(const double& delay);

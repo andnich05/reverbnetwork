@@ -35,6 +35,21 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_EQGAIN_FIRST; i <= PARAM_EQGAIN_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormEqGain(DEF_EQGAIN));
 	}
+	for (auto i = PARAM_EQCOEFFICIENTA0_FIRST; i <= PARAM_EQCOEFFICIENTA0_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormEqCoefficients(DEF_EQCOEFFICIENTS));
+	}
+	for (auto i = PARAM_EQCOEFFICIENTA1_FIRST; i <= PARAM_EQCOEFFICIENTA1_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormEqCoefficients(DEF_EQCOEFFICIENTS));
+	}
+	for (auto i = PARAM_EQCOEFFICIENTA2_FIRST; i <= PARAM_EQCOEFFICIENTA2_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormEqCoefficients(DEF_EQCOEFFICIENTS));
+	}
+	for (auto i = PARAM_EQCOEFFICIENTB1_FIRST; i <= PARAM_EQCOEFFICIENTB1_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormEqCoefficients(DEF_EQCOEFFICIENTS));
+	}
+	for (auto i = PARAM_EQCOEFFICIENTB2_FIRST; i <= PARAM_EQCOEFFICIENTB2_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormEqCoefficients(DEF_EQCOEFFICIENTS));
+	}
 	for (auto i = PARAM_EQBYPASS_FIRST; i <= PARAM_EQBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_EQBYPASS);
 	}

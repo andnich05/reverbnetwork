@@ -132,8 +132,40 @@ void EqualizerModule::calculateCoefficients() {
 		}
 		break;
 	}
+	case FilterType::rawBiquad: {
+
 	}
-	
+	default: {
+		a0 = 0.0;
+		a1 = 0.0;
+		a2 = 0.0;
+		b1 = 0.0;
+		b2 = 0.0;
+		break;
+	}
+	}
+}
+
+void EqualizerModule::setFilterCoefficient(const FilterCoefficients& coefficient, const double& value) {
+	switch (coefficient) {
+	case FilterCoefficients::a0: 
+		a0 = value;
+		break;
+	case FilterCoefficients::a1:
+		a1 = value;
+		break;
+	case FilterCoefficients::a2:
+		a2 = value;
+		break;
+	case FilterCoefficients::b1:
+		b1 = value;
+		break;
+	case FilterCoefficients::b2:
+		b2 = value;
+		break;
+	default:
+		break;
+	}
 }
 
 void EqualizerModule::processSample(double& sample) {

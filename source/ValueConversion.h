@@ -26,6 +26,8 @@ public:
 	static double plainToNormQFactor(const double& plainValue);
 	static double normToPlainEqGain(const double& normValue);
 	static double plainToNormEqGain(const double& plainValue);
+	static double normToPlainEqCoefficients(const double& normValue);
+	static double plainToNormEqCoefficients(const double& plainValue);
 
 	static double normToPlainDelay(const double& normValue);
 	static double plainToNormDelay(const double& plainValue);

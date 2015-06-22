@@ -343,6 +343,31 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToPlainEqGain(value));
 					}
 				}
+				else if (pid >= PARAM_EQCOEFFICIENTA0_FIRST && pid <= PARAM_EQCOEFFICIENTA0_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQCOEFFICIENTA0_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+					}
+				}
+				else if (pid >= PARAM_EQCOEFFICIENTA1_FIRST && pid <= PARAM_EQCOEFFICIENTA1_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQCOEFFICIENTA1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+					}
+				}
+				else if (pid >= PARAM_EQCOEFFICIENTA2_FIRST && pid <= PARAM_EQCOEFFICIENTA2_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQCOEFFICIENTA2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+					}
+				}
+				else if (pid >= PARAM_EQCOEFFICIENTB1_FIRST && pid <= PARAM_EQCOEFFICIENTB1_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQCOEFFICIENTB1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+					}
+				}
+				else if (pid >= PARAM_EQCOEFFICIENTB2_FIRST && pid <= PARAM_EQCOEFFICIENTB2_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQCOEFFICIENTB2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+					}
+				}
 				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_EQBYPASS_FIRST]->switchEqualizerBypass(value);

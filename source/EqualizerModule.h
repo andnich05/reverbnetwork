@@ -7,6 +7,15 @@ class EqualizerModule
 {
 public:
 
+	enum class FilterCoefficients {
+		a0,
+		a1,
+		a2,
+		b1,
+		b2,
+		numberOfCofficients
+	};
+
 	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double gain);
 	~EqualizerModule();
 
@@ -15,6 +24,7 @@ public:
 	inline void setQFactor(const double& q) { qFactor = q; oneDividedByQ = 1 / qFactor; calculateCoefficients(); }
 	inline void setGain(const double& g) { gain = g; calculateCoefficients(); };
 	inline void setFilterType(const FilterType& type) { filterType = type; calculateCoefficients(); }
+	void setFilterCoefficient(const FilterCoefficients& coefficient, const double& value);
 
 	void processSample(double& sample);
 

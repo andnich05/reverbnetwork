@@ -67,6 +67,11 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 			e.frequency = tool.child("equalizer").child("frequency").text().as_double();
 			e.qFactor = tool.child("equalizer").child("qFactor").text().as_double();
 			e.gain = tool.child("equalizer").child("gain").text().as_double();
+			e.a0 = tool.child("equalizer").child("a0").text().as_double();
+			e.a1 = tool.child("equalizer").child("a1").text().as_double();
+			e.a2 = tool.child("equalizer").child("a2").text().as_double();
+			e.b1 = tool.child("equalizer").child("b1").text().as_double();
+			e.b2 = tool.child("equalizer").child("b2").text().as_double();
 			m.equalizerParameters = e;
 
 			allpass a = {};
@@ -160,6 +165,11 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) {
 		moduleNode.child("equalizer").append_child("frequency").text().set(module.equalizerParameters.frequency);
 		moduleNode.child("equalizer").append_child("qFactor").text().set(module.equalizerParameters.qFactor);
 		moduleNode.child("equalizer").append_child("gain").text().set(module.equalizerParameters.gain);
+		moduleNode.child("equalizer").append_child("a0").text().set(module.equalizerParameters.a0);
+		moduleNode.child("equalizer").append_child("a1").text().set(module.equalizerParameters.a1);
+		moduleNode.child("equalizer").append_child("a2").text().set(module.equalizerParameters.a2);
+		moduleNode.child("equalizer").append_child("b1").text().set(module.equalizerParameters.b1);
+		moduleNode.child("equalizer").append_child("b2").text().set(module.equalizerParameters.b2);
 
 		// Allpass
 		moduleNode.append_child("allpass");

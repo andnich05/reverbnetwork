@@ -74,6 +74,14 @@ double ValueConversion::plainToNormEqGain(const double& plainValue) {
 	return (plainValue - MIN_EQGAIN) / (MAX_EQGAIN - MIN_EQGAIN);
 }
 
+double ValueConversion::normToPlainEqCoefficients(const double& normValue) {
+	return (MAX_EQCOEFFICIENTS - MIN_EQCOEFFICIENTS) * normValue + MIN_EQCOEFFICIENTS;
+}
+
+double ValueConversion::plainToNormEqCoefficients(const double& plainValue) {
+	return (plainValue - MIN_EQCOEFFICIENTS) / (MAX_EQCOEFFICIENTS - MIN_EQCOEFFICIENTS);
+}
+
 double ValueConversion::normToPlainDelay(const double& normValue) {
 	return (MAX_ALLPASSDELAY - MIN_ALLPASSDELAY) * normValue + MIN_ALLPASSDELAY;
 }

@@ -203,6 +203,41 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(UNIT_EQGAIN), MIN_EQGAIN, MAX_EQGAIN, DEF_EQGAIN);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		for (auto i = PARAM_EQCOEFFICIENTA0_FIRST; i <= PARAM_EQCOEFFICIENTA0_LAST; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA0_FIRST));
+			temp.append("Equalizer a0 coefficient");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (auto i = PARAM_EQCOEFFICIENTA1_FIRST; i <= PARAM_EQCOEFFICIENTA1_LAST; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA1_FIRST));
+			temp.append("Equalizer a1 coefficient");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (auto i = PARAM_EQCOEFFICIENTA2_FIRST; i <= PARAM_EQCOEFFICIENTA2_LAST; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA2_FIRST));
+			temp.append("Equalizer a2 coefficient");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (auto i = PARAM_EQCOEFFICIENTB1_FIRST; i <= PARAM_EQCOEFFICIENTB1_LAST; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTB1_FIRST));
+			temp.append("Equalizer b1 coefficient");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (auto i = PARAM_EQCOEFFICIENTB2_FIRST; i <= PARAM_EQCOEFFICIENTB2_LAST; ++i) {
+			std::string temp = "Module ";
+			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTB2_FIRST));
+			temp.append("Equalizer b2 coefficient");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
 		// Equalizer Bypass
 		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";

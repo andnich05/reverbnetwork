@@ -112,6 +112,9 @@ private:
 	// Paste the parameters from the specified structure into the specified module (can be the 'defaultModuleParamters' => set to default)
 	void pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::module& m);
 
+	std::vector<CRowColumnView*> equalizerNormalViews;
+	std::vector<CRowColumnView*> equalizerRawViews;
+
 };
 
 }} // namespaces

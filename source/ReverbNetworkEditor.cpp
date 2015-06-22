@@ -72,7 +72,17 @@ namespace Vst {
 	const int32_t id_equalizer_knob_gainLast = id_equalizer_knob_gainFirst + MAXMODULENUMBER - 1;
 	const int32_t id_equalizer_textEdit_gainFirst = id_equalizer_knob_gainLast + 1;
 	const int32_t id_equalizer_textEdit_gainLast = id_equalizer_textEdit_gainFirst + MAXMODULENUMBER - 1;
-	const int32_t id_equalizer_switch_bypassFirst = id_equalizer_textEdit_gainLast + 1;
+	const int32_t id_equalizer_textEdit_a0First = id_equalizer_textEdit_gainLast + 1;
+	const int32_t id_equalizer_textEdit_a0Last = id_equalizer_textEdit_a0First + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_a1First = id_equalizer_textEdit_a0Last + 1;
+	const int32_t id_equalizer_textEdit_a1Last = id_equalizer_textEdit_a1First + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_a2First = id_equalizer_textEdit_a1Last + 1;
+	const int32_t id_equalizer_textEdit_a2Last = id_equalizer_textEdit_a2First + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_b1First = id_equalizer_textEdit_a2Last + 1;
+	const int32_t id_equalizer_textEdit_b1Last = id_equalizer_textEdit_b1First + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_textEdit_b2First = id_equalizer_textEdit_b1Last + 1;
+	const int32_t id_equalizer_textEdit_b2Last = id_equalizer_textEdit_b2First + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_switch_bypassFirst = id_equalizer_textEdit_b2Last + 1;
 	const int32_t id_equalizer_switch_bypassLast = id_equalizer_switch_bypassFirst + MAXMODULENUMBER - 1;
 
 	// Schroeder allpass GUI ids
@@ -582,6 +592,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_equalizer_optionMenu_filterTypeFirst && tag <= id_equalizer_optionMenu_filterTypeLast)  {
 		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
 		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
+		equalizerNormalViews.at(tag - id_equalizer_optionMenu_filterTypeFirst)->setVisible((int)value != FilterType::rawBiquad);
+		equalizerRawViews.at(tag - id_equalizer_optionMenu_filterTypeFirst)->setVisible((int)value == FilterType::rawBiquad);
 	}
 	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
 		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
@@ -618,6 +630,26 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_textEdit_gainFirst), ValueConversion::plainToNormEqGain(value));
 		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormEqGain(value));
 		guiElements[id_equalizer_knob_gainFirst + (tag - id_equalizer_textEdit_gainFirst)]->setDirty();
+	}
+	else if (tag >= id_equalizer_textEdit_a0First && tag <= id_equalizer_textEdit_a0Last) {
+		controller->setParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_textEdit_a0First), ValueConversion::plainToNormEqCoefficients(value));
+		controller->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_textEdit_a0First), ValueConversion::plainToNormEqCoefficients(value));
+	}
+	else if (tag >= id_equalizer_textEdit_a1First && tag <= id_equalizer_textEdit_a1Last) {
+		controller->setParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_textEdit_a1First), ValueConversion::plainToNormEqCoefficients(value));
+		controller->performEdit(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_textEdit_a1First), ValueConversion::plainToNormEqCoefficients(value));
+	}
+	else if (tag >= id_equalizer_textEdit_a2First && tag <= id_equalizer_textEdit_a2Last) {
+		controller->setParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_textEdit_a2First), ValueConversion::plainToNormEqCoefficients(value));
+		controller->performEdit(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_textEdit_a2First), ValueConversion::plainToNormEqCoefficients(value));
+	}
+	else if (tag >= id_equalizer_textEdit_b1First && tag <= id_equalizer_textEdit_b1Last) {
+		controller->setParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_textEdit_b1First), ValueConversion::plainToNormEqCoefficients(value));
+		controller->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_textEdit_b1First), ValueConversion::plainToNormEqCoefficients(value));
+	}
+	else if (tag >= id_equalizer_textEdit_b2First && tag <= id_equalizer_textEdit_b2Last) {
+		controller->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_textEdit_b2First), ValueConversion::plainToNormEqCoefficients(value));
+		controller->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_textEdit_b2First), ValueConversion::plainToNormEqCoefficients(value));
 	}
 	else if (tag >= id_equalizer_switch_bypassFirst && tag <= id_equalizer_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_EQBYPASS_FIRST + (tag - id_equalizer_switch_bypassFirst), value);
@@ -865,6 +897,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	filterTypeMenu->addEntry("Band Pass/Stop");
 	filterTypeMenu->addEntry("Low Shelf");
 	filterTypeMenu->addEntry("High Shelf");
+	filterTypeMenu->addEntry("Raw Biquad");
 	filterTypeMenu->setCurrent(0);
 	filterTypeView->addView(filterTypeTextLabel);
 	filterTypeView->addView(filterTypeMenu);
@@ -882,9 +915,106 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
 	equalizerView->addView(checkBoxEqualizerBypass);
 	equalizerView->addView(filterTypeView);
-	equalizerView->addView(paramFirstRow);
-	equalizerView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId, 
+	CRowColumnView* equalizerNormalView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	equalizerNormalViews.push_back(equalizerNormalView);
+	equalizerNormalView->setBackgroundColor(CColor(0, 0, 0, 0));
+	equalizerNormalView->addView(paramFirstRow);
+	equalizerNormalView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId,
 		MIN_EQGAIN, MAX_EQGAIN, 2, UNIT_EQGAIN));
+	equalizerNormalView->sizeToFit();
+	CRowColumnView* equalizerRawView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	equalizerRawViews.push_back(equalizerRawView);
+	equalizerRawView->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), "Biquad Cofficients");
+	CRowColumnView* a0View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
+	a0View->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelA0 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a0:");
+	labelA0->setFont(CFontRef(kNormalFontSmall));
+	labelA0->setBackColor(CColor(0, 0, 0, 0));
+	labelA0->setFrameColor(CColor(0, 0, 0, 0));
+	CTextEdit* editA0 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a0First + moduleId);
+	addGuiElementPointer(editA0, id_equalizer_textEdit_a0First + moduleId);
+	editA0->setFont(CFontRef(kNormalFontSmall));
+	editA0->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editA0->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	editA0->setMin(MIN_EQCOEFFICIENTS);
+	editA0->setMax(MAX_EQCOEFFICIENTS);
+	a0View->addView(labelA0);
+	a0View->addView(editA0);
+	CRowColumnView* a1View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
+	a1View->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelA1 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a1:");
+	labelA1->setFont(CFontRef(kNormalFontSmall));
+	labelA1->setBackColor(CColor(0, 0, 0, 0));
+	labelA1->setFrameColor(CColor(0, 0, 0, 0));
+	CTextEdit* editA1 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a1First + moduleId);
+	addGuiElementPointer(editA1, id_equalizer_textEdit_a1First + moduleId);
+	editA1->setFont(CFontRef(kNormalFontSmall));
+	editA1->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editA1->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	editA1->setMin(MIN_EQCOEFFICIENTS);
+	editA1->setMax(MAX_EQCOEFFICIENTS);
+	a1View->addView(labelA1);
+	a1View->addView(editA1);
+	CRowColumnView* a2View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
+	a2View->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelA2 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a2:");
+	labelA2->setFont(CFontRef(kNormalFontSmall));
+	labelA2->setBackColor(CColor(0, 0, 0, 0));
+	labelA2->setFrameColor(CColor(0, 0, 0, 0));
+	CTextEdit* editA2 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a2First + moduleId);
+	addGuiElementPointer(editA2, id_equalizer_textEdit_a2First + moduleId);
+	editA2->setFont(CFontRef(kNormalFontSmall));
+	editA2->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editA2->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	editA2->setMin(MIN_EQCOEFFICIENTS);
+	editA2->setMax(MAX_EQCOEFFICIENTS);
+	a2View->addView(labelA2);
+	a2View->addView(editA2);
+	CRowColumnView* b1View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
+	b1View->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelB1 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b1:");
+	labelB1->setFont(CFontRef(kNormalFontSmall));
+	labelB1->setBackColor(CColor(0, 0, 0, 0));
+	labelB1->setFrameColor(CColor(0, 0, 0, 0));
+	CTextEdit* editB1 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b1First + moduleId);
+	addGuiElementPointer(editB1, id_equalizer_textEdit_b1First + moduleId);
+	editB1->setFont(CFontRef(kNormalFontSmall));
+	editB1->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editB1->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	editB1->setMin(MIN_EQCOEFFICIENTS);
+	editB1->setMax(MAX_EQCOEFFICIENTS);
+	b1View->addView(labelB1);
+	b1View->addView(editB1);
+	CRowColumnView* b2View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
+	b2View->setBackgroundColor(CColor(0, 0, 0, 0));
+	CTextLabel* labelB2 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b2:");
+	labelB2->setFont(CFontRef(kNormalFontSmall));
+	labelB2->setBackColor(CColor(0, 0, 0, 0));
+	labelB2->setFrameColor(CColor(0, 0, 0, 0));
+	CTextEdit* editB2 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b2First + moduleId);
+	addGuiElementPointer(editB2, id_equalizer_textEdit_b2First + moduleId);
+	editB2->setFont(CFontRef(kNormalFontSmall));
+	editB2->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editB2->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
+	editB2->setMin(MIN_EQCOEFFICIENTS);
+	editB2->setMax(MAX_EQCOEFFICIENTS);
+	b2View->addView(labelB2);
+	b2View->addView(editB2);
+	equalizerRawView->addView(a0View);
+	equalizerRawView->addView(a1View);
+	equalizerRawView->addView(a2View);
+	equalizerRawView->addView(b1View);
+	equalizerRawView->addView(b2View);
+	equalizerRawView->sizeToFit();
+	CViewContainer* layeredView = new CViewContainer(CRect(CPoint(0, 0), CPoint(0, 0)));
+	layeredView->setBackgroundColor(CColor(0, 0, 0, 0));
+	layeredView->addView(equalizerNormalView);
+	layeredView->addView(equalizerRawView);
+	layeredView->sizeToFit();
+	equalizerView->addView(layeredView);
+	equalizerRawView->setVisible(false);
+
 
 	// Holds the allpass controls (delay and decay)
 	CRowColumnView* allpassView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, controlView->getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
@@ -901,7 +1031,6 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
 	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth(), 20.0)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
-	textEditDiffK->setHoriAlign(CHoriTxtAlign::kLeftText);
 	valueToStringUserData* userData2 = new valueToStringUserData;
 	userData2->precision = 5;
 	userData2->unit = "";
@@ -930,13 +1059,10 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	textEditDelayInSamples->setStringToTruncate("samples", true);
 	textEditDelayInSamples->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	textEditDelayInSamples->setFont(CFontRef(kNormalFontSmall));
-	textEditDelayInSamples->setBackColor(CColor(0, 0, 0, 0));
-	textEditDelayInSamples->setFrameColor(CColor(0, 0, 0, 0));
 	allpassView->addView(textEditDelayInSamples);
 	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
 		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
 	allpassView->addView(diffKView);
-	// read only, so no listener but needs still a gui id
 	
 
 	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
@@ -1142,6 +1268,11 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
 	updateGuiParameter(PARAM_EQQFACTOR_FIRST, PARAM_EQQFACTOR_LAST, id_equalizer_knob_qFactorFirst, nullptr);
 	updateGuiParameter(PARAM_EQGAIN_FIRST, PARAM_EQGAIN_LAST, id_equalizer_knob_gainFirst, nullptr);
+	updateGuiParameter(PARAM_EQCOEFFICIENTA0_FIRST, PARAM_EQCOEFFICIENTA0_LAST, id_equalizer_textEdit_a0First, &ValueConversion::normToPlainEqCoefficients);
+	updateGuiParameter(PARAM_EQCOEFFICIENTA1_FIRST, PARAM_EQCOEFFICIENTA1_LAST, id_equalizer_textEdit_a1First, &ValueConversion::normToPlainEqCoefficients);
+	updateGuiParameter(PARAM_EQCOEFFICIENTA2_FIRST, PARAM_EQCOEFFICIENTA2_LAST, id_equalizer_textEdit_a2First, &ValueConversion::normToPlainEqCoefficients);
+	updateGuiParameter(PARAM_EQCOEFFICIENTB1_FIRST, PARAM_EQCOEFFICIENTB1_LAST, id_equalizer_textEdit_b1First, &ValueConversion::normToPlainEqCoefficients);
+	updateGuiParameter(PARAM_EQCOEFFICIENTB2_FIRST, PARAM_EQCOEFFICIENTB2_LAST, id_equalizer_textEdit_b2First, &ValueConversion::normToPlainEqCoefficients);
 	updateGuiParameter(PARAM_EQBYPASS_FIRST, PARAM_EQBYPASS_LAST, id_equalizer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDELAY_FIRST, PARAM_ALLPASSDELAY_LAST, id_allpass_knob_delayFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDECAY_FIRST, PARAM_ALLPASSDECAY_LAST, id_allpass_knob_decayFirst, nullptr);
@@ -1284,6 +1415,16 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->performEdit(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
 		getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.gain);
 		getController()->performEdit(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.gain);
+		getController()->setParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a0));
+		getController()->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a0));
+		getController()->setParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a1));
+		getController()->performEdit(PARAM_EQCOEFFICIENTA1_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a1));
+		getController()->setParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a2));
+		getController()->performEdit(PARAM_EQCOEFFICIENTA2_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a2));
+		getController()->setParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b1));
+		getController()->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b1));
+		getController()->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b2));
+		getController()->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b2));
 
 		// Set allpass parameters
 		getController()->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::plainToNormDelay(presetStruct.modules[i].allpassParameters.delay));
@@ -1364,6 +1505,11 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		e.frequency = ValueConversion::normToPlainCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
 		e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
 		e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + i));
+		e.a0 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + i));
+		e.a1 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + i));
+		e.a2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + i));
+		e.b1 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + i));
+		e.b2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + i));
 		e.bypass = getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + i);
 		m.equalizerParameters = e;
 
@@ -1421,6 +1567,11 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	e.frequency = ValueConversion::normToPlainCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
 	e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + sourceModuleId));
 	e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + sourceModuleId));
+	e.a0 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + sourceModuleId));
+	e.a1 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + sourceModuleId));
+	e.a2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + sourceModuleId));
+	e.b1 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + sourceModuleId));
+	e.b2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + sourceModuleId));
 	e.bypass = getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + sourceModuleId);
 	m.equalizerParameters = e;
 
@@ -1477,6 +1628,16 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	getController()->performEdit(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
 	getController()->setParamNormalized(PARAM_EQGAIN_FIRST + destModuleId, ValueConversion::plainToNormEqGain(m.equalizerParameters.gain));
 	getController()->performEdit(PARAM_EQGAIN_FIRST + destModuleId, ValueConversion::plainToNormEqGain(m.equalizerParameters.gain));
+	getController()->setParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.a0));
+	getController()->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.a0));
+	getController()->setParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.a1));
+	getController()->performEdit(PARAM_EQCOEFFICIENTA1_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.a1));
+	getController()->setParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.a2));
+	getController()->performEdit(PARAM_EQCOEFFICIENTA2_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.a2));
+	getController()->setParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b1));
+	getController()->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b1));
+	getController()->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b2));
+	getController()->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b2));
 	getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + destModuleId, m.equalizerParameters.bypass);
 	getController()->performEdit(PARAM_EQBYPASS_FIRST + destModuleId, m.equalizerParameters.bypass);
 

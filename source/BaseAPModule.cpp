@@ -79,8 +79,6 @@ double BaseAPModule::processSamples(double* moduleInputBuffer, std::vector<doubl
 		}
 	}
 
-	
-
 	// Return output sample of the whole module
 	return outputSample;
 }
@@ -116,6 +114,24 @@ void BaseAPModule::updateEqualizerGain(const double& gain) {
 	//fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain))).c_str());
 	////fprintf(pFile, "y(n): %s\n", std::to_string(K).c_str());
 	//fclose(pFile);
+}
+
+void BaseAPModule::updateEqualizerCoefficients(const double& value, const long int& paramId) {
+	if (paramId >= PARAM_EQCOEFFICIENTA0_FIRST && paramId <= PARAM_EQCOEFFICIENTA0_LAST) {
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a0, value);
+	}
+	if (paramId >= PARAM_EQCOEFFICIENTA1_FIRST && paramId <= PARAM_EQCOEFFICIENTA1_LAST) {
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a1, value);
+	}
+	if (paramId >= PARAM_EQCOEFFICIENTA2_FIRST && paramId <= PARAM_EQCOEFFICIENTA2_LAST) {
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a2, value);
+	}
+	if (paramId >= PARAM_EQCOEFFICIENTB1_FIRST && paramId <= PARAM_EQCOEFFICIENTB1_LAST) {
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::b1, value);
+	}
+	if (paramId >= PARAM_EQCOEFFICIENTB2_FIRST && paramId <= PARAM_EQCOEFFICIENTB2_LAST) {
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::b2, value);
+	}
 }
 
 void BaseAPModule::updateAllpassDelay(const double& delay) {

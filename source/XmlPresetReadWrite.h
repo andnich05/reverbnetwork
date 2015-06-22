@@ -38,6 +38,11 @@ public:
 		double frequency;
 		double qFactor;
 		double gain;
+		double a0;
+		double a1;
+		double a2;
+		double b1;
+		double b2;
 	};
 
 	struct allpass {

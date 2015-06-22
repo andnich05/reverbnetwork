@@ -11,6 +11,7 @@ enum FilterType
 	bandPassStop,
 	lowShelf,
 	highShelf,
+	rawBiquad,
 	numberOfFilterTypes
 };
 
