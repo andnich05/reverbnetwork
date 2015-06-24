@@ -10,12 +10,11 @@
 #include <cmath>
 #include <string>
 
-BaseAPModule::BaseAPModule(double sampleRate)
-	: sampleRate(sampleRate)
-	, mixer(new MixerModule(DEF_MIXERGAIN))
+BaseAPModule::BaseAPModule()
+	: mixer(new MixerModule(DEF_MIXERGAIN))
 	, quantizer(new QuantizerModule(DEF_QUANTIZERBITDEPTH))
-	, equalizer(new EqualizerModule(FilterType::lowPass, sampleRate, DEF_EQCENTERFREQ, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
-	, allpass(new SchroederAllpass(sampleRate, DEF_ALLPASSDELAY / 1000.0, DEF_ALLPASSDECAY / 1000.0))
+	, equalizer(new EqualizerModule(FilterType::lowPass, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
+	, allpass(new SchroederAllpass(DEF_ALLPASSDELAY / 1000.0, DEF_ALLPASSDECAY / 1000.0))
 	, gainOutput(new GainModule(ValueConversion::logToLinear(DEF_OUTPUTGAIN)))
 	, bypassMixer(false)
 	, bypassQuantizer(false)
@@ -47,6 +46,12 @@ BaseAPModule::~BaseAPModule() {
 		delete gainOutput;
 		gainOutput = nullptr;
 	}
+}
+
+void BaseAPModule::setSampleRate(const double& sampleRate) {
+	this->sampleRate = sampleRate;
+	equalizer->setSamplingFreq(sampleRate);
+	allpass->setSampleRate(sampleRate);
 }
 
 //double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {

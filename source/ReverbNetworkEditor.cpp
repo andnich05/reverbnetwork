@@ -181,6 +181,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	xmlPreset = new XmlPresetReadWrite();
 
 	sampleRate = ValueConversion::getSampleRate();
+	
 
 	knobBackground = new CBitmap("knob.png");
 	knobBackgroundSmall = new CBitmap("knob2.png");
@@ -592,19 +593,17 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_equalizer_optionMenu_filterTypeFirst && tag <= id_equalizer_optionMenu_filterTypeLast)  {
 		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
 		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
-		equalizerNormalViews.at(tag - id_equalizer_optionMenu_filterTypeFirst)->setVisible((int)value != FilterType::rawBiquad);
-		equalizerRawViews.at(tag - id_equalizer_optionMenu_filterTypeFirst)->setVisible((int)value == FilterType::rawBiquad);
 	}
 	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
-		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(ValueConversion::normToPlainCenterFreq(value));
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(ValueConversion::normToPlainProcCenterFreq(value)));
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(ValueConversion::normToPlainProcCenterFreq(value)));
+		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(ValueConversion::normToPlainProcCenterFreq(value));
 		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_centerFreqFirst && tag <= id_equalizer_textEdit_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormCenterFreq(value));
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormCenterFreq(value));
-		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::plainToNormCenterFreq(value));
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(value));
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(value));
+		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::plainToNormProcCenterFreq(value));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setDirty();
 	}
 	else if (tag >= id_equalizer_knob_qFactorFirst && tag <= id_equalizer_knob_qFactorLast)  {
@@ -905,7 +904,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	CRowColumnView* paramFirstRow = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
 	paramFirstRow->setBackgroundColor(CColor(0, 0, 0, 0));
 	paramFirstRow->addView(createKnobGroup("Frequency", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId, 
-		MIN_EQCENTERFREQ, MAX_EQCENTERFREQ, 2, UNIT_EQCENTERFREQ));
+		MIN_EQCENTERFREQ, ValueConversion::getMaxEqFrequency(), 2, UNIT_EQCENTERFREQ));
 
 	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId, 
 		MIN_EQQFACTOR, MAX_EQQFACTOR, 2, UNIT_EQQFACTOR));
@@ -916,14 +915,12 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	equalizerView->addView(checkBoxEqualizerBypass);
 	equalizerView->addView(filterTypeView);
 	CRowColumnView* equalizerNormalView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
-	equalizerNormalViews.push_back(equalizerNormalView);
 	equalizerNormalView->setBackgroundColor(CColor(0, 0, 0, 0));
 	equalizerNormalView->addView(paramFirstRow);
 	equalizerNormalView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId,
 		MIN_EQGAIN, MAX_EQGAIN, 2, UNIT_EQGAIN));
 	equalizerNormalView->sizeToFit();
 	CRowColumnView* equalizerRawView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
-	equalizerRawViews.push_back(equalizerRawView);
 	equalizerRawView->setBackgroundColor(CColor(0, 0, 0, 0));
 	CTextLabel* labelTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), "Biquad Cofficients");
 	CRowColumnView* a0View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
@@ -1261,11 +1258,18 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 		valueChanged(guiElements[i]);
 	}
 
+	for (uint32 i = PARAM_EQCENTERFREQ_FIRST; i < PARAM_EQCENTERFREQ_LAST + 1; ++i) { // Iterate over all parameters
+		if (guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]) { // Check if the GUI element is valid
+			guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]->setValue(ValueConversion::plainToNormProcCenterFreq(ValueConversion::normToPlainVstCenterFreq(getController()->getParamNormalized(i)))); // Set GUI element value
+			valueChanged(guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]); // Update the corresponding textEdit (if there exists one)
+		}
+	}
+
 	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBITDEPTH_FIRST, PARAM_QUANTIZERBITDEPTH_LAST, id_quantizer_knob_quantizationFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBYPASS_FIRST, PARAM_QUANTIZERBYPASS_LAST, id_quantizer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_EQFILTERTYPE_FIRST, PARAM_EQFILTERTYPE_LAST, id_equalizer_optionMenu_filterTypeFirst, &ValueConversion::normToPlainFilterTypeSelect);
-	updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
+	//updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
 	updateGuiParameter(PARAM_EQQFACTOR_FIRST, PARAM_EQQFACTOR_LAST, id_equalizer_knob_qFactorFirst, nullptr);
 	updateGuiParameter(PARAM_EQGAIN_FIRST, PARAM_EQGAIN_LAST, id_equalizer_knob_gainFirst, nullptr);
 	updateGuiParameter(PARAM_EQCOEFFICIENTA0_FIRST, PARAM_EQCOEFFICIENTA0_LAST, id_equalizer_textEdit_a0First, &ValueConversion::normToPlainEqCoefficients);
@@ -1407,8 +1411,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		// Set equalizer parameters
 		getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
 		getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
-		getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
-		getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
+		getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormVstCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
+		getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormVstCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
 		getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
 		getController()->performEdit(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
 		getController()->setParamNormalized(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
@@ -1502,7 +1506,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 		XmlPresetReadWrite::equalizer e = {};
 		e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
-		e.frequency = ValueConversion::normToPlainCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
+		e.frequency = ValueConversion::normToPlainVstCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
 		e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
 		e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + i));
 		e.a0 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + i));
@@ -1564,7 +1568,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 
 	XmlPresetReadWrite::equalizer e = {};
 	e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + sourceModuleId));
-	e.frequency = ValueConversion::normToPlainCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
+	e.frequency = ValueConversion::normToPlainVstCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
 	e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + sourceModuleId));
 	e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + sourceModuleId));
 	e.a0 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + sourceModuleId));
@@ -1622,8 +1626,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	// Set equalizer parameters
 	getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));
 	getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));
-	getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormCenterFreq(m.equalizerParameters.frequency));
-	getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormCenterFreq(m.equalizerParameters.frequency));
+	getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormVstCenterFreq(m.equalizerParameters.frequency));
+	getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormVstCenterFreq(m.equalizerParameters.frequency));
 	getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
 	getController()->performEdit(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
 	getController()->setParamNormalized(PARAM_EQGAIN_FIRST + destModuleId, ValueConversion::plainToNormEqGain(m.equalizerParameters.gain));

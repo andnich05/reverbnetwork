@@ -62,8 +62,9 @@
 
 // Equalizer Center frequency in Hertz
 #define MIN_EQCENTERFREQ 20.0
+// Only for the VST Parameter, maximum frequency depends on the Host's sample rate (should be smaller than sampleRate/2)
 #define MAX_EQCENTERFREQ 24000.0
-#define DEF_EQCENTERFREQ 4000.0
+#define DEF_EQCENTERFREQ 2000.0
 #define UNIT_EQCENTERFREQ "Hz"
 
 // Equalizer QFactor

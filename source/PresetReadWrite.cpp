@@ -27,7 +27,7 @@ PresetReadWrite::PresetReadWrite() {
 		parameterValues.push_back(ValueConversion::plainToNormFilterTypeSelect(DEF_EQFILTERTYPE));
 	}
 	for (auto i = PARAM_EQCENTERFREQ_FIRST; i <= PARAM_EQCENTERFREQ_LAST; ++i) {
-		parameterValues.push_back(ValueConversion::plainToNormCenterFreq(DEF_EQCENTERFREQ));
+		parameterValues.push_back(ValueConversion::plainToNormVstCenterFreq(DEF_EQCENTERFREQ));
 	}
 	for (auto i = PARAM_EQQFACTOR_FIRST; i <= PARAM_EQQFACTOR_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormQFactor(DEF_EQQFACTOR));

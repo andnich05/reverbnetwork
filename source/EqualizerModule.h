@@ -16,11 +16,11 @@ public:
 		numberOfCofficients
 	};
 
-	EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double gain);
+	EqualizerModule(FilterType filterType, double qFactor, double gain);
 	~EqualizerModule();
 
 	inline void setSamplingFreq(const double& fs) { samplingFreq = fs; calculateCoefficients(); }
-	inline void setCenterFreq(const double& f0) { centerFreq = f0; calculateCoefficients(); }
+	void setCenterFreq(const double& f0);
 	inline void setQFactor(const double& q) { qFactor = q; oneDividedByQ = 1 / qFactor; calculateCoefficients(); }
 	inline void setGain(const double& g) { gain = g; calculateCoefficients(); };
 	inline void setFilterType(const FilterType& type) { filterType = type; calculateCoefficients(); }

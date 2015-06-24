@@ -12,8 +12,10 @@ class GainModule;
 class BaseAPModule
 {
 public:
-	BaseAPModule(double sampleRate);
+	BaseAPModule();
 	~BaseAPModule();
+
+	void setSampleRate(const double& sampleRate);
 
 	// Process all input channels of a module, return output sample which is a mix of the input samples
 	//double processModuleSamples(std::vector<double>& channelSamples);

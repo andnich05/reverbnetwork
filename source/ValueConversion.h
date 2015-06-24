@@ -20,8 +20,10 @@ public:
 
 	static double normToPlainFilterTypeSelect(const double& normValue);
 	static double plainToNormFilterTypeSelect(const double& plainValue);
-	static double normToPlainCenterFreq(const double& normValue);
-	static double plainToNormCenterFreq(const double& plainValue);
+	static double normToPlainVstCenterFreq(const double& normValue);
+	static double plainToNormVstCenterFreq(const double& plainValue);
+	static double normToPlainProcCenterFreq(const double& normValue);
+	static double plainToNormProcCenterFreq(const double& plainValue);
 	static double normToPlainQFactor(const double& normValue);
 	static double plainToNormQFactor(const double& plainValue);
 	static double normToPlainEqGain(const double& normValue);
@@ -49,6 +51,8 @@ public:
 	// This conversion is performed when the user does some input in the textEdit; converts the string to float with sprintf(%f...)
 	// userData contains the precision for the value to be displayed
 	static bool textEditValueToStringConversion(float value, char utf8String[256], void* userData);
+
+	static double getMaxEqFrequency();
 
 private:
 	static double sampleRate;

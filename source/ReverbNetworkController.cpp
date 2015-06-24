@@ -56,6 +56,7 @@ std::string ReverbNetworkController::pluginVersion = "0";
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 {
+
 	tresult result = EditControllerEx1::initialize (context);
 	if (result == kResultTrue)
 	{
@@ -64,8 +65,8 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// MIXER parameters
 		// Mixer input selection
 		uint32 pidCounter = 0;
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
-			for (auto j = 0; j < MAXMODULEINPUTS; ++j) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			for (uint32 j = 0; j < MAXMODULEINPUTS; ++j) {
 				std::string temp = "";
 				temp.append("Module ");
 				temp.append(std::to_string(i));
@@ -76,14 +77,14 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 				// Not connected is the first entry
 				parameter->appendString(USTRING("<Not Connected>"));
 				// Module outputs come first
-				for (auto k = 0; k < MAXMODULENUMBER; ++k) {
+				for (uint32 k = 0; k < MAXMODULENUMBER; ++k) {
 					std::string temp2 = "APM";
 					temp2.append(std::to_string(k));
 					temp2.append(" Output");
 					parameter->appendString(USTRING(temp2.c_str()));
 				}
 				// Then the VST inputs
-				for (auto k = 0; k < MAXVSTINPUTS; ++k) {
+				for (uint32 k = 0; k < MAXVSTINPUTS; ++k) {
 					std::string temp2 = "VST";
 					temp2.append(std::to_string(k));
 					temp2.append(" Input");
@@ -96,8 +97,8 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		}
 		// Mixer input gain 
 		pidCounter = 0;
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
-			for (auto j = 0; j < MAXINPUTS; ++j) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			for (uint32 j = 0; j < MAXINPUTS; ++j) {
 				std::string temp = "";
 				temp.append("Module ");
 				temp.append(std::to_string(i));
@@ -111,8 +112,8 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		}
 		// Mixer input mute
 		pidCounter = 0;
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
-			for (auto j = 0; j < MAXINPUTS; ++j) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			for (uint32 j = 0; j < MAXINPUTS; ++j) {
 				std::string temp = "";
 				temp.append("Module ");
 				temp.append(std::to_string(i));
@@ -128,8 +129,8 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		}
 		// Mixer input solo
 		pidCounter = 0;
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
-			for (auto j = 0; j < MAXINPUTS; ++j) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			for (uint32 j = 0; j < MAXINPUTS; ++j) {
 				std::string temp = "";
 				temp.append("Module ");
 				temp.append(std::to_string(i));
@@ -145,7 +146,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		}
 		// QUANTIZER parameters
 		// Quantizer bitdepth
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Quantizer Bitdepth");
@@ -154,7 +155,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Quantizer Bypass
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append("Quantizer Bypass");
@@ -163,11 +164,11 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-
+		
 		// -----
 		// EQUALIZER parameters
 		// Equalizer Filter Type
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append("Equalizer Filter Type");
@@ -180,7 +181,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Center Frequency
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Center Frequency");
@@ -188,7 +189,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Q Factor
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Q Factor");
@@ -196,42 +197,42 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Gain
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Equalizer Gain");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(UNIT_EQGAIN), MIN_EQGAIN, MAX_EQGAIN, DEF_EQGAIN);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-		for (auto i = PARAM_EQCOEFFICIENTA0_FIRST; i <= PARAM_EQCOEFFICIENTA0_LAST; ++i) {
+		for (uint32 i = PARAM_EQCOEFFICIENTA0_FIRST; i <= PARAM_EQCOEFFICIENTA0_LAST; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA0_FIRST));
 			temp.append("Equalizer a0 coefficient");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-		for (auto i = PARAM_EQCOEFFICIENTA1_FIRST; i <= PARAM_EQCOEFFICIENTA1_LAST; ++i) {
+		for (uint32 i = PARAM_EQCOEFFICIENTA1_FIRST; i <= PARAM_EQCOEFFICIENTA1_LAST; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA1_FIRST));
 			temp.append("Equalizer a1 coefficient");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-		for (auto i = PARAM_EQCOEFFICIENTA2_FIRST; i <= PARAM_EQCOEFFICIENTA2_LAST; ++i) {
+		for (uint32 i = PARAM_EQCOEFFICIENTA2_FIRST; i <= PARAM_EQCOEFFICIENTA2_LAST; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA2_FIRST));
 			temp.append("Equalizer a2 coefficient");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-		for (auto i = PARAM_EQCOEFFICIENTB1_FIRST; i <= PARAM_EQCOEFFICIENTB1_LAST; ++i) {
+		for (uint32 i = PARAM_EQCOEFFICIENTB1_FIRST; i <= PARAM_EQCOEFFICIENTB1_LAST; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTB1_FIRST));
 			temp.append("Equalizer b1 coefficient");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-		for (auto i = PARAM_EQCOEFFICIENTB2_FIRST; i <= PARAM_EQCOEFFICIENTB2_LAST; ++i) {
+		for (uint32 i = PARAM_EQCOEFFICIENTB2_FIRST; i <= PARAM_EQCOEFFICIENTB2_LAST; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTB2_FIRST));
 			temp.append("Equalizer b2 coefficient");
@@ -239,7 +240,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Bypass
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append("Equalizer Bypass");
@@ -252,7 +253,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		//-----
 		// ALLPASS paramters
 		// Allpass delay
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Delay");
@@ -260,7 +261,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass decay
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Allpass Decay");
@@ -268,7 +269,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass Bypass
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append("Allpass Bypass");
@@ -281,7 +282,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		//-----
 		// OUTPUT parameters
 		// Gain
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Output Gain");
@@ -289,7 +290,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Bypass
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append("Output Gain Bypass");
@@ -299,7 +300,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
-		for (auto i = 0; i < MAXMODULENUMBER; ++i) {
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "Module ";
 			temp.append(std::to_string(i));
 			temp.append(" Visible");
@@ -312,7 +313,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		//-----
 		// VST output select
 		pidCounter = 0;
-		for (auto i = 0; i < MAXVSTOUTPUTS; ++i) {
+		for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
 			std::string temp = "VST Output ";
 			temp.append(std::to_string(i));
 			temp.append(" Select");
@@ -320,14 +321,14 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			// Not connected is the first entry
 			parameter->appendString(USTRING("<Not Connected>"));
 			// Module outputs come first
-			for (auto k = 0; k < MAXMODULENUMBER; ++k) {
+			for (uint32 k = 0; k < MAXMODULENUMBER; ++k) {
 				std::string temp2 = "APM";
 				temp2.append(std::to_string(k));
 				temp2.append(" Output");
 				parameter->appendString(USTRING(temp2.c_str()));
 			}
 			// Then the VST inputs
-			for (auto k = 0; k < MAXVSTINPUTS; ++k) {
+			for (uint32 k = 0; k < MAXVSTINPUTS; ++k) {
 				std::string temp2 = "VST";
 				temp2.append(std::to_string(k));
 				temp2.append(" Input");
@@ -417,6 +418,7 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 	return result;
 }
 
+// Nötig?
 tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID tag, ParamValue value)
 {
 	Parameter* parameter = getParameterObject(tag);

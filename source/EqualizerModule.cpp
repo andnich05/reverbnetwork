@@ -6,9 +6,9 @@
 #include <cmath>
 #include <string>
 
-EqualizerModule::EqualizerModule(FilterType filterType, double samplingFreq, double centerFreq, double qFactor, double gain)
-	: samplingFreq(samplingFreq)
-	, centerFreq(centerFreq)
+EqualizerModule::EqualizerModule(FilterType filterType, double qFactor, double gain)
+	: samplingFreq(0.0)
+	, centerFreq(0.0)
 	, qFactor(qFactor)
 	, gain(gain)
 	, filterType(filterType)
@@ -146,25 +146,40 @@ void EqualizerModule::calculateCoefficients() {
 	}
 }
 
+void EqualizerModule::setCenterFreq(const double& f0) {
+	if (f0 <= ValueConversion::getMaxEqFrequency()) {
+		centerFreq = f0;
+		calculateCoefficients();
+	}
+	else {
+		centerFreq = ValueConversion::getMaxEqFrequency();
+	}
+}
+
 void EqualizerModule::setFilterCoefficient(const FilterCoefficients& coefficient, const double& value) {
-	switch (coefficient) {
-	case FilterCoefficients::a0: 
-		a0 = value;
-		break;
-	case FilterCoefficients::a1:
-		a1 = value;
-		break;
-	case FilterCoefficients::a2:
-		a2 = value;
-		break;
-	case FilterCoefficients::b1:
-		b1 = value;
-		break;
-	case FilterCoefficients::b2:
-		b2 = value;
-		break;
-	default:
-		break;
+	if (filterType == FilterType::rawBiquad) {
+		switch (coefficient) {
+		case FilterCoefficients::a0:
+			a0 = value;
+			break;
+		case FilterCoefficients::a1:
+			a1 = value;
+			break;
+		case FilterCoefficients::a2:
+			a2 = value;
+			break;
+		case FilterCoefficients::b1:
+			b1 = value;
+			break;
+		case FilterCoefficients::b2:
+			b2 = value;
+			break;
+		default:
+			break;
+		}
+
+		// Biquad stability condition: http://nrlug.puhep.res.in/GLUE/Packages/engg/DSP/book/node75.html
+		//if (...)
 	}
 }
 

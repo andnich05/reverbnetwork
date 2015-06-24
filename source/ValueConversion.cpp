@@ -50,12 +50,20 @@ double ValueConversion::plainToNormQuantization(const double& plainValue) {
 	return ((double)plainValue - (double)MIN_QUANTIZERBITDEPTH) / ((double)MAX_QUANTIZERBITDEPTH - (double)MIN_QUANTIZERBITDEPTH);
 }
 
-double ValueConversion::normToPlainCenterFreq(const double& normValue) {
+double ValueConversion::normToPlainVstCenterFreq(const double& normValue) {
 	return (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
 }
 
-double ValueConversion::plainToNormCenterFreq(const double& plainValue) {
+double ValueConversion::plainToNormVstCenterFreq(const double& plainValue) {
 	return (plainValue - MIN_EQCENTERFREQ) / (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ);
+}
+
+double ValueConversion::normToPlainProcCenterFreq(const double& normValue) {
+	return (getMaxEqFrequency() - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
+}
+
+double ValueConversion::plainToNormProcCenterFreq(const double& plainValue) {
+	return (plainValue - MIN_EQCENTERFREQ) / (getMaxEqFrequency() - MIN_EQCENTERFREQ);
 }
 
 double ValueConversion::normToPlainQFactor(const double& normValue) {
@@ -179,4 +187,55 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 	sprintf(utf8String + strlen(utf8String), " ");
 	sprintf(utf8String + strlen(utf8String), v->unit.c_str());
 	return true;
+}
+
+double ValueConversion::getMaxEqFrequency() {
+	long int temp = (long int)sampleRate;
+	double maxFreq = 0.0;
+	// All possible MME sampling frequencies in Windows
+	switch (temp) {
+	case 8000:
+		maxFreq = 3600.0;
+		break;
+	case 9600:
+		maxFreq = 4500.0;
+		break;
+	case 11025:
+		maxFreq = 5000.0;
+		break;
+	case 12000:
+		maxFreq = 5500.0;
+		break;
+	case 16000:
+		maxFreq = 7000.0;
+		break;
+	case 22050:
+		maxFreq = 10000.0;
+		break;
+	case 24000:
+		maxFreq = 11000.0;
+		break;
+	case 32000:
+		maxFreq = 15000.0;
+		break;
+	case 44100:
+		maxFreq = 20000.0;
+		break;
+	case 48000:
+		maxFreq = 22000.0;
+		break;
+	case 88200:
+		maxFreq = 40000.0;
+		break;
+	case 96000:
+		maxFreq = 44000.0;
+		break;
+	case 192000:
+		maxFreq = 88000.0;
+		break;
+	default:
+		maxFreq = 20000.0;
+		break;
+	}
+	return maxFreq;
 }

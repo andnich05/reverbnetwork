@@ -3,11 +3,11 @@
 #include <cmath>
 #include <string>
 
-SchroederAllpass::SchroederAllpass(double sampleRate, double delaySec, double decaySec)
+SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	: buffer(nullptr)
 	, readPointer(0)
 	, writePointer(0)
-	, sampleRate(sampleRate)
+	, sampleRate(192000.0) // Set the maximum possible sample rate
 	, delaySamples((long int)(sampleRate * delaySec))
 	, delayTimeSec(delaySec)
 	, decayTimeSec(decaySec)
