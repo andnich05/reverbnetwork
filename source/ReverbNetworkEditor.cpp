@@ -180,7 +180,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	xmlPreset = new XmlPresetReadWrite();
 
-	sampleRate = ValueConversion::getSampleRate();
+	
 	
 
 	knobBackground = new CBitmap("knob.png");
@@ -514,8 +514,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			// Knob value already normalized => no conversion needed
 			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
 			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
-			// Save the new gain value for later
-			//savedGainValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value;
 		}
 		// Update the textEdit
 		guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToPlainInputGain(value));
@@ -593,6 +591,16 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_equalizer_optionMenu_filterTypeFirst && tag <= id_equalizer_optionMenu_filterTypeLast)  {
 		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
 		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
+		CViewContainer* equalizerView = dynamic_cast<CViewContainer*>(pControl->getParentView()->getParentView());
+		if (equalizerView) {
+			CViewContainer* layeredView = dynamic_cast<CViewContainer*>(equalizerView->getView(equalizerView->getNbViews() - 1));
+			if (layeredView) {
+				if (layeredView->getNbViews() >= 2) {
+					layeredView->getView(0)->setVisible((int)value != FilterType::rawBiquad);
+					layeredView->getView(1)->setVisible((int)value == FilterType::rawBiquad);
+				}
+			}
+		}
 	}
 	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
 		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(ValueConversion::normToPlainProcCenterFreq(value)));
@@ -832,6 +840,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	temp.append(std::to_string(moduleId));
 	temp.append(" ");
 	GuiCustomTextEdit* moduleTitle = new GuiCustomTextEdit(handleViewSize, this, id_module_textEdit_titleFirst + moduleId, temp.c_str());
+	addGuiElementPointer(moduleTitle, id_module_textEdit_titleFirst + moduleId);
 	moduleTitle->setStringToTruncate(temp);
 	int* userDataModuleId = new int(moduleId);
 	moduleTitle->setBackColor(CColor(0, 0, 0, 0));
@@ -922,7 +931,9 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	equalizerNormalView->sizeToFit();
 	CRowColumnView* equalizerRawView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
 	equalizerRawView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), "Biquad Cofficients");
+	CTextLabel* labelTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), "Biquad Cofficients:");
+	labelTitle->setBackColor(CColor(0, 0, 0, 0));
+	labelTitle->setFrameColor(CColor(0, 0, 0, 0));
 	CRowColumnView* a0View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
 	a0View->setBackgroundColor(CColor(0, 0, 0, 0));
 	CTextLabel* labelA0 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a0:");
@@ -936,6 +947,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	editA0->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
 	editA0->setMin(MIN_EQCOEFFICIENTS);
 	editA0->setMax(MAX_EQCOEFFICIENTS);
+	editA0->setPrecision(5);
 	a0View->addView(labelA0);
 	a0View->addView(editA0);
 	CRowColumnView* a1View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
@@ -951,6 +963,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	editA1->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
 	editA1->setMin(MIN_EQCOEFFICIENTS);
 	editA1->setMax(MAX_EQCOEFFICIENTS);
+	editA1->setPrecision(5);
 	a1View->addView(labelA1);
 	a1View->addView(editA1);
 	CRowColumnView* a2View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
@@ -966,6 +979,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	editA2->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
 	editA2->setMin(MIN_EQCOEFFICIENTS);
 	editA2->setMax(MAX_EQCOEFFICIENTS);
+	editA2->setPrecision(5);
 	a2View->addView(labelA2);
 	a2View->addView(editA2);
 	CRowColumnView* b1View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
@@ -981,6 +995,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	editB1->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
 	editB1->setMin(MIN_EQCOEFFICIENTS);
 	editB1->setMax(MAX_EQCOEFFICIENTS);
+	editB1->setPrecision(5);
 	b1View->addView(labelB1);
 	b1View->addView(editB1);
 	CRowColumnView* b2View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
@@ -996,8 +1011,10 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	editB2->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
 	editB2->setMin(MIN_EQCOEFFICIENTS);
 	editB2->setMax(MAX_EQCOEFFICIENTS);
+	editB2->setPrecision(5);
 	b2View->addView(labelB2);
 	b2View->addView(editB2);
+	equalizerRawView->addView(labelTitle);
 	equalizerRawView->addView(a0View);
 	equalizerRawView->addView(a1View);
 	equalizerRawView->addView(a2View);
@@ -1236,6 +1253,10 @@ void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
 //bool textEditStringToValueConversion(UTF8StringPtr txt, float& result, void* userData);
 
 void ReverbNetworkEditor::updateGuiWithControllerParameters() {
+	sampleRate = ValueConversion::getSampleRate();
+	for (int i = id_allpass_textEdit_samplesDelayFirst; i <= id_allpass_textEdit_samplesDelayLast; ++i) {
+		guiElements[i]->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
+	}
 	//updateGuiParameter(PARAM_MIXERINPUTSELECT_FIRST, PARAM_MIXERINPUTSELECT_LAST, id_mixer_optionMenu_inputSelectFirst, &ValueConversion::normToPlainMixerInputSelect);
 	//updateGuiParameter(PARAM_MIXERGAIN_FIRST, PARAM_MIXERGAIN_LAST, id_mixer_knob_gainFirst, nullptr);
 
@@ -1285,6 +1306,8 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToPlainMixerInputSelect);
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
+
+	
 }
 
 void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr) {
@@ -1360,7 +1383,14 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 	dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(presetStruct.name.c_str());
 	
 	for (unsigned int i = 0; i < presetStruct.modules.size(); ++i) {
-		// set name...
+		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(presetStruct.modules[i].name.c_str());
+		valueChanged(guiElements[id_module_textEdit_titleFirst + i]);
+		std::string temp = "APM";
+		temp.append(std::to_string(i));
+		temp.append(" ");
+		temp.append(presetStruct.modules[i].name);
+		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
+
 		// set id...
 		// Set position
 		apGuiModules[i]->setViewSize(CRect(CPoint(presetStruct.modules[i].positionX, presetStruct.modules[i].positionY), CPoint(apGuiModules[i]->getWidth(), apGuiModules[i]->getHeight())));
@@ -1417,8 +1447,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->performEdit(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
 		getController()->setParamNormalized(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
 		getController()->performEdit(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
-		getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.gain);
-		getController()->performEdit(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.gain);
+		getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.bypass);
+		getController()->performEdit(PARAM_EQBYPASS_FIRST + i, presetStruct.modules[i].equalizerParameters.bypass);
 		getController()->setParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a0));
 		getController()->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a0));
 		getController()->setParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.a1));
@@ -1472,7 +1502,15 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 	for (unsigned int i = 0; i < apGuiModules.size(); ++i) {
 		XmlPresetReadWrite::module m = {};
-		// name...
+		std::string temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText();
+		std::string stringToErase = "APM";
+		stringToErase.append(std::to_string(i));
+		stringToErase.append(" ");
+		std::string::size_type w = temp.find(stringToErase);
+		if (w != std::string::npos) {
+			temp.erase(w, stringToErase.length());
+		}
+		m.name = temp;
 		m.id = apGuiModules[i]->getModuleId();
 		m.positionX = apGuiModules[i]->getViewSize().getTopLeft().x;
 		m.positionY = apGuiModules[i]->getViewSize().getTopLeft().y;

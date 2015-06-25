@@ -178,6 +178,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("Band Pass/Stop"));
 			parameter->appendString(USTRING("Low Shelf"));
 			parameter->appendString(USTRING("High Shelf"));
+			parameter->appendString(USTRING("Raw Biquad"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Center Frequency
@@ -249,7 +250,6 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-
 		//-----
 		// ALLPASS paramters
 		// Allpass delay

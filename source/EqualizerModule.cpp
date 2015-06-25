@@ -33,7 +33,6 @@ EqualizerModule::~EqualizerModule()
 // Source: Zölzer book p.136+137
 // Alle WURZEL(2)-Terme werden durch 1/qFactor ersetzt!
 void EqualizerModule::calculateCoefficients() {
-
 	// tan() has a discontinuity at 0.5*PI
 	if ((centerFreq / samplingFreq) < 0.5) {
 		K = tan((centerFreq / samplingFreq) * M_PI);
@@ -133,7 +132,7 @@ void EqualizerModule::calculateCoefficients() {
 		break;
 	}
 	case FilterType::rawBiquad: {
-
+		break;
 	}
 	default: {
 		a0 = 0.0;
@@ -156,8 +155,10 @@ void EqualizerModule::setCenterFreq(const double& f0) {
 	}
 }
 
-void EqualizerModule::setFilterCoefficient(const FilterCoefficients& coefficient, const double& value) {
+void EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient, const double& value) {
+	
 	if (filterType == FilterType::rawBiquad) {
+		
 		switch (coefficient) {
 		case FilterCoefficients::a0:
 			a0 = value;
@@ -177,7 +178,6 @@ void EqualizerModule::setFilterCoefficient(const FilterCoefficients& coefficient
 		default:
 			break;
 		}
-
 		// Biquad stability condition: http://nrlug.puhep.res.in/GLUE/Packages/engg/DSP/book/node75.html
 		//if (...)
 	}

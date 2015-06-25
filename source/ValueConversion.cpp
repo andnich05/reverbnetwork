@@ -13,10 +13,6 @@ ValueConversion::ValueConversion() {
 ValueConversion::~ValueConversion() {
 }
 
-void ValueConversion::setSampleRate(const unsigned long s) {
-	sampleRate = s;
-}
-
 double ValueConversion::normToPlainMixerInputSelect(const double& normValue) {
 	// Round!
 	return std::round(normValue * ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS)); // incl. index 0
@@ -156,7 +152,7 @@ bool ValueConversion::textEditStringToValueConversion(const char* txt, float& re
 bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
 
 	if (userData == nullptr) {
-		sprintf(utf8String, "%1.2f", value);
+		sprintf(utf8String, "%1.5f", value);
 		return true;
 	}
 	valueToStringUserData* v = (valueToStringUserData*)userData;
@@ -181,7 +177,7 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 		sprintf(utf8String, "%1.5f", value);
 		break;
 	default:
-		sprintf(utf8String, "%1.2f", value);
+		sprintf(utf8String, "%1.5f", value);
 		break;
 	}
 	sprintf(utf8String + strlen(utf8String), " ");

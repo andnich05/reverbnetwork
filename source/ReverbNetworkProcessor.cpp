@@ -107,7 +107,11 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 			apModules.push_back(module);
 		}
 
-		
+		// SampleRate is always 44100 here...
+		ValueConversion::setSampleRate(processSetup.sampleRate);
+		for (auto&& module : apModules) {
+			module->setSampleRate(processSetup.sampleRate);
+		}
 
 	/*	FILE* pFile = fopen("E:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(processSetup.symbolicSampleSize).c_str());
@@ -136,6 +140,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 // User enables or disables the plugin
 tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 {
+	// Not all Hosts call this function (e.g. Audition doesn't (VST3))
+	ValueConversion::setSampleRate(processSetup.sampleRate);
+	for (auto&& module : apModules) {
+		module->setSampleRate(processSetup.sampleRate);
+	}
+
 	// Check number of Channels
 	SpeakerArrangement arr;
 	if (getBusArrangement (kOutput, 0, arr) != kResultTrue)
@@ -224,7 +234,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 
 tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 {
-	// processSetup is not set in the initialize function...
+	// For Audition
 	ValueConversion::setSampleRate(processSetup.sampleRate);
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);

@@ -7,7 +7,7 @@ public:
 	ValueConversion();
 	~ValueConversion();
 
-	static void setSampleRate(const unsigned long s);
+	inline static void setSampleRate(const double s) { sampleRate = s; }
 	inline static double getSampleRate() { return sampleRate; }
 
 	static double normToPlainMixerInputSelect(const double& normValue);

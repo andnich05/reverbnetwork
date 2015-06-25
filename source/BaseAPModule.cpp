@@ -123,19 +123,19 @@ void BaseAPModule::updateEqualizerGain(const double& gain) {
 
 void BaseAPModule::updateEqualizerCoefficients(const double& value, const long int& paramId) {
 	if (paramId >= PARAM_EQCOEFFICIENTA0_FIRST && paramId <= PARAM_EQCOEFFICIENTA0_LAST) {
-		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a0, value);
+		equalizer->setFilterCoefficient(FilterCoefficients::a0, value);
 	}
 	if (paramId >= PARAM_EQCOEFFICIENTA1_FIRST && paramId <= PARAM_EQCOEFFICIENTA1_LAST) {
-		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a1, value);
+		equalizer->setFilterCoefficient(FilterCoefficients::a1, value);
 	}
 	if (paramId >= PARAM_EQCOEFFICIENTA2_FIRST && paramId <= PARAM_EQCOEFFICIENTA2_LAST) {
-		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a2, value);
+		equalizer->setFilterCoefficient(FilterCoefficients::a2, value);
 	}
 	if (paramId >= PARAM_EQCOEFFICIENTB1_FIRST && paramId <= PARAM_EQCOEFFICIENTB1_LAST) {
-		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::b1, value);
+		equalizer->setFilterCoefficient(FilterCoefficients::b1, value);
 	}
 	if (paramId >= PARAM_EQCOEFFICIENTB2_FIRST && paramId <= PARAM_EQCOEFFICIENTB2_LAST) {
-		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::b2, value);
+		equalizer->setFilterCoefficient(FilterCoefficients::b2, value);
 	}
 }
 
