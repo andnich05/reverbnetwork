@@ -49,6 +49,9 @@
 #include "ValueConversion.h"
 #include "PresetReadWrite.h"
 
+// Performance
+//#include <chrono>
+
 namespace Steinberg {
 namespace Vst {
 
@@ -103,7 +106,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 		}*/
 
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::shared_ptr<BaseAPModule> module(new BaseAPModule());
+			BaseAPModule* module = new BaseAPModule();
 			apModules.push_back(module);
 		}
 
@@ -255,6 +258,8 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 #ifdef LOG
 	FILE* pFile = fopen("E:\\logVst.txt", "a");
 #endif
+
+	
 	// If the user changed a control in the plugin (e.g. Delay Time) => update values
 	if (data.inputParameterChanges)
 	{	
@@ -436,9 +441,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		}
 	}
 
+	//std::chrono::high_resolution_clock::time_point t0, t1;
 
+	// Peformance: 16 modules, 44100 Hz, 882 samples per block, 26.6.15
 	// Process the audio samples
-	if (data.numSamples > 0)
+	
+	if (data.numSamples > 0) // P: Worst: 22,031.000 ms Best: 5,987.600 ms
 	{
 		// Reset PPM values
 		std::fill(ppmValues.begin(), ppmValues.end(), 0.0);
@@ -464,16 +472,17 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 
 		// Vector with all samples for all inputs which are connected to a module input
 		//std::vector<double> samplesToProcess;
-		std::vector<double> vstInputBuffer;
-
+		//std::vector<double> vstInputBuffer;
+		double vstInputBuffer[MAXVSTINPUTS];
+		
 		// Sample interval
-		for (uint32 sample = 0; sample < numberOfSamples; ++sample) {
-
+		//t0 = std::chrono::high_resolution_clock::now();
+		for (auto sample = 0; sample < numberOfSamples; ++sample) { // P: Worst: 30,036.100 ms Best: 5,984.300 ms
 			// Module input processing
-			for (uint16 module = 0; module < MAXMODULENUMBER; ++module) {
-				vstInputBuffer.clear();
-				for (uint32 i = 0; i < MAXVSTINPUTS; ++i) {
-					vstInputBuffer.push_back((double)inputSamples[i][sample]);
+			for (auto module = 0; module < MAXMODULENUMBER; ++module) { // P: 0 to 1.000,700 ms
+				//vstInputBuffer.clear();
+				for (auto i = 0; i < MAXVSTINPUTS; ++i) {
+					vstInputBuffer[i] = (double)inputSamples[i][sample];
 				}
 				// Process the vector and write the output sample into the correct module output buffer
 				moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer);
@@ -482,9 +491,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					ppmValues[module] = moduleOutputBuffer[module];
 				}
 			}
-
+			
+			
 			// VST output processing
-			for (uint16 vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) {
+			for (auto vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) { // P: 0 ms
 				if (vstOutputConnections[vstOutput] != -1) {
 					if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
 						// VST output is connected to a module's output => take sample from the module output buffer
@@ -501,13 +511,18 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					outputSamples[vstOutput][sample] = 0.0;
 				}
 			}
-
+			
 			// Swap input and output buffers
+			
+			// P: 0 ms
 			double* temp = moduleInputBuffer;
 			moduleInputBuffer = moduleOutputBuffer;
 			moduleOutputBuffer = temp;
+			
 		}
 
+		//t1 = std::chrono::high_resolution_clock::now();
+		
 		//---3) Write outputs parameter changes-----------
 		IParameterChanges* paramChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host 
@@ -526,10 +541,21 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					}
 				}
 			}
+		
 		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", "TEST");
 		fclose(pFile);*/
 	}
+	
+	
+
+	//auto t00 = std::chrono::duration_cast<std::chrono::nanoseconds>(t0.time_since_epoch()).count();
+	//auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1.time_since_epoch()).count();
+	//FILE* pFile = fopen("E:\\logVst.txt", "a");
+	//fprintf(pFile, "%s\n", std::to_string(t11 - t00).c_str());
+	////fprintf(pFile, "Samples: %s\n", std::to_string(data.numSamples).c_str());
+	//fclose(pFile);
+
 	return kResultTrue;
 }
 

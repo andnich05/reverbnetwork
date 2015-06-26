@@ -4,7 +4,7 @@
 #define REVERBNETWORKDEFINES_H
 
 // Maximum number of AP modules
-#define MAXMODULENUMBER 16
+#define MAXMODULENUMBER 32
 
 // Maximum number of AP outputs (should be 1 for now)
 //#define MAXMODULEOUTPUTS 1

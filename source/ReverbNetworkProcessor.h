@@ -77,7 +77,7 @@ private:
 
 	double* moduleInputBuffer;
 	double* moduleOutputBuffer;
-	std::vector<std::shared_ptr<BaseAPModule>> apModules;
+	std::vector<BaseAPModule*> apModules;
 
 	ConnectionMatrix* connectionMatrix;
 

@@ -55,7 +55,7 @@ void BaseAPModule::setSampleRate(const double& sampleRate) {
 }
 
 //double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
-double BaseAPModule::processSamples(double* moduleInputBuffer, std::vector<double>& vstInputBuffer) {
+double BaseAPModule::processSamples(double* moduleInputBuffer, double* vstInputBuffer) {
 	// Mix channels
 	double outputSample = mixer->mixInputs(moduleInputBuffer, vstInputBuffer);
 
