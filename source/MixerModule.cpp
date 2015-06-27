@@ -23,7 +23,7 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer)
 	for (int i = 0; i < MAXINPUTS; ++i) {
 		// If input gain is zero then there is no sense in doing anything
 		if (inputGain[i] != 0.0) {
-			if (inputMuted[i] != false) { // Mute has precedence
+			if (inputMuted[i] == false) { // Mute has precedence
 				if (inputSoloed[i] == true) {
 					if (i < MAXMODULENUMBER) {
 						output += moduleInputBuffer[i] * inputGain[i];
