@@ -14,7 +14,7 @@ public:
 	// Read the VST parameter values from the filestream and save them ("Load Preset")
 	Steinberg::tresult setParamterState(Steinberg::IBStream* state);
 	// Write the saved parameter values to the filestream ("Save Preset")
-	Steinberg::tresult getParamterState(Steinberg::IBStream* state);
+	Steinberg::tresult getParamterState(Steinberg::IBStream* state) const;
 
 	// Set a parameter (has to be done in Processor)
 	inline void setNormValueByParamId(const double& normalizeValue, const unsigned long& parameterId) { 
@@ -22,7 +22,7 @@ public:
 	}
 
 	// Get a parameter (has to be done in Controller)
-	inline double getNormValueByParamId(const unsigned long& parameterId) {
+	inline double getNormValueByParamId(const unsigned long& parameterId) const {
 		if (parameterId < parameterValues.size()) return parameterValues[parameterId]; else return 0.0;
 	}
 

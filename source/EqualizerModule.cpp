@@ -6,6 +6,15 @@
 #include <cmath>
 #include <string>
 
+#define LIMITER
+
+#ifdef LIMITER
+// Max und min values at double precision: http://steve.hollasch.net/cgindex/coding/ieeefloat.html
+// ± ~10^(-323.3) to ~10^(308.3)
+const double maxSampleValue = pow(10, 300);
+const double minSampleValue = -pow(10, 300);
+#endif
+
 EqualizerModule::EqualizerModule(FilterType filterType, double qFactor, double gain)
 	: samplingFreq(0.0)
 	, centerFreq(0.0)
@@ -189,6 +198,11 @@ void EqualizerModule::processSample(double& sample) {
 
 	// Difference Equation
 	sample = a0 * sample + a1 * xn1 + a2 * xn2 - b1 * yn1 - b2 * yn2;
+
+	#ifdef LIMITER
+	if (sample > maxSampleValue) sample = maxSampleValue;
+	if (sample < minSampleValue) sample = minSampleValue;
+	#endif
 	
 	// Shift samples
 	xn2 = xn1;

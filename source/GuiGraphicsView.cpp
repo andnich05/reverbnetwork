@@ -52,6 +52,6 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::drawStuff(CDrawContext* pContext) {
-
+		
 	}
 }

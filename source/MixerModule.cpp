@@ -51,6 +51,7 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer)
 
 void MixerModule::setInputSoloed(const int& input, const bool& solo) {
 	inputSoloed[input] = solo;
+	// Check if any other input is soloed if the current input has been unsoloed
 	if (solo) {
 		isAnyOtherInputSoloed = true;
 	}
@@ -64,19 +65,3 @@ void MixerModule::setInputSoloed(const int& input, const bool& solo) {
 		}
 	}
 }
-
-//bool MixerModule::isAnyOtherInputSoloed(const int& currentInput) {
-//	bool result = false;
-//	for (int i = 0; i < MAXINPUTS; ++i) {
-//		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-//		fprintf(pFile, "y(n): %s\n", std::to_string(inputSoloed[i]).c_str());
-//		fclose(pFile);*/
-//		if (i == currentInput) continue;
-//		if (inputSoloed[i] == true) {
-//			result = true;
-//			break;
-//		}
-//	}
-//	
-//	return result;
-//}

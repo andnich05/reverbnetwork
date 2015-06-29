@@ -55,7 +55,7 @@ void BaseAPModule::setSampleRate(const double& sampleRate) {
 }
 
 //double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
-double BaseAPModule::processSamples(double* moduleInputBuffer, double* vstInputBuffer) {
+double BaseAPModule::processSamples(double* moduleInputBuffer, double* vstInputBuffer) const {
 	// Mix channels
 	double outputSample = mixer->mixInputs(moduleInputBuffer, vstInputBuffer);
 
@@ -115,10 +115,6 @@ void BaseAPModule::updateEqualizerQFactor(const double& qFactor) {
 }
 void BaseAPModule::updateEqualizerGain(const double& gain) {
 	equalizer->setGain(ValueConversion::logToLinear(gain));
-	//FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	//fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::logToLinear(ValueConversion::normToValueGain(gain))).c_str());
-	////fprintf(pFile, "y(n): %s\n", std::to_string(K).c_str());
-	//fclose(pFile);
 }
 
 void BaseAPModule::updateEqualizerCoefficients(const double& value, const long int& paramId) {
@@ -150,12 +146,3 @@ void BaseAPModule::updateOutputGain(const double& gain) {
 	
 	gainOutput->setGain(ValueConversion::logToLinear(gain));
 }
-
-
-//#include <string>
-//
-//void BaseAPModule::updateParameter(const unsigned int& pid, const double& normalizedValue) {
-//	if (pid >= PARAM_MIXERGAIN_FIRST && pid <= PARAM_MIXERGAIN_LAST) {
-//		mixer->setChannelGain((pid - PARAM_MIXERGAIN_FIRST) % MAXMODULEINPUTS, normalizedValue); // Calculate channel
-//	}
-//}

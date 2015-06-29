@@ -31,7 +31,7 @@ void QuantizerModule::setQuantization(const double& q) {
 	fclose(pFile);*/
 }
 
-void QuantizerModule::processSample(double& sample) {
+void QuantizerModule::processSample(double& sample) const {
 	// Convert to 32 bit signed integer
 	long int temp = 0;
 	if (sample >= 0.0) {

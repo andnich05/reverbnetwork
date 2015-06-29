@@ -7,15 +7,17 @@ public:
 	QuantizerModule(unsigned int quantization);
 	~QuantizerModule();
 
-	void processSample(double& sample);
+	// Process sample by reference
+	void processSample(double& sample) const;
+	// Set the quantization from 1 bit to 32 bit
 	void setQuantization(const double& q);
 
 private:
+	// Calculate the appropriate factor depending on the quantization method
 	void calculateFactor();
 
-	unsigned int bitsToReset;
-	// (min.)32 bit mask
-	long int mask;
+	unsigned int bitsToReset; // 32 - quantization
+	long int mask; // (min.)32 bit mask
 	double factor;
 
 };

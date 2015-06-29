@@ -112,7 +112,7 @@ Steinberg::tresult PresetReadWrite::setParamterState(Steinberg::IBStream* state)
 	return Steinberg::kResultTrue;
 }
 
-Steinberg::tresult PresetReadWrite::getParamterState(Steinberg::IBStream* state) {
+Steinberg::tresult PresetReadWrite::getParamterState(Steinberg::IBStream* state) const {
 	Steinberg::IBStreamer streamer(state, kLittleEndian);
 
 	// These three parameters determine whether a preset is compatible with the current Build or not
