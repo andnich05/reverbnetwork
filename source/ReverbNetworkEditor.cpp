@@ -143,6 +143,8 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
 	ViewRect viewRect(0, 0, 1000, 700);
 	setRect(viewRect);
+	editorUserData.presetName = "Preset 1";
+	editorUserData.moduleNames.resize(MAXMODULENUMBER, "");
 
 	// Set GUI refresh timer to 40 ms (25 Hz)
 	setIdleRate(40);
@@ -415,6 +417,17 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				guiElements[i]->setDirty();
 			}
 		}
+		for (int i = id_general_optionMenu_vstOutputFirst; i <= id_general_optionMenu_vstOutputLast; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
+			temp.append(" ");
+			temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
+			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(tag - id_module_textEdit_titleFirst + 1)->setTitle(temp.c_str());
+			for (int i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
+				guiElements[i]->setDirty();
+			}
+		} 
+		editorUserData.moduleNames[tag - id_module_textEdit_titleFirst] = dynamic_cast<CTextEdit*>(pControl)->getText();
 	}
 	else if (tag >= id_module_button_collapseFirst && tag <= id_module_button_collapseLast) {
 		if (apGuiModules[tag - id_module_button_collapseFirst]->isCollapsed()) {
@@ -761,6 +774,9 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
 		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
 		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
+	}
+	else if (tag == id_general_textEdit_presetFilePath) {
+		editorUserData.presetName = dynamic_cast<CTextEdit*>(pControl)->getText();
 	}
 	else if (tag == id_general_button_openPreset) {
 		if (pControl->getValue() == 1.0) {
@@ -1257,22 +1273,6 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	for (int i = id_allpass_textEdit_samplesDelayFirst; i <= id_allpass_textEdit_samplesDelayLast; ++i) {
 		guiElements[i]->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	}
-	//updateGuiParameter(PARAM_MIXERINPUTSELECT_FIRST, PARAM_MIXERINPUTSELECT_LAST, id_mixer_optionMenu_inputSelectFirst, &ValueConversion::normToPlainMixerInputSelect);
-	//updateGuiParameter(PARAM_MIXERGAIN_FIRST, PARAM_MIXERGAIN_LAST, id_mixer_knob_gainFirst, nullptr);
-
-	//for (auto i = PARAM_MIXERGAIN_FIRST; i <= PARAM_MIXERGAIN_LAST; ++i) {
-	//	savedGainValues[i - PARAM_MIXERGAIN_FIRST] = getController()->getParamNormalized(i);
-	//}
-	//for (auto i = PARAM_MIXERINPUTMUTED_FIRST; i <= PARAM_MIXERINPUTMUTED_LAST; ++i) {
-	//	savedMuteValues[i - PARAM_MIXERINPUTMUTED_FIRST] = getController()->getParamNormalized(i) != 0.0;
-	//	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	//	fprintf(pFile, "y(n): %s\n", std::to_string(getController()->getParamNormalized(i)).c_str());
-	//	fclose(pFile);*/
-	//}
-	//for (auto i = PARAM_MIXERINPUTSOLOED_FIRST; i <= PARAM_MIXERINPUTSOLOED_LAST; ++i) {
-	//	savedSoloValues[i - PARAM_MIXERINPUTSOLOED_FIRST] = getController()->getParamNormalized(i) != 0.0;
-	//}
-
 	for (uint32 i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
 		int menuIndex = ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (i - id_mixer_optionMenu_inputSelectFirst)));
 		guiElements[i]->setValue(menuIndex);
@@ -1308,6 +1308,8 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
 
 	
+
+	applyUserData();
 }
 
 void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr) {
@@ -1380,16 +1382,20 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		// If those defines in the XML differ from the defines in the actual build then the preset will be probably incompatible
 		return;
 	}
-	dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(presetStruct.name.c_str());
+	//dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(presetStruct.name.c_str());
+	editorUserData.presetName = presetStruct.name;
 	
 	for (unsigned int i = 0; i < presetStruct.modules.size(); ++i) {
-		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(presetStruct.modules[i].name.c_str());
+		if (i >= MAXMODULENUMBER) break;
+		/*dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(presetStruct.modules[i].name.c_str());
 		valueChanged(guiElements[id_module_textEdit_titleFirst + i]);
 		std::string temp = "APM";
 		temp.append(std::to_string(i));
 		temp.append(" ");
 		temp.append(presetStruct.modules[i].name);
-		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
+		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());*/
+		editorUserData.moduleNames[i] = presetStruct.modules[i].name;
+		
 
 		// set id...
 		// Set position
@@ -1483,7 +1489,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
 		getController()->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
 	}
-
+	
 	// Update the GUI with the new parameter values
 	updateGuiWithControllerParameters();
 
@@ -1700,6 +1706,22 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	apGuiModules[destModuleId]->setDirty();
 	workspaceView->setDirty();
 	updateGuiWithControllerParameters();
+}
+
+void ReverbNetworkEditor::applyUserData() {
+	if (!editorUserData.presetName.empty()) {
+		dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(editorUserData.presetName.c_str());
+	}
+	for (unsigned int i = 0; i < editorUserData.moduleNames.size(); ++i) {
+		if (i >= MAXMODULENUMBER) break;
+		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(editorUserData.moduleNames[i].c_str());
+		valueChanged(guiElements[id_module_textEdit_titleFirst + i]);
+		std::string temp = "APM";
+		temp.append(std::to_string(i));
+		temp.append(" ");
+		temp.append(editorUserData.moduleNames[i]);
+		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
+	}
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

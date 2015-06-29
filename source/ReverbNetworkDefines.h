@@ -237,6 +237,14 @@
 #define PARAM_PPMUPDATE_FIRST (PARAM_GENERALVSTOUTPUTSELECT_LAST + 1)
 #define PARAM_PPMUPDATE_LAST (PARAM_PPMUPDATE_FIRST + MAXMODULENUMBER - 1)
 
+// Since the editor object is destroyed every time the user closes the gui these parameters need to be saved somewhere => in the Controller
+// Module names
+#define PARAM_MODULENAME_FIRST (PARAM_PPMUPDATE_LAST + 1)
+#define PARAM_MODULENAME_LAST (PARAM_MODULENAME_FIRST + MAXMODULENUMBER - 1)
+// Preset name
+#define PARAM_PRESETNAME PARAM_MODULENAME_LAST + 1
+
+
 // ------
 
 

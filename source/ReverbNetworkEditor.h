@@ -20,6 +20,12 @@ public:
 	ReverbNetworkEditor(void* controller);
 	~ReverbNetworkEditor();
 
+	typedef struct EditorUserData{
+		std::string presetName;
+		std::vector<std::string> moduleNames;
+	};
+	EditorUserData editorUserData;
+
 	//---from VSTGUIEditor---------------
 	bool PLUGIN_API open(void* parent, const PlatformType& platformType = kDefaultNative);
 	void PLUGIN_API close();
@@ -39,6 +45,10 @@ public:
 	void updateEditorFromController(ParamID tag, ParamValue value);
 
 	inline void setPluginVersion(std::string version) { pluginVersion = version; }
+	inline const EditorUserData& getUserData() const { return editorUserData; }
+	inline void setUserData(const EditorUserData& userData) { editorUserData = userData; applyUserData(); }
+	void applyUserData();
+
 
 private:
 	

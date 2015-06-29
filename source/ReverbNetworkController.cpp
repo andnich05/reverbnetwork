@@ -39,7 +39,7 @@
 #include "reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
 
-#include "ReverbNetworkEditor.h"
+
 #include "ReverbNetworkDefines.h"
 #include "PresetReadWrite.h"
 
@@ -337,6 +337,9 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
+		// Initialize Editor user data
+		editorUserData.moduleNames.resize(MAXMODULENUMBER);
+		editorUserData.presetName = "";
 	}
 	return kResultTrue;
 }
@@ -378,6 +381,8 @@ void ReverbNetworkController::editorAttached(EditorView* editor)
 	ReverbNetworkEditor* view = dynamic_cast<ReverbNetworkEditor*> (editor);
 	if (view)
 	{
+		view->setUserData(editorUserData);
+
 		addDependentView(view);
 	}
 }
@@ -388,6 +393,13 @@ void ReverbNetworkController::editorRemoved(EditorView* editor)
 	ReverbNetworkEditor* view = dynamic_cast<ReverbNetworkEditor*> (editor);
 	if (view)
 	{
+		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", view->getModuleNames().at(0).c_str());
+		fclose(pFile);*/
+
+		// Save the data when the Editor is closed
+		editorUserData = view->getUserData();
+
 		removeDependentView(view);
 	}
 }
@@ -450,6 +462,16 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	}
 
 	return result;
+}
+
+ParamValue PLUGIN_API ReverbNetworkController::getParamNormalized(ParamID tag)
+{
+	Parameter* parameter = getParameterObject(tag);
+	if (parameter)
+	{
+		return parameter->getNormalized();
+	}
+	return 0.0;
 }
 
 void ReverbNetworkController::setVersion(std::string version) {

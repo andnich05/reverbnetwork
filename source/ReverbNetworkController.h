@@ -41,6 +41,8 @@
 #include "public.sdk/source/vst/vsteditcontroller.h"
 #include "XmlPresetReadWrite.h"
 
+#include "ReverbNetworkEditor.h"
+
 #if MAC
 #include <TargetConditionals.h>
 #endif
@@ -76,6 +78,7 @@ public:
 	tresult PLUGIN_API setComponentState(IBStream* state);
 
 	tresult PLUGIN_API setParamNormalized(ParamID tag, ParamValue value);
+	ParamValue PLUGIN_API getParamNormalized(ParamID tag);
 	tresult PLUGIN_API setParamNormalizedFromPreset(ParamID tag, ParamValue value);
 
 	static void setVersion(std::string version);
@@ -85,6 +88,9 @@ private:
 	TArray <ReverbNetworkEditor*> viewsArray;
 
 	static std::string pluginVersion;
+
+	// Contains everything from the editor that has no VST parameter
+	ReverbNetworkEditor::EditorUserData editorUserData;
 };
 
 }} // namespaces
