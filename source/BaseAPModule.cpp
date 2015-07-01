@@ -13,7 +13,7 @@
 BaseAPModule::BaseAPModule()
 	: mixer(new MixerModule(DEF_MIXERGAIN))
 	, quantizer(new QuantizerModule(DEF_QUANTIZERBITDEPTH))
-	, equalizer(new EqualizerModule(FilterType::lowPass, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
+	, equalizer(new EqualizerModule(FilterType::lowPass, DEF_EQCENTERFREQ, DEF_EQQFACTOR, ValueConversion::logToLinear(DEF_EQGAIN)))
 	, allpass(new SchroederAllpass(DEF_ALLPASSDELAY / 1000.0, DEF_ALLPASSDECAY / 1000.0))
 	, gainOutput(new GainModule(ValueConversion::logToLinear(DEF_OUTPUTGAIN)))
 	, bypassMixer(false)

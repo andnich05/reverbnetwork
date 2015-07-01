@@ -15,9 +15,9 @@ const double maxSampleValue = pow(10, 300);
 const double minSampleValue = -pow(10, 300);
 #endif
 
-EqualizerModule::EqualizerModule(FilterType filterType, double qFactor, double gain)
+EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain)
 	: samplingFreq(0.0)
-	, centerFreq(0.0)
+	, centerFreq(centerFrequency)
 	, qFactor(qFactor)
 	, gain(gain)
 	, filterType(filterType)
@@ -167,7 +167,6 @@ void EqualizerModule::setCenterFreq(const double& f0) {
 void EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient, const double& value) {
 	
 	if (filterType == FilterType::rawBiquad) {
-		
 		switch (coefficient) {
 		case FilterCoefficients::a0:
 			a0 = value;

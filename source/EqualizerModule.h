@@ -16,7 +16,7 @@ class EqualizerModule
 {
 public:
 
-	EqualizerModule(FilterType filterType, double qFactor, double gain);
+	EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain);
 	~EqualizerModule();
 
 	// Set the sample rate of the host
