@@ -15,7 +15,7 @@ namespace VSTGUI {
 		// Show the splash screen
 		virtual void splash();
 		virtual inline void setUserData(void* userData) { savedUserData = userData; }
-		virtual inline void* getUserData() { if(savedUserData) return savedUserData; }
+		virtual inline void* getUserData() const { if(savedUserData) return savedUserData; }
 		virtual inline void releaseUserData() { if (savedUserData) delete savedUserData; savedUserData = nullptr; }
 
 		virtual CMouseEventResult onMouseDown(CPoint& where, const CButtonState& buttons);
@@ -23,7 +23,6 @@ namespace VSTGUI {
 	protected:
 		void* savedUserData;
 	};
-
 }
 
 #endif // GUICUSTOMSPLASHSCREEN_H

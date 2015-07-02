@@ -20,4 +20,9 @@ struct valueToStringUserData{
 	std::string unit;
 };
 
+struct EqualizerStability {
+	int moduleNumber;
+	bool isStable;
+};
+
 #endif // REVERBNETWORKENUMS_H

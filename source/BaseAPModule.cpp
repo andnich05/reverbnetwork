@@ -104,35 +104,36 @@ void BaseAPModule::updateQuantizerQuantization(const double& quantization) {
 	quantizer->setQuantization(quantization);
 }
 
-void BaseAPModule::updateEqualizerFilterType(const double& filterType) {
-	equalizer->setFilterType((FilterType)((int)(filterType)));
+const bool& BaseAPModule::updateEqualizerFilterType(const double& filterType) {
+	return equalizer->setFilterType((FilterType)((int)(filterType)));
 }
-void BaseAPModule::updateEqualizerCenterFrequency(const double& freq) {
-	equalizer->setCenterFreq(freq);
+const bool& BaseAPModule::updateEqualizerCenterFrequency(const double& freq) {
+	return equalizer->setCenterFreq(freq);
 }
-void BaseAPModule::updateEqualizerQFactor(const double& qFactor) {
-	equalizer->setQFactor(qFactor);
+const bool& BaseAPModule::updateEqualizerQFactor(const double& qFactor) {
+	return equalizer->setQFactor(qFactor);
 }
-void BaseAPModule::updateEqualizerGain(const double& gain) {
-	equalizer->setGain(ValueConversion::logToLinear(gain));
+const bool& BaseAPModule::updateEqualizerGain(const double& gain) {
+	return equalizer->setGain(ValueConversion::logToLinear(gain));
 }
 
-void BaseAPModule::updateEqualizerCoefficients(const double& value, const long int& paramId) {
+const bool& BaseAPModule::updateEqualizerCoefficients(const double& value, const long int& paramId) {
 	if (paramId >= PARAM_EQCOEFFICIENTA0_FIRST && paramId <= PARAM_EQCOEFFICIENTA0_LAST) {
 		equalizer->setFilterCoefficient(FilterCoefficients::a0, value);
 	}
-	if (paramId >= PARAM_EQCOEFFICIENTA1_FIRST && paramId <= PARAM_EQCOEFFICIENTA1_LAST) {
+	else if (paramId >= PARAM_EQCOEFFICIENTA1_FIRST && paramId <= PARAM_EQCOEFFICIENTA1_LAST) {
 		equalizer->setFilterCoefficient(FilterCoefficients::a1, value);
 	}
-	if (paramId >= PARAM_EQCOEFFICIENTA2_FIRST && paramId <= PARAM_EQCOEFFICIENTA2_LAST) {
+	else if (paramId >= PARAM_EQCOEFFICIENTA2_FIRST && paramId <= PARAM_EQCOEFFICIENTA2_LAST) {
 		equalizer->setFilterCoefficient(FilterCoefficients::a2, value);
 	}
-	if (paramId >= PARAM_EQCOEFFICIENTB1_FIRST && paramId <= PARAM_EQCOEFFICIENTB1_LAST) {
+	else if (paramId >= PARAM_EQCOEFFICIENTB1_FIRST && paramId <= PARAM_EQCOEFFICIENTB1_LAST) {
 		equalizer->setFilterCoefficient(FilterCoefficients::b1, value);
 	}
-	if (paramId >= PARAM_EQCOEFFICIENTB2_FIRST && paramId <= PARAM_EQCOEFFICIENTB2_LAST) {
+	else if (paramId >= PARAM_EQCOEFFICIENTB2_FIRST && paramId <= PARAM_EQCOEFFICIENTB2_LAST) {
 		equalizer->setFilterCoefficient(FilterCoefficients::b2, value);
 	}
+	return equalizer->isStable();
 }
 
 void BaseAPModule::updateAllpassDelay(const double& delay) {

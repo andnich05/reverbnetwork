@@ -83,9 +83,13 @@ private:
 
 	std::vector<double> ppmValues;
 	std::vector<double> ppmOldValues;
+	std::vector<bool> eqStabilityCurrent;
+	std::vector<bool> eqStabilityOld;
 
 	PresetReadWrite* preset;
 };
+
+
 
 }} // namespaces
 

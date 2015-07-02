@@ -84,6 +84,8 @@ public:
 	static void setVersion(std::string version);
 	static std::string getVersion();
 
+	tresult PLUGIN_API notify(IMessage* message);
+
 private:
 	TArray <ReverbNetworkEditor*> viewsArray;
 

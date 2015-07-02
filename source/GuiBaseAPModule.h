@@ -25,9 +25,9 @@ public:
 
 	virtual void setViewSize(const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 
-	unsigned int getModuleId ();
+	unsigned int getModuleId() const;
 	void collapseView(const bool& collapse);
-	inline bool isCollapsed() { return collapsed; }
+	inline bool isCollapsed() const { return collapsed; }
 
 	static const char* kModuleWantsFocus;
 

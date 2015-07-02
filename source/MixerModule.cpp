@@ -13,7 +13,7 @@ MixerModule::MixerModule(const double& defaultGain) {
 MixerModule::~MixerModule() {
 }
 
-double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer) {
+double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer) const {
 	if (moduleInputBuffer == nullptr || vstInputBuffer == nullptr) {
 		return 0.0;
 	}

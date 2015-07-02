@@ -30,7 +30,7 @@ GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, c
 	collapsed = false;
 }
 
-unsigned int GuiBaseAPModule::getModuleId() {
+unsigned int GuiBaseAPModule::getModuleId() const {
 	return moduleId;
 }
 

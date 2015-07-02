@@ -464,6 +464,33 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	return result;
 }
 
+tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message)
+{
+	//if (!message)
+	//	return kInvalidArgument;
+
+	//if (!strcmp(message->getMessageID(), "TextMessage"))
+	//{
+	//	TChar string[256] = { 0 };
+	//	if (message->getAttributes()->getString("Text", string, sizeof(string) / sizeof(char16)) == kResultOk)
+	//	{
+	//		char8 cstr[256];
+	//		String tmp(string);
+	//		tmp.copyTo8(cstr, 0, 255);
+	//		return receiveText(cstr);
+	//	}
+	//}
+
+	if (message) {
+		const void* eqStability;
+		EqualizerStability bla;
+		uint32 size = sizeof(bla);
+		message->getAttributes()->getBinary(0, eqStability, size);
+		return true;
+	}
+	return false;
+}
+
 ParamValue PLUGIN_API ReverbNetworkController::getParamNormalized(ParamID tag)
 {
 	Parameter* parameter = getParameterObject(tag);

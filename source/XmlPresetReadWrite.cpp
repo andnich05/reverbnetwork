@@ -12,7 +12,7 @@ XmlPresetReadWrite::~XmlPresetReadWrite() {
 }
 
 
-const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* filePath) {
+const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* filePath) const {
 	preset loadedPreset = {};
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filePath);
@@ -105,7 +105,7 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 	return loadedPreset;
 }
 
-void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) {
+void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const {
 	pugi::xml_document doc;
 	pugi::xml_node decl = doc.prepend_child(pugi::node_declaration);
 	// Add a custom header declaration in the xml file

@@ -10,7 +10,7 @@ public:
 	~MixerModule();
 
 	// Mix samples of each channels, return the new sample value
-	double mixInputs(double* moduleInputBuffer, double* vstInputBuffer);
+	double mixInputs(double* moduleInputBuffer, double* vstInputBuffer) const;
 	// Set gain of an input
 	inline void setInputGain(const int& input, const double& gain) { inputGain[input] = gain; }
 	// Mute or unmute an input

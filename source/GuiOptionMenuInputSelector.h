@@ -13,7 +13,7 @@ public:
 	~GuiOptionMenuInputSelector();
 
 	// Get the index which was selected before the current index was selected
-	inline int32_t getLastIndex() { return lastIndex; }
+	inline int32_t getLastIndex() const { return lastIndex; }
 
 private:
 	int32_t lastIndex;

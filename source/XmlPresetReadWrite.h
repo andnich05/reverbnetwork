@@ -86,8 +86,8 @@ public:
 		general generalParamters;
 	};
 
-	const preset loadPreset(const char* filePath);
-	void savePreset(const char* filePath, const preset& p);
+	const preset loadPreset(const char* filePath) const;
+	void savePreset(const char* filePath, const preset& p) const;
 
 private:
 	

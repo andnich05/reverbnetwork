@@ -34,12 +34,12 @@ public:
 	void updateQuantizerQuantization(const double& quantization);
 	inline void switchQuantizerBypass(const double& bypass) { bypassQuantizer = (bypass != 0.0); }
 
-	// Equalizer update functions
-	void updateEqualizerFilterType(const double& filterType);
-	void updateEqualizerCenterFrequency(const double& freq);
-	void updateEqualizerQFactor(const double& qFactor);
-	void updateEqualizerGain(const double& gain);
-	void updateEqualizerCoefficients(const double& value, const long int& paramId);
+	// Equalizer update functions; return true if the filter is stable
+	const bool& updateEqualizerFilterType(const double& filterType);
+	const bool& updateEqualizerCenterFrequency(const double& freq);
+	const bool& updateEqualizerQFactor(const double& qFactor);
+	const bool& updateEqualizerGain(const double& gain);
+	const bool& updateEqualizerCoefficients(const double& value, const long int& paramId);
 	inline void switchEqualizerBypass(const double& bypass) { bypassEqualizer = (bypass != 0.0); }
 
 	// Allpass update functions

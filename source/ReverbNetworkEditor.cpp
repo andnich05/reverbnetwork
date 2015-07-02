@@ -60,7 +60,9 @@ namespace Vst {
 	// Equalizer GUI ids
 	const int32_t id_equalizer_optionMenu_filterTypeFirst = id_quantizer_switch_bypassLast + 1;
 	const int32_t id_equalizer_optionMenu_filterTypeLast = id_equalizer_optionMenu_filterTypeFirst + MAXMODULENUMBER - 1;
-	const int32_t id_equalizer_knob_centerFreqFirst = id_equalizer_optionMenu_filterTypeLast + 1;
+	const int32_t id_equalizer_button_stabilityFirst = id_equalizer_optionMenu_filterTypeLast + 1;
+	const int32_t id_equalizer_button_stabilityLast = id_equalizer_button_stabilityFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_knob_centerFreqFirst = id_equalizer_button_stabilityLast + 1;
 	const int32_t id_equalizer_knob_centerFreqLast = id_equalizer_knob_centerFreqFirst + MAXMODULENUMBER - 1;
 	const int32_t id_equalizer_textEdit_centerFreqFirst = id_equalizer_knob_centerFreqLast + 1;
 	const int32_t id_equalizer_textEdit_centerFreqLast = id_equalizer_textEdit_centerFreqFirst + MAXMODULENUMBER - 1;
@@ -936,8 +938,13 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	paramFirstRow->sizeToFit();
 	CCheckBox* checkBoxEqualizerBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_equalizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
+	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
+	addGuiElementPointer(buttonStability, id_equalizer_button_stabilityFirst + moduleId);
+	buttonStability->setMouseEnabled(false);
+	buttonStability->setFont(CFontRef(kNormalFontSmall));
 	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
 	equalizerView->addView(checkBoxEqualizerBypass);
+	equalizerView->addView(buttonStability);
 	equalizerView->addView(filterTypeView);
 	CRowColumnView* equalizerNormalView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
 	equalizerNormalView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -1178,7 +1185,7 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	return groupView;
 }
 
-CTextLabel* ReverbNetworkEditor::createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) {
+CTextLabel* ReverbNetworkEditor::createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) const {
 	CTextLabel* label = new CTextLabel(CRect(CPoint(0, 0), CPoint(width, 30)), title);
 	label->setFont(kNormalFontBig);
 	label->setBackColor(CColor(0, 0, 0, 0));
@@ -1259,12 +1266,12 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	return mixerRow;
 }
 
-void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
-	// Remove the view and delete it (=> true)
-	// the view container fills gaps out by moving the views' index e.g.  workspaceView[0][1][2] => removeView(1) => workspaceView[0][1] (2 is now 1) => like a std::vector
-	workspaceView->removeView(workspaceView->getView(moduleNumber), true);
-	workspaceView->setDirty();
-}
+//void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
+//	// Remove the view and delete it (=> true)
+//	// the view container fills gaps out by moving the views' index e.g.  workspaceView[0][1][2] => removeView(1) => workspaceView[0][1] (2 is now 1) => like a std::vector
+//	workspaceView->removeView(workspaceView->getView(moduleNumber), true);
+//	workspaceView->setDirty();
+//}
 
 //bool textEditStringToValueConversion(UTF8StringPtr txt, float& result, void* userData);
 
@@ -1307,8 +1314,6 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToPlainMixerInputSelect);
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
 
-	
-
 	applyUserData();
 }
 
@@ -1326,11 +1331,22 @@ void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastPar
 	}
 }
 
-void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue value)
-{
+void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue value) {
 	if (tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) {
 		// Update PPM value
 		lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = value;	
+	}
+	else if (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST) {
+		if (value == 0.0) { // false
+			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setTitle("Unstable");
+			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setGradientStartColor(CColor(200, 0, 0, 255));
+			guiElements[id_equalizer_switch_bypassFirst + (tag - PARAM_EQSTABILITY_FIRST)]->setValue(1.0);
+			valueChanged(guiElements[id_equalizer_switch_bypassFirst + (tag - PARAM_EQSTABILITY_FIRST)]);
+		}
+		else {
+			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setTitle("Stable");
+			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setGradientStartColor(CColor(0, 200, 0, 255));
+		}
 	}
 }
 
@@ -1492,7 +1508,6 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 	
 	// Update the GUI with the new parameter values
 	updateGuiWithControllerParameters();
-
 }
 
 const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
@@ -1722,6 +1737,10 @@ void ReverbNetworkEditor::applyUserData() {
 		temp.append(editorUserData.moduleNames[i]);
 		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
 	}
+}
+
+void ReverbNetworkEditor::updateEqualizerStability(const int& moduleNumber, const bool& isStable) {
+
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

@@ -49,6 +49,8 @@ public:
 	inline void setUserData(const EditorUserData& userData) { editorUserData = userData; applyUserData(); }
 	void applyUserData();
 
+	void updateEqualizerStability(const int& moduleNumber, const bool& isStable);
+
 
 private:
 	
@@ -81,7 +83,7 @@ private:
 	// Create the GUI for a Allpass module
 	GuiBaseAPModule* createAPModule();
 	// Remove the GUI for a specified Allpass module
-	void removeAPModule(uint16 moduleNumber);
+	//void removeAPModule(uint16 moduleNumber);
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
@@ -90,7 +92,7 @@ private:
 	//CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
 
 	// Create a text label with a title for a group
-	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width);
+	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) const;
 
 	CRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset);
 

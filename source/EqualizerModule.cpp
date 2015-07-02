@@ -11,8 +11,8 @@
 #ifdef LIMITER
 // Max und min values at double precision: http://steve.hollasch.net/cgindex/coding/ieeefloat.html
 // ± ~10^(-323.3) to ~10^(308.3)
-const double maxSampleValue = pow(10, 300);
-const double minSampleValue = -pow(10, 300);
+const double maxSampleValue = 1.0e10;
+const double minSampleValue = -1.0e10;
 #endif
 
 EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain)
@@ -21,6 +21,7 @@ EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, 
 	, qFactor(qFactor)
 	, gain(gain)
 	, filterType(filterType)
+	, stable(false)
 {
 	// Initialize everything
 	xn0 = 0.0;
@@ -41,7 +42,7 @@ EqualizerModule::~EqualizerModule()
 
 // Source: Zölzer book p.136+137
 // Alle WURZEL(2)-Terme werden durch 1/qFactor ersetzt!
-void EqualizerModule::calculateCoefficients() {
+const bool& EqualizerModule::calculateCoefficients() {
 	// tan() has a discontinuity at 0.5*PI
 	if ((centerFreq / samplingFreq) < 0.5) {
 		K = tan((centerFreq / samplingFreq) * M_PI);
@@ -152,20 +153,20 @@ void EqualizerModule::calculateCoefficients() {
 		break;
 	}
 	}
+	return checkStability();
 }
 
-void EqualizerModule::setCenterFreq(const double& f0) {
+const bool& EqualizerModule::setCenterFreq(const double& f0) {
 	if (f0 <= ValueConversion::getMaxEqFrequency()) {
 		centerFreq = f0;
-		calculateCoefficients();
 	}
 	else {
 		centerFreq = ValueConversion::getMaxEqFrequency();
 	}
+	return calculateCoefficients();
 }
 
-void EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient, const double& value) {
-	
+const bool& EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient, const double& value) {
 	if (filterType == FilterType::rawBiquad) {
 		switch (coefficient) {
 		case FilterCoefficients::a0:
@@ -186,9 +187,24 @@ void EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient,
 		default:
 			break;
 		}
-		// Biquad stability condition: http://nrlug.puhep.res.in/GLUE/Packages/engg/DSP/book/node75.html
-		//if (...)
 	}
+	return checkStability();
+}
+
+const bool& EqualizerModule::checkStability() {
+	// Source: Kammeyer p.77 / 78
+	stable = false;
+	if (b2 > (pow(b1, 2.0) / 4.0)) {
+		if (b2 < 1.0) {
+			stable = true;
+		}
+	}
+	else if (b2 < (pow(b1, 2.0) / 4.0)) {
+		if (b1 < (1.0 + b2) && b1 > (-1.0 - b2)) {
+			stable = true;
+		}
+	}
+	return stable;
 }
 
 void EqualizerModule::processSample(double& sample) {
