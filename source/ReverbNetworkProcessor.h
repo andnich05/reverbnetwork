@@ -75,6 +75,8 @@ protected:
 private:
 	//std::vector<std::shared_ptr<SchroederAllpass>> allpasses;
 
+	//tresult sendEqUpdateMessage(const int& moduleNumber, const bool& isStable);
+
 	double* moduleInputBuffer;
 	double* moduleOutputBuffer;
 	std::vector<BaseAPModule*> apModules;
@@ -83,8 +85,8 @@ private:
 
 	std::vector<double> ppmValues;
 	std::vector<double> ppmOldValues;
-	std::vector<bool> eqStabilityCurrent;
-	std::vector<bool> eqStabilityOld;
+	std::vector<bool> eqStabilityValues;
+	std::vector<bool> eqStabilityOldValues;
 
 	PresetReadWrite* preset;
 };

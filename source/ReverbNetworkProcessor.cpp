@@ -68,8 +68,8 @@ ReverbNetworkProcessor::ReverbNetworkProcessor() {
 
 	ppmValues.resize(MAXMODULENUMBER, 0.0);
 	ppmOldValues.resize(MAXMODULENUMBER, 0.0);
-	eqStabilityCurrent.resize(MAXMODULENUMBER, false);
-	eqStabilityOld.resize(MAXMODULENUMBER, false);
+	eqStabilityValues.resize(MAXMODULENUMBER, true);
+	eqStabilityOldValues.resize(MAXMODULENUMBER, true);
 
 	preset = new PresetReadWrite();
 
@@ -348,52 +348,47 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						value = ValueConversion::normToPlainFilterTypeSelect(value);
-						EqualizerStability* eqStability = new EqualizerStability();
-						eqStability->moduleNumber = pid - PARAM_EQFILTERTYPE_FIRST;
-						eqStability->isStable = apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateEqualizerFilterType(value);
-						IMessage* message = allocateMessage();
-						message->getAttributes()->setBinary(0, eqStability, sizeof(*eqStability));
-						sendMessage(message);
+						eqStabilityValues[pid - PARAM_EQFILTERTYPE_FIRST] = apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateEqualizerFilterType(value);
 					}
 				}
 				else if (pid >= PARAM_EQCENTERFREQ_FIRST && pid <= PARAM_EQCENTERFREQ_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQCENTERFREQ_FIRST] = apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToPlainVstCenterFreq(value));
+						eqStabilityValues[pid - PARAM_EQCENTERFREQ_FIRST] = apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToPlainVstCenterFreq(value));
 					}
 				}
 				else if (pid >= PARAM_EQQFACTOR_FIRST && pid <= PARAM_EQQFACTOR_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQQFACTOR_FIRST] = apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(ValueConversion::normToPlainQFactor(value));
+						eqStabilityValues[pid - PARAM_EQQFACTOR_FIRST] = apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(ValueConversion::normToPlainQFactor(value));
 					}
 				}
 				else if (pid >= PARAM_EQGAIN_FIRST && pid <= PARAM_EQGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQGAIN_FIRST] = apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToPlainEqGain(value));
+						eqStabilityValues[pid - PARAM_EQGAIN_FIRST] = apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToPlainEqGain(value));
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTA0_FIRST && pid <= PARAM_EQCOEFFICIENTA0_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQCOEFFICIENTA0_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA0_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						eqStabilityValues[pid - PARAM_EQCOEFFICIENTA0_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA0_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTA1_FIRST && pid <= PARAM_EQCOEFFICIENTA1_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQCOEFFICIENTA1_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						eqStabilityValues[pid - PARAM_EQCOEFFICIENTA1_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTA2_FIRST && pid <= PARAM_EQCOEFFICIENTA2_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQCOEFFICIENTA2_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						eqStabilityValues[pid - PARAM_EQCOEFFICIENTA2_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTB1_FIRST && pid <= PARAM_EQCOEFFICIENTB1_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQCOEFFICIENTB1_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTB1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						eqStabilityValues[pid - PARAM_EQCOEFFICIENTB1_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTB1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTB2_FIRST && pid <= PARAM_EQCOEFFICIENTB2_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						eqStabilityCurrent[pid - PARAM_EQCOEFFICIENTB2_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTB2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						eqStabilityValues[pid - PARAM_EQCOEFFICIENTB2_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTB2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
 					}
 				}
 				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
@@ -548,15 +543,15 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						ppmOldValues[i] = ppmValues[i];
 					}
 				}
-				/*if (eqStabilityCurrent[i] != eqStabilityOld[i]) {
+				if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
 					int32 index = 0;
 					IParamValueQueue* paramQueue = paramChanges->addParameterData(PARAM_EQSTABILITY_FIRST + i, index);
 					if (paramQueue) {
 						int32 index2 = 0;
-						paramQueue->addPoint(0, eqStabilityCurrent[i], index2);
-						eqStabilityOld[i] = eqStabilityCurrent[i];
+						paramQueue->addPoint(0, eqStabilityValues[i], index2);
+						eqStabilityOldValues[i] = eqStabilityValues[i];
 					}
-				}*/
+				}
 			}
 		}
 	}
@@ -572,5 +567,17 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 
 	return kResultTrue;
 }
+
+//tresult ReverbNetworkProcessor::sendEqUpdateMessage(const int& moduleNumber, const bool& isStable) {
+//	EqualizerStability* eqStability = new EqualizerStability();
+//	eqStability->moduleNumber = moduleNumber;
+//	eqStability->isStable = isStable;
+//	IMessage* message = allocateMessage();
+//	message->setMessageID("EqStability");
+//	message->getAttributes()->setBinary(0, eqStability, sizeof(*eqStability));
+//	tresult result = sendMessage(message);
+//	message->release();
+//	return result;
+//}
 
 }} // namespaces

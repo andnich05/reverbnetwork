@@ -25,10 +25,6 @@ QuantizerModule::~QuantizerModule() {
 void QuantizerModule::setQuantization(const double& q) {
 	bitsToReset = 32 - (unsigned int)(std::round(q));
 	calculateFactor();
-	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(q).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(bitsToReset).c_str());
-	fclose(pFile);*/
 }
 
 void QuantizerModule::processSample(double& sample) const {

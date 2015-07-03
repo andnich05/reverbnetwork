@@ -464,31 +464,25 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	return result;
 }
 
-tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message)
-{
-	//if (!message)
-	//	return kInvalidArgument;
-
-	//if (!strcmp(message->getMessageID(), "TextMessage"))
-	//{
-	//	TChar string[256] = { 0 };
-	//	if (message->getAttributes()->getString("Text", string, sizeof(string) / sizeof(char16)) == kResultOk)
-	//	{
-	//		char8 cstr[256];
-	//		String tmp(string);
-	//		tmp.copyTo8(cstr, 0, 255);
-	//		return receiveText(cstr);
+tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
+	//if (!message) return kMessageUnknown;
+	//if (strncmp(message->getMessageID(), "EqStability", 128) == 0) {
+	//	const void* ptr;
+	//	EqualizerStability eqStability;
+	//	uint32 size = sizeof(eqStability);
+	//	message->getAttributes()->getBinary(0, ptr, size);
+	//	if (ptr) {
+	//		eqStability = *(EqualizerStability*)ptr;
 	//	}
+	//	for (int i = 0; i < viewsArray.size(); ++i) {
+	//		if (viewsArray.at(i)) {
+	//			//viewsArray.at(i)->updateEqualizerStability(eqStability.moduleNumber, eqStability.isStable);
+	//		}
+	//	}
+	//	
+	//	return kMessageNotified;
 	//}
-
-	if (message) {
-		const void* eqStability;
-		EqualizerStability bla;
-		uint32 size = sizeof(bla);
-		message->getAttributes()->getBinary(0, eqStability, size);
-		return true;
-	}
-	return false;
+	return kMessageUnknown;
 }
 
 ParamValue PLUGIN_API ReverbNetworkController::getParamNormalized(ParamID tag)

@@ -6,7 +6,7 @@
 #include "GuiBaseAPModule.h"
 #include "XmlPresetReadWrite.h"
 #include "GuiGraphicsView.h"
-
+#include "ReverbNetworkEnums.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -49,11 +49,13 @@ public:
 	inline void setUserData(const EditorUserData& userData) { editorUserData = userData; applyUserData(); }
 	void applyUserData();
 
-	void updateEqualizerStability(const int& moduleNumber, const bool& isStable);
-
+	//void updateEqualizerStability(const int moduleNumber, const bool isStable);
+	
 
 private:
 	
+	//std::vector<EqualizerStability> eqStability;
+
 	std::string pluginVersion;
 
 	// Holds pointer to the module GUIs
@@ -107,6 +109,7 @@ private:
 	CMessageResult notify(CBaseObject* sender, const char* message);
 
 	std::vector<double> lastPpmValues;
+	std::vector<EqualizerStability> eqStabilityValues;
 
 	XmlPresetReadWrite* xmlPreset;
 	// Apply the loaded xml preset structure to the Vst plug-in

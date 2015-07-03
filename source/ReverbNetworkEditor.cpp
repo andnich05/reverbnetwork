@@ -7,6 +7,8 @@
 #include "GuiCustomSplashScreen.h"
 #include "GuiGraphicsView.h"
 
+#include <mutex>
+
 //#include "XmlPresetReadWrite.h"
 
 //#include "GuiHandleView.h"
@@ -140,6 +142,9 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 , fileSelectorStyle(CNewFileSelector::kSelectFile)
 {
 	pluginVersion = "0";
+	/*updateEqStability = false;
+	eqStability.moduleNumber = 0;
+	eqStability.isStable = true;*/
 	tempModuleParameters = {};
 	defaultModuleParameters = {};
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
@@ -380,7 +385,9 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	ppmOn->forget();
 
 	updateGuiWithControllerParameters();
-
+	for (int i = 0; i < MAXMODULENUMBER; ++i) {
+		updateEditorFromController(PARAM_EQSTABILITY_FIRST + i, 1.0);
+	}
 	return true;
 }
 
@@ -615,6 +622,13 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 					layeredView->getView(1)->setVisible((int)value == FilterType::rawBiquad);
 				}
 			}
+		}
+		if ((int)value == FilterType::rawBiquad) {
+			controller->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			controller->performEdit(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			controller->performEdit(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			controller->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			controller->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 		}
 	}
 	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
@@ -1337,21 +1351,16 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = value;	
 	}
 	else if (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST) {
-		if (value == 0.0) { // false
-			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setTitle("Unstable");
-			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setGradientStartColor(CColor(200, 0, 0, 255));
-			guiElements[id_equalizer_switch_bypassFirst + (tag - PARAM_EQSTABILITY_FIRST)]->setValue(1.0);
-			valueChanged(guiElements[id_equalizer_switch_bypassFirst + (tag - PARAM_EQSTABILITY_FIRST)]);
-		}
-		else {
-			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setTitle("Stable");
-			dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + (tag - PARAM_EQSTABILITY_FIRST)])->setGradientStartColor(CColor(0, 200, 0, 255));
-		}
+		EqualizerStability stability;
+		stability.moduleNumber = tag - PARAM_EQSTABILITY_FIRST;
+		stability.isStable = value;
+		eqStabilityValues.push_back(stability);
 	}
 }
 
 CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
 {
+	if (!message) return kMessageUnknown;
 	if (message == GuiBaseAPModule::kModuleWantsFocus) {
 		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", message);
@@ -1378,9 +1387,10 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			}
 		}
 	}
+	// GUI refresh timer, can be set with setIdleRate()
+	// Any GUI changes coming from controller/processor should be made here after the editor's variables have been updated
 	else if (message == CVSTGUITimer::kMsgTimer)
-	{
-		// GUI refresh timer, can be set with setIdleRate()
+	{	
 		// Update PPMs of the modules
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			if (guiElements[id_output_ppmFirst + i])
@@ -1389,6 +1399,25 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 				//lastPpmValues[i] = 0.0;
 			}
 		}
+		if (eqStabilityValues.size() > 0) {
+			for (auto&& i : eqStabilityValues) {
+				if (guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber]) {
+					if (i.isStable) {
+						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setTitle("Stable");
+						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setGradientStartColor(CColor(0, 200, 0, 255));
+					}
+					else {
+						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setTitle("Unstable");
+						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setGradientStartColor(CColor(200, 0, 0, 255));
+						guiElements[id_equalizer_switch_bypassFirst + i.moduleNumber]->setValue(1.0);
+						valueChanged(guiElements[id_equalizer_switch_bypassFirst + i.moduleNumber]);
+					}
+					dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setDirty();
+				}
+			}
+			eqStabilityValues.clear();
+		}
+
 	}
 	return VSTGUIEditor::notify(sender, message);
 } 
@@ -1739,9 +1768,12 @@ void ReverbNetworkEditor::applyUserData() {
 	}
 }
 
-void ReverbNetworkEditor::updateEqualizerStability(const int& moduleNumber, const bool& isStable) {
-
-}
+//void ReverbNetworkEditor::updateEqualizerStability(const int moduleNumber, const bool isStable) {
+//	EqualizerStability stability;
+//	stability.moduleNumber = moduleNumber;
+//	stability.isStable = isStable;
+//	//eqStability.push_back(stability);
+//}
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;
