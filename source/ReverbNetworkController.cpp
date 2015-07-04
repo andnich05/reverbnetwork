@@ -453,17 +453,21 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	// called from host to update our parameters state
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 
-	for (int32 i = 0; i < viewsArray.total (); i++)
-	{
-		if (viewsArray.at (i))
+	// Update the GUI with values coming from Processor
+	if ((tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) || (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST)) {
+		for (int32 i = 0; i < viewsArray.total(); i++)
 		{
-			viewsArray.at(i)->updateEditorFromController(tag, value);
+			if (viewsArray.at(i))
+			{
+				viewsArray.at(i)->updateEditorFromController(tag, value);
+			}
 		}
 	}
 
 	return result;
 }
 
+// Problems with thread safety when changing member variables of the Editor!
 tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
 	//if (!message) return kMessageUnknown;
 	//if (strncmp(message->getMessageID(), "EqStability", 128) == 0) {

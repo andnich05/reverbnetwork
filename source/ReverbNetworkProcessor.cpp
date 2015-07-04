@@ -531,11 +531,13 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		IParameterChanges* paramChanges = data.outputParameterChanges;
 		// a new value of VuMeter will be send to the host 
 		// (the host will send it back in sync to our controller for updating our editor)
-
+		// The function "setParamNormalized()" will be called in the Controller
 		if (paramChanges) {
 			for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+				// Check if the values have changed since last time
 				if (ppmValues[i] != ppmOldValues[i]) {
 					int32 index = 0;
+					// Add the changes to the output parameter queue
 					IParamValueQueue* paramQueue = paramChanges->addParameterData(PARAM_PPMUPDATE_FIRST + i, index);
 					if (paramQueue) {
 						int32 index2 = 0;

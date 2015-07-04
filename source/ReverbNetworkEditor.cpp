@@ -1346,6 +1346,7 @@ void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastPar
 }
 
 void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue value) {
+	// Update the PPM with values from Processor
 	if (tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) {
 		// Update PPM value
 		lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = value;	
@@ -1354,6 +1355,7 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		EqualizerStability stability;
 		stability.moduleNumber = tag - PARAM_EQSTABILITY_FIRST;
 		stability.isStable = value;
+		// Add the change to the ToDo-queue
 		eqStabilityValues.push_back(stability);
 	}
 }
@@ -1388,7 +1390,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		}
 	}
 	// GUI refresh timer, can be set with setIdleRate()
-	// Any GUI changes coming from controller/processor should be made here after the editor's variables have been updated
+	// Any GUI changes coming from controller/processor should be made here after the editor's variables have been updated (thread-safe!)
 	else if (message == CVSTGUITimer::kMsgTimer)
 	{	
 		// Update PPMs of the modules
@@ -1399,6 +1401,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 				//lastPpmValues[i] = 0.0;
 			}
 		}
+		// If there is something in the ToDo-queue
 		if (eqStabilityValues.size() > 0) {
 			for (auto&& i : eqStabilityValues) {
 				if (guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber]) {
@@ -1415,6 +1418,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 					dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setDirty();
 				}
 			}
+			// Clear the queue
 			eqStabilityValues.clear();
 		}
 
