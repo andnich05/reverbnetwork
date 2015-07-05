@@ -566,8 +566,16 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			// Update the textEdit
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToPlainInputGain(value));
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
+			std::string temp = "";
+			if (inputIndex <= MAXMODULENUMBER) {
+				temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + inputIndex - 1])->getText();
+			}
+			else {
+				temp = "VST";
+				temp.append(std::to_string(inputIndex - MAXMODULENUMBER - 1));
+				temp.append(" IN");
+			}
 			if (ValueConversion::normToPlainInputGain(value) != 0.0) {
-				std::string temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + inputIndex - 1])->getText();
 				temp.append(" [");
 				if (ValueConversion::normToPlainInputGain(value) >= 0.0) {
 					temp.append(std::to_string(ValueConversion::normToPlainInputGain(value)).c_str(), 4);
@@ -576,16 +584,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 					temp.append(std::to_string(ValueConversion::normToPlainInputGain(value)).c_str(), 5);
 				}
 				temp.append("]");
-				int menuIndex = dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)])->getCurrentIndex();
-				for (int i = id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst) / MAXMODULEINPUTS * MAXMODULEINPUTS; i <= id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst) + MAXMODULEINPUTS; ++i) {
-					dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(temp.c_str());
-				}
 			}
-			else {
-				int menuIndex = dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)])->getCurrentIndex();
-				for (int i = id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst) / MAXMODULEINPUTS * MAXMODULEINPUTS; i <= id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst) + MAXMODULEINPUTS; ++i) {
-					dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + inputIndex - 1])->getText());
-				}
+			int menuIndex = dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)])->getCurrentIndex();
+			for (int i = id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst) / MAXMODULEINPUTS * MAXMODULEINPUTS; i <= id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst) + MAXMODULEINPUTS; ++i) {
+				dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(temp.c_str());
 			}
 			guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->setDirty();
 		}
@@ -601,8 +603,16 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::plainToNormInputGain(value));
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormInputGain(value));
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
+			std::string temp = "";
+			if (inputIndex <= MAXMODULENUMBER) {
+				temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + inputIndex - 1])->getText();
+			}
+			else {
+				temp = "VST";
+				temp.append(std::to_string(inputIndex - MAXMODULENUMBER - 1));
+				temp.append(" IN");
+			}
 			if (value != 0.0) {
-				std::string temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + inputIndex - 1])->getText();
 				temp.append(" [");
 				if (value >= 0.0) {
 					temp.append(std::to_string(value).c_str(), 4);
@@ -611,16 +621,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 					temp.append(std::to_string(value).c_str(), 5);
 				}
 				temp.append("] ");
-				int menuIndex = dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)])->getCurrentIndex();
-				for (int i = id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS * MAXMODULEINPUTS; i <= id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst) + MAXMODULEINPUTS; ++i) {
-					dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(temp.c_str());
-				}
 			}
-			else {
-				int menuIndex = dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)])->getCurrentIndex();
-				for (int i = id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS * MAXMODULEINPUTS; i <= id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst) + MAXMODULEINPUTS; ++i) {
-					dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + inputIndex - 1])->getText());
-				}
+			int menuIndex = dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)])->getCurrentIndex();
+			for (int i = id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS * MAXMODULEINPUTS; i <= id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst) + MAXMODULEINPUTS; ++i) {
+				dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(temp.c_str());
 			}
 			guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
 		}
@@ -1351,6 +1355,27 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 		guiElements[i]->setValue(menuIndex);
 		valueChanged(guiElements[i]);
 	}
+	std::string temp = "";
+	double gainValue = 0.0;
+	for (int i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
+		for (int j = MAXMODULENUMBER + 1; j < MAXMODULENUMBER + 1 + MAXVSTINPUTS; ++j) {
+			gainValue = ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + (j - 1) + ((i - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS) * MAXINPUTS));
+			temp = "VST";
+			temp.append(std::to_string(j - (MAXMODULENUMBER + 1)));
+			temp.append(" IN");
+			if (gainValue != 0.0) {
+				temp.append(" [");
+				if (gainValue >= 0.0) {
+					temp.append(std::to_string(gainValue).c_str(), 4);
+				}
+				else {
+					temp.append(std::to_string(gainValue).c_str(), 5);
+				}
+				temp.append("]");
+			}
+			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(j)->setTitle(temp.c_str());
+		}
+	}
 
 	for (uint32 i = PARAM_EQCENTERFREQ_FIRST; i < PARAM_EQCENTERFREQ_LAST + 1; ++i) { // Iterate over all parameters
 		if (guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]) { // Check if the GUI element is valid
@@ -1433,6 +1458,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		if (selector) {
 			if (fileSelectorStyle == CNewFileSelector::kSelectFile) {
 				setXmlPreset(xmlPreset->loadPreset(selector->getSelectedFile(0)));
+				workspaceView->setDirty();
 				return kMessageNotified;
 			}
 			else if (fileSelectorStyle == CNewFileSelector::kSelectSaveFile) {
