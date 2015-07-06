@@ -36,6 +36,10 @@ public:
 	void controlBeginEdit(CControl* pControl);
 	void controlEndEdit(CControl* pControl);
 
+	// from IPlugView
+	/** Is view sizable by user. */
+	tresult PLUGIN_API canResize();
+	tresult PLUGIN_API onSize(ViewRect* newSize);
 
 	// Sync GUI with controller parameters (e.g. otherwise if the user closes and reopens the GUI the changes in the GUI would be lost)
 	// Also called when users loads a VST Preset
@@ -75,6 +79,9 @@ private:
 	CBitmap* knobBackgroundSmall;
 	CBitmap* ppmOff;
 	CBitmap* ppmOn;
+
+	// The graphics view holds all the components in small form as an overview
+	GuiGraphicsView* graphicsView;
 
 	// Holds pointers to all GUI elements which have their own GUI id; the index itself is the GUI id
 	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!

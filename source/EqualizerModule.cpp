@@ -32,7 +32,6 @@ EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, 
 	
 	K = 0.0;
 	oneDividedByQ = 1 / qFactor;
-
 	calculateCoefficients();
 }
 

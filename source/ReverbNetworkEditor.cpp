@@ -180,6 +180,15 @@ void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32
 	}
 }
 
+tresult PLUGIN_API ReverbNetworkEditor::canResize() {
+	return kResultTrue;
+}
+
+tresult PLUGIN_API ReverbNetworkEditor::onSize(ViewRect* newSize) {
+	// Change the views sizes
+	return kResultTrue;
+}
+
 bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& platformType) {
 	
 	if (frame) // already attached!
@@ -188,9 +197,6 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	}
 
 	xmlPreset = new XmlPresetReadWrite();
-
-	
-	
 
 	knobBackground = new CBitmap("knob.png");
 	knobBackgroundSmall = new CBitmap("knob2.png");
@@ -335,11 +341,10 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	CSplitView* splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
 
-	GuiGraphicsView* graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(800, 300)));
+	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(800, 300)));
 	graphicsView->setBackgroundColor(CColor(100, 100, 100));
 	splitView->addView(graphicsView);
 	splitView->addView(workspaceView);
-
 
 	CRowColumnView* mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
@@ -826,6 +831,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	// General
 	else if (tag >= id_general_checkBox_moduleVisibleFirst && tag <= id_general_checkBox_moduleVisibleLast) {
+		graphicsView->rearrangeModules();
 		if (pControl->isDirty()) {
 			controller->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
 			controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
@@ -836,6 +842,21 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 					if (value == 1.0) {
 						dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(workspaceView->getView(i), workspaceView->getNbViews() - 1);
 					}
+					//// Draw the module if check box is checked
+					//if (value == 1.0) {
+					//	int moduleId = tag - id_general_checkBox_moduleVisibleFirst;
+					//	std::vector<double> gainValues;
+					//	for (int j = 0; j < MAXINPUTS; ++j) {
+					//		gainValues.push_back(ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + moduleId * MAXINPUTS + j)));
+					//	}
+					//	graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + moduleId])->getText(), moduleId, workspaceView->getView(i)->getViewSize().getTopLeft(), gainValues);
+					//}
+					//// Remove the module 
+					//else {
+					//	graphicsView->removeModule(tag - id_general_checkBox_moduleVisibleFirst);
+					//}
+					//// Redraw
+					//graphicsView->setDirty();
 					break;
 				}
 			}
@@ -879,6 +900,23 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			}
 		}
 	}
+
+	// Update the graphics view
+	for (int i = 0; i < MAXMODULENUMBER; ++i) {
+		// Draw the module if check box is checked
+		//if (guiElements[id_general_checkBox_moduleVisibleFirst + i]->getValue() == 1.0) {
+			std::vector<double> gainValues;
+			for (int j = 0; j < MAXINPUTS; ++j) {
+				gainValues.push_back(ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j)));
+			}
+			graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, workspaceView->getView(i)->getViewSize().getTopLeft(), gainValues);
+		//}
+		//else {
+			//graphicsView->removeModule(i);
+		//}
+	}
+	// Redraw
+	graphicsView->setDirty();
 }
 
 GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
