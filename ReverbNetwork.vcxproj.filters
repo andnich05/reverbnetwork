@@ -178,6 +178,9 @@
     <ClCompile Include="source\ComponentMessage.cpp">
       <Filter>Source Files\sourceVstSdk</Filter>
     </ClCompile>
+    <ClCompile Include="source\Logging.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -371,6 +374,9 @@
     </ClInclude>
     <ClInclude Include="source\ComponentMessage.h">
       <Filter>Source Files\sourceVstSdk</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Logging.h">
+      <Filter>Source Files\source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

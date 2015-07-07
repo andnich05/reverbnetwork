@@ -6,6 +6,7 @@
 #include <cmath>
 #include <string>
 
+
 #define LIMITER
 
 #ifdef LIMITER
@@ -200,6 +201,11 @@ const bool& EqualizerModule::checkStability() {
 	}
 	else if (b2 < (pow(b1, 2.0) / 4.0)) {
 		if (b1 < (1.0 + b2) && b1 > (-1.0 - b2)) {
+			stable = true;
+		}
+	}
+	else if (b2 == (pow(b1, 2.0) / 4.0)) {
+		if (b1 < 2.0 && b1 > -2.0) {
 			stable = true;
 		}
 	}

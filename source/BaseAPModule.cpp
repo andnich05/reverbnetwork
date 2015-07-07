@@ -10,6 +10,7 @@
 #include <cmath>
 #include <string>
 
+
 BaseAPModule::BaseAPModule()
 	: mixer(new MixerModule(DEF_MIXERGAIN))
 	, quantizer(new QuantizerModule(DEF_QUANTIZERBITDEPTH))

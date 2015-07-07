@@ -225,6 +225,7 @@
     <ClCompile Include="source\GuiCustomTextEdit.cpp" />
     <ClCompile Include="pugixml-1.6\src\pugixml.cpp" />
     <ClCompile Include="source\GuiOptionMenuInputSelector.cpp" />
+    <ClCompile Include="source\Logging.cpp" />
     <ClCompile Include="source\QuantizerModule.cpp" />
     <ClCompile Include="source\PresetReadWrite.cpp" />
     <ClCompile Include="source\GuiWorkspaceView.cpp" />
@@ -272,6 +273,7 @@
     <ClInclude Include="source\GuiCustomSplashScreen.h" />
     <ClInclude Include="source\GuiCustomTextEdit.h" />
     <ClInclude Include="source\GuiOptionMenuInputSelector.h" />
+    <ClInclude Include="source\Logging.h" />
     <ClInclude Include="source\QuantizerModule.h" />
     <ClInclude Include="source\PresetReadWrite.h" />
     <ClInclude Include="source\GuiWorkspaceView.h" />

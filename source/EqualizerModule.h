@@ -3,6 +3,7 @@
 
 #include "ReverbNetworkEnums.h"
 
+
 enum FilterCoefficients {
 	a0,
 	a1,

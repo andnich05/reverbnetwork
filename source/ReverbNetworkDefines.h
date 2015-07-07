@@ -1,5 +1,8 @@
 #include "ReverbNetworkEnums.h"
 
+// Log file output
+#define LOGGING
+
 #ifndef REVERBNETWORKDEFINES_H
 #define REVERBNETWORKDEFINES_H
 

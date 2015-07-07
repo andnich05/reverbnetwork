@@ -50,6 +50,10 @@
 #include "ValueConversion.h"
 #include "PresetReadWrite.h"
 
+#ifdef LOGGING
+#include "Logging.h"
+#endif
+
 // Performance
 //#include <chrono>
 
@@ -152,6 +156,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);
 	}
+#ifdef LOGGING
+	Logging::addToLog("PROCESSOR", "Sample rate set to " + std::to_string(processSetup.sampleRate) + " in setActive()");
+#endif
 
 	// Check number of Channels
 	SpeakerArrangement arr;
@@ -163,6 +170,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 
 	if (state) // Plugin enabled
 	{
+#ifdef LOGGING
+		Logging::addToLog("PROCESSOR", "Plug-in enabled");
+#endif
 		/*for (uint32 i = 0; i < allpasses.size(); ++i) {
 			allpasses[i]->createBuffers();
 		}*/
@@ -205,6 +215,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 	}
 	else // Plugin disabled => Free buffer
 	{
+#ifdef LOGGING
+		Logging::addToLog("PROCCESSOR", "Plug-in disabled");
+#endif
 		/*for (uint32 i = 0; i < allpasses.size(); ++i) {
 			allpasses[i]->freeBuffers();
 		}*/
@@ -246,6 +259,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);
 	}
+#ifdef LOGGING
+	Logging::addToLog("PROCESSOR", "Sample rate set to " + std::to_string(processSetup.sampleRate) + " in setState()");
+#endif
 	return preset->setParamterState(state);
 }
 
@@ -310,6 +326,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						uint16 moduleNumber = (pid - PARAM_MIXERGAIN_FIRST) / MAXINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERGAIN_FIRST) % MAXINPUTS;
 						apModules[moduleNumber]->updateMixerGain(moduleInput, ValueConversion::normToPlainInputGain(value));
+						#ifdef LOGGING
+						Logging::addToLog("MIXER", "Module " + std::to_string(moduleNumber) + " - Input " + std::to_string(moduleInput) + " Gain set to " + std::to_string(ValueConversion::normToPlainInputGain(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_MIXERINPUTMUTED_FIRST && pid <= PARAM_MIXERINPUTMUTED_LAST) {
@@ -317,11 +336,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						uint16 moduleNumber = (pid - PARAM_MIXERINPUTMUTED_FIRST) / MAXINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERINPUTMUTED_FIRST) % MAXINPUTS;
 						apModules[moduleNumber]->updateMixerMute(moduleInput, value);
-						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleInput).c_str());
-						fclose(pFile);*/
-						
+						#ifdef LOGGING
+						Logging::addToLog("MIXER", "Module " + std::to_string(moduleNumber) + " - Input " + std::to_string(moduleInput) + " - Mute set to " + std::to_string(value));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_MIXERINPUTSOLOED_FIRST && pid <= PARAM_MIXERINPUTSOLOED_LAST) {
@@ -329,96 +346,146 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						uint16 moduleNumber = (pid - PARAM_MIXERINPUTSOLOED_FIRST) / MAXINPUTS;	// Calculate the module number
 						uint16 moduleInput = (pid - PARAM_MIXERINPUTSOLOED_FIRST) % MAXINPUTS;
 						apModules[moduleNumber]->updateMixerSolo(moduleInput, value);
-						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleNumber).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(moduleInput).c_str());
-						fclose(pFile);*/
+						#ifdef LOGGING
+						Logging::addToLog("MIXER", "Module " + std::to_string(moduleNumber) + " - Input " + std::to_string(moduleInput) + " - Solo set to " + std::to_string(value));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_QUANTIZERBITDEPTH_FIRST && pid <= PARAM_QUANTIZERBITDEPTH_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_QUANTIZERBITDEPTH_FIRST]->updateQuantizerQuantization(ValueConversion::normToPlainQuantization(value));
+						#ifdef LOGGING
+						Logging::addToLog("QUANTIZER", "Module " + std::to_string(pid - PARAM_QUANTIZERBITDEPTH_FIRST) + " - Quantization set to " + std::to_string(ValueConversion::normToPlainQuantization(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_QUANTIZERBYPASS_FIRST && pid <= PARAM_QUANTIZERBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_QUANTIZERBYPASS_FIRST]->switchQuantizerBypass(value);
+						#ifdef LOGGING
+						Logging::addToLog("QUANTIZER", "Module " + std::to_string(pid - PARAM_QUANTIZERBYPASS_FIRST) + " - Bypass set to " + std::to_string(value));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQFILTERTYPE_FIRST && pid <= PARAM_EQFILTERTYPE_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						value = ValueConversion::normToPlainFilterTypeSelect(value);
 						eqStabilityValues[pid - PARAM_EQFILTERTYPE_FIRST] = apModules[pid - PARAM_EQFILTERTYPE_FIRST]->updateEqualizerFilterType(value);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQFILTERTYPE_FIRST) + " - Filter type set to " + std::to_string(value));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQCENTERFREQ_FIRST && pid <= PARAM_EQCENTERFREQ_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCENTERFREQ_FIRST] = apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToPlainVstCenterFreq(value));
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCENTERFREQ_FIRST) + " - Center Frequency set to " + std::to_string(ValueConversion::normToPlainVstCenterFreq(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQQFACTOR_FIRST && pid <= PARAM_EQQFACTOR_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQQFACTOR_FIRST] = apModules[pid - PARAM_EQQFACTOR_FIRST]->updateEqualizerQFactor(ValueConversion::normToPlainQFactor(value));
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQQFACTOR_FIRST) + " - QFactor set to " + std::to_string(ValueConversion::normToPlainQFactor(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQGAIN_FIRST && pid <= PARAM_EQGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQGAIN_FIRST] = apModules[pid - PARAM_EQGAIN_FIRST]->updateEqualizerGain(ValueConversion::normToPlainEqGain(value));
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQGAIN_FIRST) + " - Gain set to " + std::to_string(ValueConversion::normToPlainEqGain(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTA0_FIRST && pid <= PARAM_EQCOEFFICIENTA0_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCOEFFICIENTA0_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA0_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCOEFFICIENTA0_FIRST) + " - a0 set to " + std::to_string(ValueConversion::normToPlainEqCoefficients(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTA1_FIRST && pid <= PARAM_EQCOEFFICIENTA1_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCOEFFICIENTA1_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCOEFFICIENTA1_FIRST) + " - a1 set to " + std::to_string(ValueConversion::normToPlainEqCoefficients(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTA2_FIRST && pid <= PARAM_EQCOEFFICIENTA2_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCOEFFICIENTA2_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTA2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCOEFFICIENTA2_FIRST) + " - a2 set to " + std::to_string(ValueConversion::normToPlainEqCoefficients(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTB1_FIRST && pid <= PARAM_EQCOEFFICIENTB1_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCOEFFICIENTB1_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTB1_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCOEFFICIENTB1_FIRST) + " - b1 set to " + std::to_string(ValueConversion::normToPlainEqCoefficients(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQCOEFFICIENTB2_FIRST && pid <= PARAM_EQCOEFFICIENTB2_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCOEFFICIENTB2_FIRST] = apModules[pid - PARAM_EQCOEFFICIENTB2_FIRST]->updateEqualizerCoefficients(ValueConversion::normToPlainEqCoefficients(value), pid);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCOEFFICIENTB2_FIRST) + " - b2 set to " + std::to_string(ValueConversion::normToPlainEqCoefficients(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_EQBYPASS_FIRST]->switchEqualizerBypass(value);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQBYPASS_FIRST) + " - Bypass set to " + std::to_string(value));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_ALLPASSDELAY_FIRST && pid <= PARAM_ALLPASSDELAY_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_ALLPASSDELAY_FIRST]->updateAllpassDelay(ValueConversion::normToPlainDelay(value));
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSDELAY_FIRST) + " - Delay set to " + std::to_string(ValueConversion::normToPlainDelay(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_ALLPASSDECAY_FIRST && pid <= PARAM_ALLPASSDECAY_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(ValueConversion::normToPlainDecay(value));
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSDECAY_FIRST) + " - Decay set to " + std::to_string(ValueConversion::normToPlainDecay(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_ALLPASSBYPASS_FIRST && pid <= PARAM_ALLPASSBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_ALLPASSBYPASS_FIRST]->switchAllpassBypass(value);
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSBYPASS_FIRST) + " - Bypass set to " + std::to_string(value));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_OUTGAIN_FIRST && pid <= PARAM_OUTGAIN_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToPlainOutputGain(value));
+						#ifdef LOGGING
+						Logging::addToLog("OUTPUT", "Module " + std::to_string(pid - PARAM_OUTGAIN_FIRST) + " - Gain set to " + std::to_string(ValueConversion::normToPlainOutputGain(value)));
+						#endif
 					}
 				}
 				else if (pid >= PARAM_OUTBYPASS_FIRST && pid <= PARAM_OUTBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_OUTBYPASS_FIRST]->switchOutputBypass(value);
+						#ifdef LOGGING
+						Logging::addToLog("OUTPUT", "Module " + std::to_string(pid - PARAM_OUTBYPASS_LAST) + " - Bypass set to " + std::to_string(value));
+						#endif
 					}
 				}
 				//...
@@ -428,15 +495,24 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						int index = (int)(ValueConversion::normToPlainMixerInputSelect(value));
 						if (index == 0) { // <Not Connected> selected
 							connectionMatrix->disconnectVstOutput(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
+							#ifdef LOGGING
+							Logging::addToLog("VST OUTPUT", "Disconnect VST Output " + std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST));
+							#endif
 						}
 						else if (index < MAXMODULENUMBER + 1) { // Another module output as input source selected
 							connectionMatrix->setModuleToVstConnection(index - 1, pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
+							#ifdef LOGGING
+							Logging::addToLog("VST OUTPUT", "Connect Module " + std::to_string(index - 1) + " to VST Output " + std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST));
+							#endif
 							/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 							fprintf(pFile, "y(n): %s\n", std::to_string(index).c_str());
 							fclose(pFile);*/
 						}
 						else { // VST input as input source selected
 							connectionMatrix->setVstToVstConnection(index - 1 - MAXMODULENUMBER, pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
+							#ifdef LOGGING
+							Logging::addToLog("VST OUTPUT", "Connect VST Input " + std::to_string(index - 1 - MAXMODULENUMBER) + " to VST Output " + std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST));
+							#endif
 							
 						}
 					}
