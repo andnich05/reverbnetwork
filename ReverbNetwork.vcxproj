@@ -219,6 +219,7 @@
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
     <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
     <ClCompile Include="source\ComponentMessage.cpp" />
+    <ClCompile Include="source\GuiGraphicsModule.cpp" />
     <ClCompile Include="source\GuiGraphicsView.cpp" />
     <ClCompile Include="source\GuiOpenGLGraphicsView.cpp" />
     <ClCompile Include="source\GuiCustomSplashScreen.cpp" />
@@ -268,6 +269,7 @@
     <ClInclude Include="..\..\..\..\source\vst\vstguieditor.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
     <ClInclude Include="source\ComponentMessage.h" />
+    <ClInclude Include="source\GuiGraphicsModule.h" />
     <ClInclude Include="source\GuiGraphicsView.h" />
     <ClInclude Include="source\GuiOpenGLGraphicsView.h" />
     <ClInclude Include="source\GuiCustomSplashScreen.h" />

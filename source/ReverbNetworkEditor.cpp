@@ -341,7 +341,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	CSplitView* splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
 
-	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(800, 300)));
+	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(800, 300)), MAXMODULENUMBER);
 	graphicsView->setBackgroundColor(CColor(100, 100, 100));
 	splitView->addView(graphicsView);
 	splitView->addView(workspaceView);
@@ -909,7 +909,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			for (int j = 0; j < MAXINPUTS; ++j) {
 				gainValues.push_back(ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j)));
 			}
-			graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, workspaceView->getView(i)->getViewSize().getTopLeft(), gainValues);
+			//graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, workspaceView->getView(i)->getViewSize().getTopLeft(), gainValues);
 		//}
 		//else {
 			//graphicsView->removeModule(i);

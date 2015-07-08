@@ -181,6 +181,9 @@
     <ClCompile Include="source\Logging.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
+    <ClCompile Include="source\GuiGraphicsModule.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -377,6 +380,9 @@
     </ClInclude>
     <ClInclude Include="source\Logging.h">
       <Filter>Source Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiGraphicsModule.h">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
