@@ -135,6 +135,8 @@ namespace Vst {
 	const int32_t id_general_button_splashViewOk = id_general_splashScreen_overrideParametersQuery + 1;
 	const int32_t id_general_button_splashViewCancel = id_general_button_splashViewOk + 1;
 
+	const int32_t id_graphicsView_rearrangeModules = id_general_button_splashViewCancel + 1;
+
 // Contructor is called every time the editor is reopened => watch out for memory leaks!
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 : VSTGUIEditor(controller) 
@@ -337,6 +339,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(labelNumberOfVstInputs);
 	viewVstOutputSelect->addView(labelNumberOfVstOutputs);
 	viewVstOutputSelect->addView(labelNumberOfModules);
+
+	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_graphicsView_rearrangeModules, "Rearrange Modules");
+	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
+	viewVstOutputSelect->addView(buttonRearrange);
+
 	viewVstOutputSelect->sizeToFit();
 
 	CSplitView* splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
@@ -345,6 +352,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	graphicsView->setBackgroundColor(CColor(100, 100, 100));
 	splitView->addView(graphicsView);
 	splitView->addView(workspaceView);
+	initializeGraphicsView();
 
 	CRowColumnView* mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
@@ -595,6 +603,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(temp.c_str());
 			}
 			guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->setDirty();
+
+			updateGraphicsViewModule(moduleNumber, inputIndex - 1, ValueConversion::normToPlainInputGain(value));
 		}
 	}
 	else if (tag >= id_mixer_textEdit_gainFirst && tag <= id_mixer_textEdit_gainLast)  {
@@ -632,6 +642,8 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(menuIndex)->setTitle(temp.c_str());
 			}
 			guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
+
+			updateGraphicsViewModule(moduleNumber, inputIndex - 1, value);
 		}
 	}
 	else if (tag >= id_mixer_button_muteFirst && tag <= id_mixer_button_muteLast)  {
@@ -831,7 +843,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	// General
 	else if (tag >= id_general_checkBox_moduleVisibleFirst && tag <= id_general_checkBox_moduleVisibleLast) {
-		graphicsView->rearrangeModules();
 		if (pControl->isDirty()) {
 			controller->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
 			controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
@@ -900,22 +911,9 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			}
 		}
 	}
-
-	// Update the graphics view
-	for (int i = 0; i < MAXMODULENUMBER; ++i) {
-		// Draw the module if check box is checked
-		//if (guiElements[id_general_checkBox_moduleVisibleFirst + i]->getValue() == 1.0) {
-			std::vector<double> gainValues;
-			for (int j = 0; j < MAXINPUTS; ++j) {
-				gainValues.push_back(ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j)));
-			}
-			//graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, workspaceView->getView(i)->getViewSize().getTopLeft(), gainValues);
-		//}
-		//else {
-			//graphicsView->removeModule(i);
-		//}
+	else if (tag == id_graphicsView_rearrangeModules) {
+		graphicsView->rearrangeModules();
 	}
-	// Redraw
 	graphicsView->setDirty();
 }
 
@@ -1414,6 +1412,10 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(j)->setTitle(temp.c_str());
 		}
 	}
+	// CRASH FIX!
+	/*for (int i = id_mixer_knob_gainFirst; i <= id_mixer_knob_gainLast; ++i) {
+		valueChanged(guiElements[i]);
+	}*/
 
 	for (uint32 i = PARAM_EQCENTERFREQ_FIRST; i < PARAM_EQCENTERFREQ_LAST + 1; ++i) { // Iterate over all parameters
 		if (guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]) { // Check if the GUI element is valid
@@ -1888,12 +1890,25 @@ void ReverbNetworkEditor::applyUserData() {
 	}
 }
 
-//void ReverbNetworkEditor::updateEqualizerStability(const int moduleNumber, const bool isStable) {
-//	EqualizerStability stability;
-//	stability.moduleNumber = moduleNumber;
-//	stability.isStable = isStable;
-//	//eqStability.push_back(stability);
-//}
+void ReverbNetworkEditor::initializeGraphicsView() {
+	std::vector<std::string> inputNames;
+	for (int i = 0; i < MAXMODULENUMBER; ++i) {
+		inputNames.push_back("APM" + std::to_string(i));
+	}
+	for (int i = 0; i < MAXVSTINPUTS; ++i) {
+		inputNames.push_back("VST" + std::to_string(i));
+	}
+	for (int i = 0; i < MAXMODULENUMBER; ++i) {
+		graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, inputNames);
+	}
+	//graphicsView->rearrangeModules();
+	graphicsView->setDirty();
+}
+
+void ReverbNetworkEditor::updateGraphicsViewModule(const int& moduleId, const int& input, const double& gainValue) {
+	graphicsView->updateModule(moduleId, input, gainValue);
+	graphicsView->setDirty();
+}
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;

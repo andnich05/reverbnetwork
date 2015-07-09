@@ -9,18 +9,29 @@
 namespace VSTGUI {
 
 	GuiGraphicsView::GuiGraphicsView(const CRect& size, const int& numberOfModules)
-	: CViewContainer(size) {
+	: CViewContainer(size), numberOfModules(numberOfModules) {
 		modules.resize(numberOfModules);
 	}
 
 
 	GuiGraphicsView::~GuiGraphicsView() {
-
+		/*for (auto&& m : modules) {
+			if (m != nullptr) {
+				delete m;
+				m = nullptr;
+			}
+		}*/
 	}
 
-	void GuiGraphicsView::addModule(const std::string& title, const int& id, const CPoint& position, const std::vector<double>& inputGainValues, const std::vector<std::string>& inputNames) {
-		GuiGraphicsModule* module = new GuiGraphicsModule(position, title, inputGainValues, inputNames);
+	void GuiGraphicsView::addModule(const std::string& title, const int& id, const std::vector<std::string>& inputNames) {
+		GuiGraphicsModule* module = new GuiGraphicsModule(title, inputNames);
+		this->addView(module);
 		modules[id] = module;
+	}
+
+	void GuiGraphicsView::updateModule(const int& moduleId, const int& input, const double& gainValue) {
+		modules[moduleId]->updateInput(input, gainValue);
+		this->setDirty();
 	}
 
 	void GuiGraphicsView::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
@@ -57,63 +68,68 @@ namespace VSTGUI {
 			pContext->drawRect(r, backgroundColorDrawStyle);
 		}
 
-		//redraw(pContext);
+		redraw(pContext);
 	}
 
 	void GuiGraphicsView::redraw(CDrawContext* pContext) {
-		drawModuleRects(pContext);
+		//drawModuleRects(pContext);
 		drawModuleConnections(pContext);
 	}
 
 	void GuiGraphicsView::drawModuleRects(CDrawContext* pContext) {
 		for (auto&& m : modules) {
-			
+			if (m) {
+				if (m->isEnabled()) {
+					m->setDirty();
+				}
+			}
 		}
-
-
-		//!!!!!!!!!!!!!!
-		//rearrangeModules();
 	}
 
 	void GuiGraphicsView::drawModuleConnections(CDrawContext* pContext) {
-		/*for (auto&& m : modules) {
-			if (m.enabled) {
-				for (unsigned int j = 0; j < m.inputGainValues.size(); ++j) {
-					if (m.inputGainValues[j] != 0.0) {
-						pContext->setFrameColor(CColor(255, 255, 255, (uint8_t)(255 * abs(m.inputGainValues[j]))));
-						CPoint line[2];
-						line[0] = m.inputRects[j].getCenter();
-						line[1] = modules[j].outputRect.getCenter();
-						pContext->drawLines(line, 2);
+		for (auto&& m : modules) {
+			if (m) {
+				if (m->isEnabled()) {
+					for (unsigned int j = 0; j < numberOfModules; ++j) {
+						if (m->getGainValue(j) != 0.0) {
+							pContext->setLineWidth(1);
+							pContext->setFrameColor(CColor(255, 255, 255, (uint8_t)(255 * abs(m->getGainValue(j)))));
+							CPoint line[2];
+							line[0] = m->getInputRectCenter(j);
+							line[1] = modules[j]->getOutputRectCenter();
+							FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+							fprintf(pFile, "y(n): %s\n", std::to_string(m->getInputRectCenter(j).x).c_str());
+							fprintf(pFile, "y(n): %s\n", std::to_string(m->getInputRectCenter(j).y).c_str());
+							fprintf(pFile, "y(n): %s\n", std::to_string(modules[j]->getOutputRectCenter().x).c_str());
+							fprintf(pFile, "y(n): %s\n", std::to_string(modules[j]->getOutputRectCenter().y).c_str());
+							fclose(pFile);
+							pContext->drawLines(line, 2);
+						}
 					}
 				}
 			}
-		}*/
+		}
 	}
 
 	void GuiGraphicsView::rearrangeModules() {
-		//int notUsedCounter = 0;
-		//for (unsigned int m = 0; m < modules.size(); ++m) {
-		//	if (modules[m].numberOfUsedInputs == 0) {
-		//		modules[m].position.x = this->getWidth() - modules[m].completeRegion.getWidth();
-		//		modules[m].position.y = 0 + notUsedCounter * modules[m].completeRegion.getHeight();
-		//		++notUsedCounter;
-		//		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		//		fprintf(pFile, "y(n): %s\n", std::to_string(m.completeRegion.getWidth()).c_str());
-		//		fclose(pFile);*/
-		//	}
-		//	else {
-		//		modules[m].position.x = (modules[m].completeRegion.getWidth() + 20) * m;
-		//	}
-
-		//	modules[m].completeRegion = CRect(CPoint(modules[m].position.x, (modules[m].position.y)), CPoint(modules[m].completeRegion.getWidth(), modules[m].completeRegion.getHeight()));
-		//	modules[m].handleRegion = CRect(CPoint(modules[m].position.x, (modules[m].position.y)), CPoint(modules[m].handleRegion.getWidth(), modules[m].handleRegion.getHeight()));
-		//}
+		int notUsedCounter = 0;
+		int usedCounter = 0;
+		for (unsigned int m = 0; m < modules.size(); ++m) {
+			if (modules[m]) {
+				if (modules[m]->getNumberOfUsedInputs() == 0) {
+					modules[m]->setViewSize(CRect(CPoint(this->getWidth() - modules[m]->getWidth(), ((modules[m]->getHeight()) + 5)* notUsedCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
+					++notUsedCounter;
+				}
+				else {
+					/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+					fprintf(pFile, "y(n): %s\n", std::to_string(modules[m]->getWidth()).c_str());
+					fclose(pFile);*/
+					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 10) * usedCounter, 10), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
+					++usedCounter;
+				}
+				
+			}
+		}
 		this->setDirty();
 	}
-
-	
-
-
-
 }

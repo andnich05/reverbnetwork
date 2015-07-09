@@ -1,5 +1,7 @@
 #include "GuiGraphicsModule.h"
 #include "ReverbNetworkDefines.h"
+#include "../vstgui4/vstgui/lib/cdrawcontext.h"
+#include "../vstgui4/vstgui/lib/cbitmap.h"
 #include <sstream>
 #include <iomanip>
 
@@ -9,36 +11,83 @@ namespace VSTGUI {
 	const int inoutRectHeight = 10;
 	const int spacing = 2;
 
-	GuiGraphicsModule::GuiGraphicsModule(const CPoint& position, const std::string& title, const std::vector<double>& inputGainValues, const std::vector<std::string>& inputNames)
-		: CViewContainer(CRect(CPoint(position), CPoint(100, 12))), position(position), title(title), inputGainValues(inputGainValues) {
+	GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const std::vector<std::string>& inputNames)
+		: CViewContainer(CRect(0, 0, 0, 0)), title(title), inputNames(inputNames) {
 
-		inputRects.resize(inputGainValues.size(), CRect(0, 0, 0, 0));
-		setEnabled(true);
-		updateInputs(inputGainValues, inputNames);
-		moveTo(position);
+		enabled = true;
+
+		numberOfInputs = inputNames.size();
+		numberOfUsedInputs = inputNames.size();
+		inputGainValues.resize(inputNames.size(), 0.0);
+
+		inputGainValues.resize(inputNames.size());
+		inputRects.resize(inputNames.size(), CRect(0, 0, 0, 0));
+
+		mouseDownCoordinates = CPoint(0, 0);
+		mouseDownInHandleRegion = false;
+
+		updateShape();
 	}
 
 	GuiGraphicsModule::~GuiGraphicsModule() {
 
 	}
 
-	void GuiGraphicsModule::updateInputs(const std::vector<double> inputGainValues, const std::vector<std::string>& inputNames) {
-		if (inputGainValues.size() != inputNames.size()) return;
-		this->inputGainValues = inputGainValues;
-		this->inputNames = inputNames;
-		numberOfInputs = inputNames.size();
-		moveTo(position); // Update view
+	void GuiGraphicsModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
+	{
+		if (getDrawBackground())
+		{
+			CRect oldClip;
+			pContext->getClipRect(oldClip);
+			CRect newClip(_updateRect);
+			newClip.bound(oldClip);
+			pContext->setClipRect(newClip);
+			CRect tr(0, 0, getViewSize().getWidth(), getViewSize().getHeight());
+			getDrawBackground()->draw(pContext, tr, backgroundOffset);
+			pContext->setClipRect(oldClip);
+		}
+		else if ((backgroundColor.alpha != 255 && getTransparency()) || !getTransparency())
+		{
+			pContext->setDrawMode(kAliasing);
+			pContext->setLineWidth(1);
+			pContext->setFillColor(backgroundColor);
+			pContext->setFrameColor(backgroundColor);
+			pContext->setLineStyle(kLineSolid);
+			CRect r;
+			if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
+			{
+				r = _updateRect;
+				r.inset(-1, -1);
+			}
+			else
+			{
+				r = getViewSize();
+				r.offset(-r.left, -r.top);
+			}
+			pContext->drawRect(r, backgroundColorDrawStyle);
+		}
+
+		updateShape();
+		redraw(pContext);
 	}
 
-	void GuiGraphicsModule::moveTo(const CPoint& position) {
-		handleRegion = CRect(CPoint(0, 0), CPoint(100, 12)).offset(position.x, position.y);
-		mainRegion = CRect(CPoint(0, handleRegion.getHeight()), CPoint(handleRegion.getWidth(), spacing + numberOfInputs * (spacing + inoutRectHeight) + spacing)).offset(position.x, position.y);
-		completeRegion = CRect(CPoint(0, 0), CPoint(handleRegion.getWidth(), handleRegion.getHeight() + mainRegion.getHeight())).offset(position.x, position.y);
-		this->setViewSize(CRect(CPoint(position), CPoint(completeRegion.getBottomRight())));
+	void GuiGraphicsModule::updateInput(const int& input, const double& gainValue) {
+		inputGainValues[input] = gainValue;
+	}
+
+	void GuiGraphicsModule::updateShape() {
+		handleRegion = CRect(CPoint(0, 0), CPoint(100, 12));
+		numberOfUsedInputs = 0;
 		for (int i = 0; i < numberOfInputs; ++i) {
-			inputRects[i] = CRect(CPoint(0, handleRegion.getHeight() + spacing).offset(0, i * (spacing + inoutRectHeight)), CPoint(inoutRectWidth, inoutRectHeight)).offset(position.x, position.y);
+			if (inputGainValues[i] != 0.0) {
+				inputRects[i] = CRect(CPoint(0, handleRegion.getHeight() + spacing).offset(0, numberOfUsedInputs * (spacing + inoutRectHeight)), CPoint(inoutRectWidth, inoutRectHeight));
+				++numberOfUsedInputs;
+			}
 		}
-		outputRect = CRect(CPoint(handleRegion.getWidth() - inoutRectWidth, completeRegion.getCenter().y - inoutRectHeight / 2), CPoint(inoutRectWidth, inoutRectHeight)).offset(position.x, position.y);
+		mainRegion = CRect(CPoint(0, handleRegion.getHeight()), CPoint(handleRegion.getWidth(), spacing + numberOfUsedInputs * (spacing + inoutRectHeight) + spacing));
+		completeRegion = CRect(CPoint(0, 0), CPoint(handleRegion.getWidth(), handleRegion.getHeight() + mainRegion.getHeight()));
+		this->setViewSize(CRect(CPoint(this->getViewSize().getTopLeft()), CPoint(completeRegion.getWidth(), completeRegion.getHeight())));
+		outputRect = CRect(CPoint(handleRegion.getWidth() - inoutRectWidth, completeRegion.getCenter().y - inoutRectHeight / 2), CPoint(inoutRectWidth, inoutRectHeight));	
 	}
 
 	void GuiGraphicsModule::redraw(CDrawContext* pContext) {
@@ -47,18 +96,21 @@ namespace VSTGUI {
 			pContext->setFillColor(CColor(50, 50, 50));
 			pContext->setLineWidth(1);
 			pContext->setFont(kNormalFontSmaller);
+			pContext->setFontColor(CColor(255, 255, 255));
 			pContext->drawRect(handleRegion, CDrawStyle::kDrawFilledAndStroked); // title rect
-			pContext->drawString(title.c_str(), CPoint(2, 10).offset(position.x, position.y), false); // title string
+			pContext->drawString(title.c_str(), CPoint(2, 10), false); // title string
 			pContext->setFillColor(CColor(50, 50, 50));
 			pContext->drawRect(mainRegion, kDrawFilledAndStroked); // main rect
 			std::stringstream temp;
 			for (int i = 0; i < inputRects.size(); ++i) {
-				pContext->setFillColor(CColor(50, 200, 50));
-				pContext->drawRect(inputRects[i], CDrawStyle::kDrawFilledAndStroked); // module inputs
-				temp.str(std::string());
-				temp.clear();
-				temp << inputNames[i] << " [" << std::setprecision(2) << inputGainValues[i] << "]";
-				pContext->drawString(temp.str().c_str(), CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(100, inoutRectHeight)), CHoriTxtAlign::kLeftText, false);
+				if (inputGainValues[i] != 0.0) {
+					pContext->setFillColor(CColor(50, 200, 50));
+					pContext->drawRect(inputRects[i], CDrawStyle::kDrawFilledAndStroked); // module inputs
+					temp.str(std::string());
+					temp.clear();
+					temp << inputNames[i] << " [" << std::setprecision(2) << inputGainValues[i] << "]";
+					pContext->drawString(temp.str().c_str(), CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(100, inoutRectHeight)), CHoriTxtAlign::kLeftText, false);
+				}
 			}
 			pContext->setFillColor(CColor(200, 200, 200));
 			pContext->drawRect(outputRect, kDrawFilledAndStroked);

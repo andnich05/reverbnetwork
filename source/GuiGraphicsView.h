@@ -14,7 +14,8 @@ namespace VSTGUI {
 		GuiGraphicsView(const CRect& size, const int& numberOfModules);
 		~GuiGraphicsView();
 
-		virtual void addModule(const std::string& title, const int& id, const CPoint& position, const std::vector<double>& inputGainValues, const std::vector<std::string>& inputNames);
+		virtual void addModule(const std::string& title, const int& id, const std::vector<std::string>& inputNames);
+		virtual void updateModule(const int& moduleId, const int& input, const double& gainValue);
 		//virtual void setModuleEnabled(const int& id, const bool& enabled);
 		virtual void rearrangeModules();
 
@@ -31,6 +32,8 @@ namespace VSTGUI {
 		virtual void redraw(CDrawContext* pContext);
 		virtual void drawModuleRects(CDrawContext* pContext);
 		virtual void drawModuleConnections(CDrawContext* pContext);
+
+		int numberOfModules;
 	};
 
 }
