@@ -89,10 +89,15 @@ private:
 	//std::vector<SharedPointer<CControl>> guiElements;
 	std::vector<CControl*> guiElements;
 	
+
 	// Create the GUI for a Allpass module
 	GuiBaseAPModule* createAPModule();
-	// Remove the GUI for a specified Allpass module
-	//void removeAPModule(uint16 moduleNumber);
+
+	CRowColumnView* createMixer(const CRect& parentViewSize, const int& moduleId);
+	CRowColumnView* createQuantizer(const CRect& parentViewSize, const int& moduleId);
+	CRowColumnView* createEqualizer(const CRect& parentViewSize, const int& moduleId);
+	CRowColumnView* createAllpass(const CRect& parentViewSize, const int& moduleId);
+	CRowColumnView* createOutput(const CRect& parentViewSize, const int& moduleId);
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
@@ -135,6 +140,8 @@ private:
 
 	void initializeGraphicsView();
 	void updateGraphicsViewModule(const int& moduleId, const int& input, const double& gainValue);
+
+	void updateGainValuesInOptionMenus(const int& moduleNumber, const int& input, const double& gainValue);
 };
 
 }} // namespaces

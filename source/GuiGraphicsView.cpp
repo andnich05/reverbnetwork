@@ -1,6 +1,7 @@
 #include "GuiGraphicsView.h"
 #include "ValueConversion.h"
 #include "GuiGraphicsModule.h"
+#include "GuiGraphicsConnections.h"
 #include "../vstgui4/vstgui/lib/cdrawcontext.h"
 #include "../vstgui4/vstgui/lib/cbitmap.h"
 #include <iomanip>
@@ -11,15 +12,23 @@ namespace VSTGUI {
 	GuiGraphicsView::GuiGraphicsView(const CRect& size, const int& numberOfModules)
 	: CViewContainer(size), numberOfModules(numberOfModules) {
 		modules.resize(numberOfModules);
+		connections = new GuiGraphicsConnections(size, numberOfModules);
+		connections->setMouseEnabled(false);
+		this->addView(connections);
 	}
 
 
 	GuiGraphicsView::~GuiGraphicsView() {
+		// Vstgui takes care of that
 		/*for (auto&& m : modules) {
 			if (m != nullptr) {
 				delete m;
 				m = nullptr;
 			}
+		}
+		if (connections) {
+			delete connections;
+			connections = nullptr;
 		}*/
 	}
 
@@ -27,6 +36,7 @@ namespace VSTGUI {
 		GuiGraphicsModule* module = new GuiGraphicsModule(title, inputNames);
 		this->addView(module);
 		modules[id] = module;
+		this->changeViewZOrder(connections, this->getNbViews() - 1);
 	}
 
 	void GuiGraphicsView::updateModule(const int& moduleId, const int& input, const double& gainValue) {
@@ -92,23 +102,13 @@ namespace VSTGUI {
 				if (m->isEnabled()) {
 					for (unsigned int j = 0; j < numberOfModules; ++j) {
 						if (m->getGainValue(j) != 0.0) {
-							pContext->setLineWidth(1);
-							pContext->setFrameColor(CColor(255, 255, 255, (uint8_t)(255 * abs(m->getGainValue(j)))));
-							CPoint line[2];
-							line[0] = m->getInputRectCenter(j);
-							line[1] = modules[j]->getOutputRectCenter();
-							FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-							fprintf(pFile, "y(n): %s\n", std::to_string(m->getInputRectCenter(j).x).c_str());
-							fprintf(pFile, "y(n): %s\n", std::to_string(m->getInputRectCenter(j).y).c_str());
-							fprintf(pFile, "y(n): %s\n", std::to_string(modules[j]->getOutputRectCenter().x).c_str());
-							fprintf(pFile, "y(n): %s\n", std::to_string(modules[j]->getOutputRectCenter().y).c_str());
-							fclose(pFile);
-							pContext->drawLines(line, 2);
+							connections->setConnection(m->getInputRectCenter(j), modules[j]->getOutputRectCenter(), std::abs(m->getGainValue(j)), j);
 						}
 					}
 				}
 			}
 		}
+		connections->setDirty();
 	}
 
 	void GuiGraphicsView::rearrangeModules() {
@@ -118,6 +118,7 @@ namespace VSTGUI {
 			if (modules[m]) {
 				if (modules[m]->getNumberOfUsedInputs() == 0) {
 					modules[m]->setViewSize(CRect(CPoint(this->getWidth() - modules[m]->getWidth(), ((modules[m]->getHeight()) + 5)* notUsedCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
+					modules[m]->setMouseableArea(modules[m]->getViewSize());
 					++notUsedCounter;
 				}
 				else {
@@ -125,6 +126,7 @@ namespace VSTGUI {
 					fprintf(pFile, "y(n): %s\n", std::to_string(modules[m]->getWidth()).c_str());
 					fclose(pFile);*/
 					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 10) * usedCounter, 10), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
+					modules[m]->setMouseableArea(modules[m]->getViewSize());
 					++usedCounter;
 				}
 				
@@ -132,4 +134,35 @@ namespace VSTGUI {
 		}
 		this->setDirty();
 	}
+
+	//CMouseEventResult GuiGraphicsView::onMouseDown(CPoint &where, const CButtonState& buttons)
+	//{
+
+	//	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	//	fprintf(pFile, "y(n): %s\n", std::to_string(this->getWidth()).c_str());
+	//	fclose(pFile);*/
+
+	//	for (auto&& m : modules) {
+	//		m->onMouseDown(where, buttons);
+	//	}
+
+	//	return kMouseEventHandled;
+	//}
+
+	//CMouseEventResult GuiGraphicsView::onMouseMoved(CPoint &where, const CButtonState& buttons)
+	//{
+	//	for (auto&& m : modules) {
+	//		m->onMouseMoved(where, buttons);
+	//	}
+
+	//	return kMouseEventHandled;
+	//}
+
+	//CMouseEventResult GuiGraphicsView::onMouseUp(CPoint& where, const CButtonState& buttons) {
+	//	for (auto&& m : modules) {
+	//		m->onMouseUp(where, buttons);
+	//	}
+
+	//	return kMouseEventHandled;
+	//}
 }

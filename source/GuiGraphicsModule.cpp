@@ -120,34 +120,36 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
-
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(this->getWidth()).c_str());
 		fclose(pFile);*/
 
-		if (where.isInside(handleRegion)) {
+		if (frameToLocal(where).isInside(handleRegion)) {
 			mouseDownInHandleRegion = true;
-			//mouseDownCoordinates = where - modules[i].position;
+			mouseDownCoordinates = where;
 			return kMouseEventHandled;
 		}
 
-		return kMouseEventNotHandled;
+		return kMouseEventHandled;
 	}
 
 	CMouseEventResult GuiGraphicsModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
-	{
-		/*if (mouseDownInHandleRegion >= 0) {
-			if (modules[mouseDownInHandleRegion].enabled) {
-				modules[mouseDownInHandleRegion].position = CPoint(where - mouseDownCoordinates);
-				this->setDirty();
-				return kMouseEventHandled;
+	{	
+		if (mouseDownInHandleRegion) {
+			if (where != mouseDownCoordinates) {
+				if (enabled) {
+					this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+					this->setMouseableArea(this->getViewSize());
+					this->getParentView()->setDirty();
+					return kMouseEventHandled;
+				}
 			}
-		}*/
-		return kMouseEventNotHandled;
+		}
+		return kMouseEventHandled;
 	}
 
 	CMouseEventResult GuiGraphicsModule::onMouseUp(CPoint& where, const CButtonState& buttons) {
-		mouseDownInHandleRegion = -1;
+		mouseDownInHandleRegion = false;
 		return kMouseEventHandled;
 	}
 }
