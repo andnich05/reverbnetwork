@@ -23,8 +23,10 @@ namespace VSTGUI {
 		};
 
 		void redraw(CDrawContext* pContext);
-		void setConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency, const int& id);
-		void resetConnection(const int& id);
+		void setConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency);
+		void clearConnections();
+		void updateMouseConnectionLine(const CPoint& startPoint, const CPoint& endPoint);
+		void finishMouseConnectionLine(const double& transparency);
 
 		// Overrides
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);
@@ -35,6 +37,8 @@ namespace VSTGUI {
 
 	private:
 		std::vector<ConnectionLine> connections;
+		CPoint mouseStart;
+		CPoint mouseEnd;
 	};
 
 }

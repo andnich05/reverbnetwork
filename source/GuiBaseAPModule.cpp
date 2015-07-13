@@ -117,20 +117,27 @@ CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState
 
 CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
 {	
+
 	if (mousePressed) {
 		//this->size.moveTo(where.x - mousePressedX, where.y - mousePressedY);
 		this->setViewSize(CRect(CPoint(where.x - mousePressedX, where.y - mousePressedY), CPoint(this->getWidth(), this->getHeight())));
 		// invalid() updates the GUI; setDirty() is similar but does not force an immediate redraw, although setDirty() is thread safe
+
+		// Don't paint the modules outside the parent module
+		if (this->getViewSize().getBottomRight().y > getParentView()->getViewSize().getBottomRight().y) {
+			this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+		}
+		if (this->getViewSize().getBottomRight().x > getParentView()->getViewSize().getBottomRight().x) {
+			this->setViewSize(CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+		}
+		if (this->getViewSize().getTopLeft().x < getParentView()->getViewSize().getTopLeft().x) {
+			this->setViewSize(CRect(CPoint(0, getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+		}
+		if (this->getViewSize().getTopLeft().y < getParentView()->getViewSize().getTopLeft().y) {
+			this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, 0), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+		}
+		
 		this->setMouseableArea(this->getViewSize());
-
-		//FOREACHSUBVIEW_REVERSE(true)
-		//	pV->setViewSize(CRect(CPoint(where.x - mousePressedX, where.y - mousePressedY), CPoint(pV->getWidth(), pV->getHeight())));
-		//	pV->setMouseableArea(pV->getViewSize());
-		///*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		//fprintf(pFile, "y(n): %s\n", std::to_string(pV->getViewSize().bottom).c_str());
-		//fclose(pFile);*/
-		//ENDFOREACHSUBVIEW
-
 		this->getParentView()->setDirty();
 	}
 	else {

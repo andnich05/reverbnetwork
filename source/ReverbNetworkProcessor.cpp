@@ -598,7 +598,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			double* temp = moduleInputBuffer;
 			moduleInputBuffer = moduleOutputBuffer;
 			moduleOutputBuffer = temp;
-			
 		}
 
 		//t1 = std::chrono::high_resolution_clock::now();

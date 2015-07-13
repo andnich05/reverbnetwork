@@ -7,6 +7,7 @@
 #include "XmlPresetReadWrite.h"
 #include "GuiGraphicsView.h"
 #include "ReverbNetworkEnums.h"
+#include "GuiCustomSplashScreen.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -69,6 +70,11 @@ private:
 
 	// View where the modules are placed and where they can be moved around and stuff
 	CScrollView* workspaceView;
+	CSplitView* splitView;
+	CRowColumnView* mainView;
+	CRowColumnView* viewVstOutputSelect;
+	CRowColumnView* viewModuleListMain;
+	GuiCustomSplashScreen* splashOverrideParametersQuery;
 
 	// True if the id (= the index of the vector) is already taken
 	std::vector<bool> allpassModuleIdPool;

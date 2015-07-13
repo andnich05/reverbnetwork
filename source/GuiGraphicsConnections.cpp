@@ -10,9 +10,9 @@ namespace VSTGUI {
 	const int spacing = 2;
 
 	GuiGraphicsConnections::GuiGraphicsConnections(const CRect& size, const int& maxConnectionNumber) 
-		: CViewContainer(size) {
-		ConnectionLine connection = ConnectionLine(0, 0, 1.0, false);
-		connections.resize(maxConnectionNumber, connection);
+		: CViewContainer(size), mouseStart(0), mouseEnd(0) {
+		/*ConnectionLine connection = ConnectionLine(0, 0, 1.0, false);
+		connections.resize(maxConnectionNumber, connection);*/
 		this->setBackgroundColor(CColor(0, 0, 0, 0));
 	}
 
@@ -58,6 +58,7 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsConnections::redraw(CDrawContext* pContext) {
+		
 		CPoint line[2];
 		for (auto&& connection : connections) {
 			pContext->setLineWidth(1);
@@ -65,23 +66,45 @@ namespace VSTGUI {
 			line[0] = connection.startPoint;
 			line[1] = connection.endPoint;
 			pContext->drawLines(line, 2);
+			
+		}
+		if (mouseStart != 0) {
+			line[0] = mouseStart;
+			line[1] = mouseEnd;
+			pContext->setFrameColor(CColor(255, 255, 255));
+			pContext->drawLines(line, 2);
 		}
 	}
 
-	void GuiGraphicsConnections::setConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency, const int& id) {
-		if (id < connections.size()) {
-			connections[id].startPoint = startPoint;
-			connections[id].endPoint = endPoint;
-			connections[id].transparency = transparency;
-		}
+	void GuiGraphicsConnections::setConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency) {
+		//if (id < connections.size()) {
+		connections.push_back(ConnectionLine(startPoint, endPoint, transparency, true));
+		this->setDirty();
+		//}
 	}
 
-	void GuiGraphicsConnections::resetConnection(const int& id) {
-		if (id < connections.size()) {
-			connections[id].startPoint = 0;
+	void GuiGraphicsConnections::clearConnections() {
+		//if (id < connections.size()) {
+			/*connections[id].startPoint = 0;
 			connections[id].endPoint = 0;
-			connections[id].transparency = 1.0;
-		}
+			connections[id].transparency = 1.0;*/
+		//}
+		connections.clear();
+	}
+
+	void GuiGraphicsConnections::updateMouseConnectionLine(const CPoint& startPoint, const CPoint& endPoint) {
+		this->mouseStart = startPoint;
+		this->mouseEnd = endPoint;
+		this->setDirty();
+	}
+
+	void GuiGraphicsConnections::finishMouseConnectionLine(const double& transparency) {
+		connections.push_back(ConnectionLine(mouseStart, mouseEnd, transparency, true));
+		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(connections.size()).c_str());
+		fclose(pFile);
+		setDirty();
+		
 	}
 
 	//CMouseEventResult GuiGraphicsConnections::onMouseDown(CPoint &where, const CButtonState& buttons)

@@ -6,6 +6,7 @@
 
 namespace VSTGUI {
 
+
 	class GuiGraphicsModule : public CViewContainer {
 	public:
 		GuiGraphicsModule(const std::string& title, const std::vector<std::string>& inputNames);
@@ -14,11 +15,15 @@ namespace VSTGUI {
 		void redraw(CDrawContext* pContext);
 		inline void setEnabled(const bool& enabled) { this->enabled = enabled; }
 		void updateInput(const int& input, const double& gainValue);
+		void clearInputs();
 		inline const bool& isEnabled() const { return enabled; }
 		inline const double& getGainValue(const int& input) { return inputGainValues[input]; }
 		inline const CPoint& getInputRectCenter(const int& input) { return localToFrame(inputRects[input].getCenter()); }
 		inline const CPoint& getOutputRectCenter() { return localToFrame(outputRect.getCenter()); }
 		inline const int& getNumberOfUsedInputs() { return numberOfUsedInputs; }
+		inline const CPoint& getMouseMoveOutputRect() { return mouseMoveOutputRect; }
+		inline const CPoint& getMouseUpCoordinates() { return mouseUpCoordinates; }
+
 
 		// Overrides
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);
@@ -26,6 +31,7 @@ namespace VSTGUI {
 		virtual CMouseEventResult onMouseUp(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 		virtual CMouseEventResult onMouseMoved(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 		//virtual CMouseEventResult onMouseCancel() VSTGUI_OVERRIDE_VMETHOD;
+		
 
 	private:
 		bool enabled;
@@ -44,6 +50,10 @@ namespace VSTGUI {
 		bool mouseDownInHandleRegion;
 
 		void updateShape();
+
+		bool mouseDownInOutputRect;
+		CPoint mouseMoveOutputRect;
+		CPoint mouseUpCoordinates;
 	};
 
 }

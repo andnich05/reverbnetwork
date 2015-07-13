@@ -4,7 +4,6 @@
 #include "GuiCustomValueEdit.h"
 #include "GuiCustomTextEdit.h"
 #include "GuiOptionMenuInputSelector.h"
-#include "GuiCustomSplashScreen.h"
 #include "GuiGraphicsView.h"
 
 #include <mutex>
@@ -185,11 +184,20 @@ void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32
 }
 
 tresult PLUGIN_API ReverbNetworkEditor::canResize() {
+	// Make Editor resizeable
 	return kResultTrue;
 }
 
 tresult PLUGIN_API ReverbNetworkEditor::onSize(ViewRect* newSize) {
 	// Change the views sizes
+	frame->setSize(newSize->getWidth(), newSize->getHeight());
+	frame->setViewSize(CRect(CPoint(0, 0), CPoint(newSize->getWidth(), newSize->getHeight())));
+	frame->setMouseableArea(frame->getViewSize());
+	mainView->setViewSize(CRect(CPoint(0, 0), CPoint(newSize->getWidth(), newSize->getHeight())));
+	mainView->setMouseableArea(mainView->getViewSize());
+	splitView->setViewSize(CRect(CPoint(0, 0), CPoint(newSize->getWidth() - viewVstOutputSelect->getWidth() - viewModuleListMain->getWidth() - 40, newSize->getHeight())));
+	splitView->setMouseableArea(splitView->getViewSize());
+	splashOverrideParametersQuery->setViewSize(mainView->getViewSize());
 	return kResultTrue;
 }
 
@@ -219,14 +227,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 
-	////CViewContainer* blaView = new CViewContainer(CRect(0, 0, 800, 600));
-	//CTextLabel* labelBla = new CTextLabel(CRect(0, 0, 100, 20), "BLAAAAAAAAA");
-	//CSplashScreen* splash = new CSplashScreen(CRect(0, 0, 800, 600), this, -1, labelBla);
-	//frame->addView(splash);
-	//// To make the SplashScreen appear you must click in the 800,600 area
-
 	// Create Module List
-	CRowColumnView* viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
 	CScrollView* viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(100, 500)), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
 	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 	CRowColumnView* viewModuleList = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
@@ -242,12 +244,8 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		labelModuleTitle->setHoriAlign(CHoriTxtAlign::kLeftText);
 		CCheckBox* checkBoxShowHideModule = new CCheckBox(CRect(CPoint(0, 0), CPoint(18, 18)), this, id_general_checkBox_moduleVisibleFirst + i, "");
 		addGuiElementPointer(checkBoxShowHideModule, id_general_checkBox_moduleVisibleFirst + i);
-		//CTextButton* buttonCopyParameters = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, 1234, "Copy");
-		//CTextButton* buttonPasteParameters = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, 1234, "Paste");
 		viewModuleRow->addView(labelModuleTitle);
 		viewModuleRow->addView(checkBoxShowHideModule);
-		//viewModuleRow->addView(buttonCopyParameters);
-		//viewModuleRow->addView(buttonPasteParameters);
 		viewModuleRow->sizeToFit();
 		viewModuleList->addView(viewModuleRow);
 		viewModuleRow->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -268,7 +266,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	}
 
 	// Create VST output selection 
-	CRowColumnView* viewVstOutputSelect = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
+	viewVstOutputSelect = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
 	viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
@@ -348,15 +346,22 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	viewVstOutputSelect->sizeToFit();
 
-	CSplitView* splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
+	splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
 
-	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(800, 300)), MAXMODULENUMBER);
-	graphicsView->setBackgroundColor(CColor(100, 100, 100));
-	splitView->addView(graphicsView);
+	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(2000, 1000)), MAXMODULENUMBER, this);
+	graphicsView->setBackgroundColor(CColor(0, 0, 0, 0));
+	//splitView->addView(graphicsView);
+	CScrollView* scrollViewGraphics = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
+	scrollViewGraphics->addView(graphicsView);
+	scrollViewGraphics->setBackgroundColor(CColor(80, 80, 80, 255));
+	scrollViewGraphics->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
+	scrollViewGraphics->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	scrollViewGraphics->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	splitView->addView(scrollViewGraphics);
 	splitView->addView(workspaceView);
 	initializeGraphicsView();
 
-	CRowColumnView* mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
+	mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
 	mainView->addView(viewModuleListMain);
 	mainView->addView(viewVstOutputSelect);
@@ -387,7 +392,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	CViewContainer* queryView = new CViewContainer(mainView->getViewSize());
 	queryView->addView(querySubView);
 	queryView->setBackgroundColor(CColor(0, 0, 0, 150));
-	GuiCustomSplashScreen* splashOverrideParametersQuery = new GuiCustomSplashScreen(CRect(CPoint(0, 0), CPoint(0, 0)), this, id_general_splashScreen_overrideParametersQuery, queryView);
+	splashOverrideParametersQuery = new GuiCustomSplashScreen(CRect(CPoint(0, 0), CPoint(0, 0)), this, id_general_splashScreen_overrideParametersQuery, queryView);
 	splashOverrideParametersQuery->sizeToFit();
 	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
 	
@@ -910,15 +915,6 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	// Control view which holds the individual processing modules
 	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 300), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0);
 	controlView->setBackgroundColor(CColor(0, 0, 0, 0));
-	//controlView->addView(knob);
-	
-
-
-	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(id_apDelayFirst + idOffset).c_str());
-	fclose(pFile);*/
-
-	
 
 	// Add process views to the control view
 	controlView->addView(createMixer(controlView->getViewSize(), moduleId));
@@ -932,11 +928,6 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	baseModuleView->sizeToFit();
 
 	workspaceView->addView(baseModuleView);
-
-	/*mixerView->setBackground(groupFrame);
-	equalizerView->setBackground(groupFrame);
-	allpassView->setBackground(groupFrame);
-	gainView->setBackground(groupFrame);*/
 
 	++totalNumberOfCreatedModules;
 
@@ -1471,6 +1462,15 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		}
 
 	}
+	else if (sender == graphicsView) {
+		
+		Connection connection = graphicsView->getDrawnConnection();
+		guiElements[id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source]->setValue(1.0);
+		valueChanged(guiElements[id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source]);
+		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source).c_str());
+		fclose(pFile);*/
+	}
 	return VSTGUIEditor::notify(sender, message);
 } 
 
@@ -1479,6 +1479,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		// If those defines in the XML differ from the defines in the actual build then the preset will be probably incompatible
 		return;
 	}
+	graphicsView->clearModules();
 	//dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(presetStruct.name.c_str());
 	editorUserData.presetName = presetStruct.name;
 	
@@ -1568,6 +1569,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 
 		apGuiModules[i]->setDirty();
 		workspaceView->setDirty();
+		//graphicsView->setDirty();
 	}
 	
 	for (unsigned int i = 0; i < presetStruct.generalParamters.vstOutputMenuIndexes.size(); ++i) {
@@ -1820,7 +1822,7 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 	for (int i = 0; i < MAXMODULENUMBER; ++i) {
 		graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, inputNames);
 	}
-	//graphicsView->rearrangeModules();
+	graphicsView->rearrangeModules();
 	graphicsView->setDirty();
 }
 

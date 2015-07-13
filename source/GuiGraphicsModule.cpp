@@ -24,7 +24,11 @@ namespace VSTGUI {
 		inputRects.resize(inputNames.size(), CRect(0, 0, 0, 0));
 
 		mouseDownCoordinates = CPoint(0, 0);
+		mouseUpCoordinates = CPoint(0, 0);
 		mouseDownInHandleRegion = false;
+
+		mouseDownInOutputRect = false;
+		mouseMoveOutputRect = 0;
 
 		updateShape();
 	}
@@ -75,6 +79,12 @@ namespace VSTGUI {
 		inputGainValues[input] = gainValue;
 	}
 
+	void GuiGraphicsModule::clearInputs() {
+		for (auto&& i : inputGainValues) {
+			i = 0.0;
+		}
+	}
+
 	void GuiGraphicsModule::updateShape() {
 		handleRegion = CRect(CPoint(0, 0), CPoint(100, 12));
 		numberOfUsedInputs = 0;
@@ -120,9 +130,29 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(this->getWidth()).c_str());
-		fclose(pFile);*/
+		
+
+		CPoint local = frameToLocal(where);
+
+		if (local.isInside(outputRect)) {
+			if (!mouseDownInOutputRect) {
+				getParentView()->notify(this, "StartMouseLine");
+				mouseDownInOutputRect = true;
+				return kMouseEventHandled;
+			}
+			/*else {
+				getParentView()->notify(this, "EndMouseLine");
+				mouseDownInOutputRect = false;
+				return kMouseEventHandled;
+			}*/
+		}
+		/*else {
+			if (mouseDownInOutputRect) {
+				getParentView()->notify(this, "AbortMouseLine");
+				mouseDownInOutputRect = false;
+				return kMouseEventHandled;
+			}
+		}*/
 
 		if (frameToLocal(where).isInside(handleRegion)) {
 			mouseDownInHandleRegion = true;
@@ -135,7 +165,12 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
 	{	
-		if (mouseDownInHandleRegion) {
+		if (mouseDownInOutputRect) {
+			this->mouseMoveOutputRect = where;
+			getParentView()->notify(this, "MoveMouseLine");
+			return kMouseEventHandled;
+		}
+		else if (mouseDownInHandleRegion) {
 			if (where != mouseDownCoordinates) {
 				if (enabled) {
 					this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
@@ -150,6 +185,12 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseUp(CPoint& where, const CButtonState& buttons) {
 		mouseDownInHandleRegion = false;
+		
+		if (mouseDownInOutputRect) {
+			mouseUpCoordinates = where;
+			getParentView()->notify(this, "EndMouseLine");
+		}
+
 		return kMouseEventHandled;
 	}
 }

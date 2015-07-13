@@ -9,8 +9,8 @@
 
 namespace VSTGUI {
 
-	GuiGraphicsView::GuiGraphicsView(const CRect& size, const int& numberOfModules)
-	: CViewContainer(size), numberOfModules(numberOfModules) {
+	GuiGraphicsView::GuiGraphicsView(const CRect& size, const int& numberOfModules, CBaseObject* editor)
+	: CViewContainer(size), numberOfModules(numberOfModules), editor(editor) {
 		modules.resize(numberOfModules);
 		connections = new GuiGraphicsConnections(size, numberOfModules);
 		connections->setMouseEnabled(false);
@@ -42,6 +42,12 @@ namespace VSTGUI {
 	void GuiGraphicsView::updateModule(const int& moduleId, const int& input, const double& gainValue) {
 		modules[moduleId]->updateInput(input, gainValue);
 		this->setDirty();
+	}
+
+	void GuiGraphicsView::clearModules() {
+		for (auto&& m : modules) {
+			m->clearInputs();
+		}
 	}
 
 	void GuiGraphicsView::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
@@ -86,23 +92,24 @@ namespace VSTGUI {
 		drawModuleConnections(pContext);
 	}
 
-	void GuiGraphicsView::drawModuleRects(CDrawContext* pContext) {
-		for (auto&& m : modules) {
-			if (m) {
-				if (m->isEnabled()) {
-					m->setDirty();
-				}
-			}
-		}
-	}
+	//void GuiGraphicsView::drawModuleRects(CDrawContext* pContext) {
+	//	for (auto&& m : modules) {
+	//		if (m) {
+	//			if (m->isEnabled()) {
+	//				m->setDirty();
+	//			}
+	//		}
+	//	}
+	//}
 
 	void GuiGraphicsView::drawModuleConnections(CDrawContext* pContext) {
+		connections->clearConnections();
 		for (auto&& m : modules) {
 			if (m) {
 				if (m->isEnabled()) {
 					for (unsigned int j = 0; j < numberOfModules; ++j) {
 						if (m->getGainValue(j) != 0.0) {
-							connections->setConnection(m->getInputRectCenter(j), modules[j]->getOutputRectCenter(), std::abs(m->getGainValue(j)), j);
+							connections->setConnection(m->getInputRectCenter(j), modules[j]->getOutputRectCenter(), std::abs(m->getGainValue(j)));
 						}
 					}
 				}
@@ -112,27 +119,80 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::rearrangeModules() {
-		int notUsedCounter = 0;
-		int usedCounter = 0;
+		int moduleCounter = 0;
+		int rowCounter = 0;
+		int columnCounter = 0;
+		int lastUnusedModule = -1;
 		for (unsigned int m = 0; m < modules.size(); ++m) {
 			if (modules[m]) {
 				if (modules[m]->getNumberOfUsedInputs() == 0) {
-					modules[m]->setViewSize(CRect(CPoint(this->getWidth() - modules[m]->getWidth(), ((modules[m]->getHeight()) + 5)* notUsedCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
+					if (((modules[m]->getHeight()) + 5) * (moduleCounter + 1) + modules[m]->getHeight() > this->getVisibleViewSize().getHeight()) {
+						++columnCounter;
+						moduleCounter = 0;
+					}
+					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 5) * columnCounter, ((modules[m]->getHeight()) + 5) * moduleCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
 					modules[m]->setMouseableArea(modules[m]->getViewSize());
-					++notUsedCounter;
-				}
-				else {
-					/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-					fprintf(pFile, "y(n): %s\n", std::to_string(modules[m]->getWidth()).c_str());
-					fclose(pFile);*/
-					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 10) * usedCounter, 10), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
+					++moduleCounter;
+					lastUnusedModule = m;
+				}	
+			}
+		}
+		moduleCounter = 0;
+		rowCounter = 0;
+		columnCounter = 0;
+		int offset = 0;
+		if (lastUnusedModule != -1) {
+			offset = modules[lastUnusedModule]->getViewSize().getTopRight().x + 10;
+		}
+		for (unsigned int m = 0; m < modules.size(); ++m) {
+			if (modules[m]) {
+				if (modules[m]->getNumberOfUsedInputs() != 0) {
+					if ((modules[m]->getWidth() + 10) * (moduleCounter + 1) > this->getVisibleViewSize().getWidth()) {
+						++rowCounter;
+						moduleCounter = 0;
+					}
+					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 10) * moduleCounter, (modules[m]->getHeight() + 5) * rowCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())).offset(offset, 0));
 					modules[m]->setMouseableArea(modules[m]->getViewSize());
-					++usedCounter;
+					++moduleCounter;
 				}
-				
 			}
 		}
 		this->setDirty();
+	}
+
+	CMessageResult GuiGraphicsView::notify(CBaseObject* sender, IdStringPtr message) {
+		for (unsigned int i = 0; i < modules.size(); ++i) {
+			if (sender == modules[i]) {
+				if (message == "StartMouseLine") {
+					connections->updateMouseConnectionLine(modules[i]->getOutputRectCenter(), modules[i]->getOutputRectCenter());
+					return kMessageNotified;
+				}
+				else if (message == "MoveMouseLine") {
+					connections->updateMouseConnectionLine(modules[i]->getOutputRectCenter(), modules[i]->getMouseMoveOutputRect());
+		
+					return kMessageNotified;
+				}
+				else if (message == "EndMouseLine") {
+					
+					for (unsigned int j = 0; j < modules.size(); ++j) {
+						/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(modules[i]->getMouseUpCoordinates().x).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(modules[j]->getViewSize().getTopLeft().x).c_str());
+						fclose(pFile);*/
+						if (modules[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
+							//connections->updateMouseConnectionLine(modules[i]->getOutputRectCenter(), modules[j]->getViewSize().getCenter());
+							//connections->finishMouseConnectionLine(1.0);
+							drawnConnection = Connection(i, j);
+							editor->notify(this, "NewConnectionEstablished");
+							break;
+						}
+					}
+					connections->updateMouseConnectionLine(0, 0);
+					return kMessageNotified;
+				}
+			}
+		}
+		return kMessageUnknown;
 	}
 
 	//CMouseEventResult GuiGraphicsView::onMouseDown(CPoint &where, const CButtonState& buttons)
