@@ -9,11 +9,14 @@ namespace VSTGUI {
 
 	class GuiGraphicsModule : public CViewContainer {
 	public:
-		GuiGraphicsModule(const std::string& title, const std::vector<std::string>& inputNames);
+		GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput);
 		~GuiGraphicsModule();
 
 		void redraw(CDrawContext* pContext);
 		inline void setEnabled(const bool& enabled) { this->enabled = enabled; }
+		inline void setInputEnabled(const unsigned int& input, const bool& enabled) { if (input < inputsEnabled.size()) { inputsEnabled[input] = enabled; } }
+		void setInputNames(const std::vector<std::string>& inputNames);
+		inline void setOutputName(const std::string& name) { outputName = name; }
 		void updateInput(const int& input, const double& gainValue);
 		void clearInputs();
 		inline const bool& isEnabled() const { return enabled; }
@@ -41,10 +44,13 @@ namespace VSTGUI {
 		CRect mainRegion;
 		int numberOfInputs;
 		int numberOfUsedInputs;
+		std::vector<bool> inputsEnabled;
 		std::vector<double> inputGainValues;
 		std::vector<std::string> inputNames;
 		std::vector<CRect> inputRects;
+		bool hasOutput;
 		CRect outputRect;
+		std::string outputName;
 
 		CPoint mouseDownCoordinates;
 		bool mouseDownInHandleRegion;

@@ -11,17 +11,14 @@ namespace VSTGUI {
 	const int inoutRectHeight = 10;
 	const int spacing = 2;
 
-	GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const std::vector<std::string>& inputNames)
-		: CViewContainer(CRect(0, 0, 0, 0)), title(title), inputNames(inputNames) {
+	GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput)
+		: CViewContainer(CRect(0, 0, 0, 0)), title(title), numberOfInputs(numberOfInputs), hasOutput(hasOutput) {
 
 		enabled = true;
 
-		numberOfInputs = inputNames.size();
-		numberOfUsedInputs = inputNames.size();
-		inputGainValues.resize(inputNames.size(), 0.0);
-
-		inputGainValues.resize(inputNames.size());
-		inputRects.resize(inputNames.size(), CRect(0, 0, 0, 0));
+		inputsEnabled.resize(numberOfInputs, false);
+		inputGainValues.resize(numberOfInputs, 0.0);
+		inputRects.resize(numberOfInputs, CRect(0, 0, 0, 0));
 
 		mouseDownCoordinates = CPoint(0, 0);
 		mouseUpCoordinates = CPoint(0, 0);
@@ -35,6 +32,10 @@ namespace VSTGUI {
 
 	GuiGraphicsModule::~GuiGraphicsModule() {
 
+	}
+
+	void GuiGraphicsModule::setInputNames(const std::vector<std::string>& inputNames) {
+		this->inputNames = inputNames;
 	}
 
 	void GuiGraphicsModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
@@ -76,12 +77,23 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsModule::updateInput(const int& input, const double& gainValue) {
-		inputGainValues[input] = gainValue;
+		if (input < numberOfInputs) {
+			inputGainValues[input] = gainValue;
+			if (gainValue == 0.0) {
+				inputsEnabled[input] = false;
+			}
+			else {
+				inputsEnabled[input] = true;
+			}
+		}
 	}
 
 	void GuiGraphicsModule::clearInputs() {
 		for (auto&& i : inputGainValues) {
 			i = 0.0;
+		}
+		for (auto&& i : inputsEnabled) {
+			i = false;
 		}
 	}
 
@@ -89,7 +101,7 @@ namespace VSTGUI {
 		handleRegion = CRect(CPoint(0, 0), CPoint(100, 12));
 		numberOfUsedInputs = 0;
 		for (int i = 0; i < numberOfInputs; ++i) {
-			if (inputGainValues[i] != 0.0) {
+			if (inputsEnabled[i]) {
 				inputRects[i] = CRect(CPoint(0, handleRegion.getHeight() + spacing).offset(0, numberOfUsedInputs * (spacing + inoutRectHeight)), CPoint(inoutRectWidth, inoutRectHeight));
 				++numberOfUsedInputs;
 			}
@@ -113,25 +125,28 @@ namespace VSTGUI {
 			pContext->drawRect(mainRegion, kDrawFilledAndStroked); // main rect
 			std::stringstream temp;
 			for (int i = 0; i < inputRects.size(); ++i) {
-				if (inputGainValues[i] != 0.0) {
+				if (inputsEnabled[i]) {
 					pContext->setFillColor(CColor(50, 200, 50));
 					pContext->drawRect(inputRects[i], CDrawStyle::kDrawFilledAndStroked); // module inputs
 					temp.str(std::string());
 					temp.clear();
-					temp << inputNames[i] << " [" << std::setprecision(2) << inputGainValues[i] << "]";
+					temp << inputNames[i];
+					if (inputGainValues[i] != 0.0) {
+						temp << " [" << std::setprecision(2) << inputGainValues[i] << "]";
+					}
 					pContext->drawString(temp.str().c_str(), CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(100, inoutRectHeight)), CHoriTxtAlign::kLeftText, false);
 				}
 			}
-			pContext->setFillColor(CColor(200, 200, 200));
-			pContext->drawRect(outputRect, kDrawFilledAndStroked);
-			pContext->drawString("OUT", CRect(CPoint(outputRect.left - 50, outputRect.top), CPoint(50, outputRect.getHeight())), CHoriTxtAlign::kRightText, false);
+			if (hasOutput) {
+				pContext->setFillColor(CColor(200, 200, 200));
+				pContext->drawRect(outputRect, kDrawFilledAndStroked);
+				pContext->drawString(outputName.c_str(), CRect(CPoint(outputRect.left - 50, outputRect.top), CPoint(50, outputRect.getHeight())), CHoriTxtAlign::kRightText, false);
+			}
 		}
 	}
 
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
-		
-
 		CPoint local = frameToLocal(where);
 
 		if (local.isInside(outputRect)) {
@@ -140,19 +155,7 @@ namespace VSTGUI {
 				mouseDownInOutputRect = true;
 				return kMouseEventHandled;
 			}
-			/*else {
-				getParentView()->notify(this, "EndMouseLine");
-				mouseDownInOutputRect = false;
-				return kMouseEventHandled;
-			}*/
 		}
-		/*else {
-			if (mouseDownInOutputRect) {
-				getParentView()->notify(this, "AbortMouseLine");
-				mouseDownInOutputRect = false;
-				return kMouseEventHandled;
-			}
-		}*/
 
 		if (frameToLocal(where).isInside(handleRegion)) {
 			mouseDownInHandleRegion = true;

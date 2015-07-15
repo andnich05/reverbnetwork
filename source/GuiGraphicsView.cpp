@@ -32,16 +32,50 @@ namespace VSTGUI {
 		}*/
 	}
 
-	void GuiGraphicsView::addModule(const std::string& title, const int& id, const std::vector<std::string>& inputNames) {
-		GuiGraphicsModule* module = new GuiGraphicsModule(title, inputNames);
-		this->addView(module);
-		modules[id] = module;
-		this->changeViewZOrder(connections, this->getNbViews() - 1);
+	void GuiGraphicsView::addModule(const std::string& title, const int& id, const int& numberOfInputs) {
+		if (id < modules.size()) {
+			GuiGraphicsModule* module = new GuiGraphicsModule(title, numberOfInputs, true);
+			this->addView(module);
+			modules[id] = module;
+			this->changeViewZOrder(connections, this->getNbViews() - 1);
+		}
+	}
+
+	void GuiGraphicsView::addVstInput() {
+		std::string title = "VST IN ";
+		title.append(std::to_string(vstInputs.size()));
+		GuiGraphicsModule* vstInput = new GuiGraphicsModule(title, 0, true);
+		this->addView(vstInput);
+		vstInput->setOutputName("VST IN");
+		vstInputs.push_back(vstInput);
+	}
+
+	void GuiGraphicsView::addVstOutput() {
+		std::string title = "VST OUT ";
+		title.append(std::to_string(vstOutputs.size()));
+		GuiGraphicsModule* vstOutput = new GuiGraphicsModule(title, 1, false);
+		this->addView(vstOutput);
+		std::vector<std::string> name;
+		name.push_back("VST OUT");
+		vstOutput->setInputNames(name);
+		vstOutput->setInputEnabled(0, true);
+		vstOutputs.push_back(vstOutput);
+	}
+
+	void GuiGraphicsView::setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames) {
+		if (moduleId < modules.size()) {
+			modules[moduleId]->setInputNames(inputNames);
+		}
 	}
 
 	void GuiGraphicsView::updateModule(const int& moduleId, const int& input, const double& gainValue) {
-		modules[moduleId]->updateInput(input, gainValue);
-		this->setDirty();
+		if (moduleId < modules.size()) {
+			if (gainValue != 0.0) {
+				modules[moduleId]->setEnabled(true);
+			}
+			modules[moduleId]->updateInput(input, gainValue);
+			this->setDirty();
+		}
 	}
 
 	void GuiGraphicsView::clearModules() {
@@ -119,6 +153,20 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::rearrangeModules() {
+		int counter = 0;
+		for (unsigned int i = 0; i < vstInputs.size(); ++i) {
+			vstInputs[i]->setViewSize(CRect(CPoint(0, (vstInputs[i]->getHeight() + 5) * counter), CPoint(vstInputs[i]->getWidth(), vstInputs[i]->getHeight())));
+			vstInputs[i]->setMouseableArea(vstInputs[i]->getViewSize());
+			++counter;
+		}
+
+		counter = 0;
+		for (unsigned int i = 0; i < vstOutputs.size(); ++i) {
+			vstOutputs[i]->setViewSize(CRect(CPoint(this->getVisibleViewSize().getWidth() - vstOutputs[i]->getWidth(), (vstOutputs[i]->getHeight() + 5) * counter), CPoint(vstOutputs[i]->getWidth(), vstOutputs[i]->getHeight())));
+			vstOutputs[i]->setMouseableArea(vstOutputs[i]->getViewSize());
+			++counter;
+		}
+
 		int moduleCounter = 0;
 		int rowCounter = 0;
 		int columnCounter = 0;
@@ -126,18 +174,20 @@ namespace VSTGUI {
 		for (unsigned int m = 0; m < modules.size(); ++m) {
 			if (modules[m]) {
 				if (modules[m]->getNumberOfUsedInputs() == 0) {
-					if (((modules[m]->getHeight()) + 5) * (moduleCounter + 1) + modules[m]->getHeight() > this->getVisibleViewSize().getHeight()) {
+					/*if (((modules[m]->getHeight()) + 5) * (moduleCounter + 1) + modules[m]->getHeight() > this->getVisibleViewSize().getHeight()) {
 						++columnCounter;
 						moduleCounter = 0;
-					}
+					}B
 					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 5) * columnCounter, ((modules[m]->getHeight()) + 5) * moduleCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
 					modules[m]->setMouseableArea(modules[m]->getViewSize());
 					++moduleCounter;
-					lastUnusedModule = m;
+					lastUnusedModule = m;*/
+					modules[m]->setEnabled(false);
 				}	
 			}
 		}
-		moduleCounter = 0;
+
+		moduleCounter = 1;
 		rowCounter = 0;
 		columnCounter = 0;
 		int offset = 0;

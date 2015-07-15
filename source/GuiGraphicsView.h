@@ -24,7 +24,10 @@ namespace VSTGUI {
 		~GuiGraphicsView();
 
 		
-		virtual void addModule(const std::string& title, const int& id, const std::vector<std::string>& inputNames);
+		virtual void addModule(const std::string& title, const int& id, const int& numberOfInputs);
+		virtual void addVstInput();
+		virtual void addVstOutput();
+		virtual void setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames);
 		virtual void updateModule(const int& moduleId, const int& input, const double& gainValue);
 		virtual void clearModules();
 		//virtual void setModuleEnabled(const int& id, const bool& enabled);
@@ -41,7 +44,10 @@ namespace VSTGUI {
 		virtual CMessageResult notify(CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	private:
-		std::vector<GuiGraphicsModule*>modules;
+		std::vector<GuiGraphicsModule*> modules;
+		std::vector<GuiGraphicsModule*> vstInputs;
+		std::vector<GuiGraphicsModule*> vstOutputs;
+
 		GuiGraphicsConnections* connections;
 
 		virtual void redraw(CDrawContext* pContext);

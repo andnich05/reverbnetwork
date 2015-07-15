@@ -340,7 +340,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(labelNumberOfVstOutputs);
 	viewVstOutputSelect->addView(labelNumberOfModules);
 
-	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_graphicsView_rearrangeModules, "Rearrange Modules");
+	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(150, 20)), this, id_graphicsView_rearrangeModules, "Rearrange Modules");
 	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
 	viewVstOutputSelect->addView(buttonRearrange);
 
@@ -1820,7 +1820,14 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 		inputNames.push_back("VST" + std::to_string(i));
 	}
 	for (int i = 0; i < MAXMODULENUMBER; ++i) {
-		graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, inputNames);
+		graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
+		graphicsView->setModuleInputNames(i, inputNames);
+	}
+	for (int i = 0; i < MAXVSTINPUTS; ++i) {
+		graphicsView->addVstInput();
+	}
+	for (int i = 0; i < MAXVSTOUTPUTS; ++i) {
+		graphicsView->addVstOutput();
 	}
 	graphicsView->rearrangeModules();
 	graphicsView->setDirty();
