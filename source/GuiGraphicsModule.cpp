@@ -14,7 +14,7 @@ namespace VSTGUI {
 	GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput)
 		: CViewContainer(CRect(0, 0, 0, 0)), title(title), numberOfInputs(numberOfInputs), hasOutput(hasOutput) {
 
-		enabled = true;
+		//enabled = true;
 
 		inputsEnabled.resize(numberOfInputs, false);
 		inputGainValues.resize(numberOfInputs, 0.0);
@@ -36,6 +36,7 @@ namespace VSTGUI {
 
 	void GuiGraphicsModule::setInputNames(const std::vector<std::string>& inputNames) {
 		this->inputNames = inputNames;
+		updateShape();
 	}
 
 	void GuiGraphicsModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
@@ -85,6 +86,7 @@ namespace VSTGUI {
 			else {
 				inputsEnabled[input] = true;
 			}
+			updateShape();
 		}
 	}
 
@@ -95,6 +97,7 @@ namespace VSTGUI {
 		for (auto&& i : inputsEnabled) {
 			i = false;
 		}
+		updateShape();
 	}
 
 	void GuiGraphicsModule::updateShape() {
@@ -109,11 +112,12 @@ namespace VSTGUI {
 		mainRegion = CRect(CPoint(0, handleRegion.getHeight()), CPoint(handleRegion.getWidth(), spacing + numberOfUsedInputs * (spacing + inoutRectHeight) + spacing));
 		completeRegion = CRect(CPoint(0, 0), CPoint(handleRegion.getWidth(), handleRegion.getHeight() + mainRegion.getHeight()));
 		this->setViewSize(CRect(CPoint(this->getViewSize().getTopLeft()), CPoint(completeRegion.getWidth(), completeRegion.getHeight())));
+		this->setMouseableArea(this->getViewSize());
 		outputRect = CRect(CPoint(handleRegion.getWidth() - inoutRectWidth, completeRegion.getCenter().y - inoutRectHeight / 2), CPoint(inoutRectWidth, inoutRectHeight));	
 	}
 
 	void GuiGraphicsModule::redraw(CDrawContext* pContext) {
-		if (enabled) {
+		if (isVisible()) {
 			pContext->setFrameColor(CColor(0, 0, 0));
 			pContext->setFillColor(CColor(50, 50, 50));
 			pContext->setLineWidth(1);
@@ -147,9 +151,10 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
-		CPoint local = frameToLocal(where);
+		// Reference conversion!
+		frameToLocal(where);
 
-		if (local.isInside(outputRect)) {
+		if (where.isInside(outputRect)) {
 			if (!mouseDownInOutputRect) {
 				getParentView()->notify(this, "StartMouseLine");
 				mouseDownInOutputRect = true;
@@ -157,7 +162,10 @@ namespace VSTGUI {
 			}
 		}
 
-		if (frameToLocal(where).isInside(handleRegion)) {
+		if (where.isInside(handleRegion)) {
+			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", "INSIDE");
+			fclose(pFile);*/
 			mouseDownInHandleRegion = true;
 			mouseDownCoordinates = where;
 			return kMouseEventHandled;
@@ -175,12 +183,10 @@ namespace VSTGUI {
 		}
 		else if (mouseDownInHandleRegion) {
 			if (where != mouseDownCoordinates) {
-				if (enabled) {
-					this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
-					this->setMouseableArea(this->getViewSize());
-					this->getParentView()->setDirty();
-					return kMouseEventHandled;
-				}
+				this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+				this->setMouseableArea(this->getViewSize());
+				this->getParentView()->setDirty();
+				return kMouseEventHandled;
 			}
 		}
 		return kMouseEventHandled;
@@ -190,6 +196,7 @@ namespace VSTGUI {
 		mouseDownInHandleRegion = false;
 		
 		if (mouseDownInOutputRect) {
+			mouseDownInOutputRect = false;
 			mouseUpCoordinates = where;
 			getParentView()->notify(this, "EndMouseLine");
 		}

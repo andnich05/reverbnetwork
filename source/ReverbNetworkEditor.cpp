@@ -137,6 +137,7 @@ namespace Vst {
 	const int32_t id_general_button_splashViewCancel = id_general_button_splashViewOk + 1;
 
 	const int32_t id_graphicsView_rearrangeModules = id_general_button_splashViewCancel + 1;
+	const int32_t id_graphicsView_addModule = id_graphicsView_rearrangeModules + 1;
 
 // Contructor is called every time the editor is reopened => watch out for memory leaks!
 ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
@@ -255,6 +256,15 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewModuleList->sizeToFit();
 	viewModuleListMain->addView(createGroupTitle("Module List:", viewModuleScrollList->getWidth()));
 	viewModuleListMain->addView(viewModuleScrollList);
+
+	// ToDo: Move those buttons into the graphics view (like a tool box or something...)
+	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(120, 20)), this, id_graphicsView_addModule, "Add module");
+	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
+	viewModuleListMain->addView(buttonAddModule);
+	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(120, 20)), this, id_graphicsView_rearrangeModules, "Rearrange Modules");
+	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
+	viewModuleListMain->addView(buttonRearrange);
+
 	viewModuleListMain->sizeToFit();
 	viewModuleListMain->setBackgroundColor(CColor(0, 0, 0, 0));
 	viewModuleScrollList->setBackgroundColor(CColor(50, 50, 50, 255));
@@ -340,9 +350,6 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(labelNumberOfVstOutputs);
 	viewVstOutputSelect->addView(labelNumberOfModules);
 
-	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(150, 20)), this, id_graphicsView_rearrangeModules, "Rearrange Modules");
-	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
-	viewVstOutputSelect->addView(buttonRearrange);
 
 	viewVstOutputSelect->sizeToFit();
 
@@ -514,7 +521,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	// CAnimKnob accepts only normalized values (BUG?)
 	// Mixer
 	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
-
 		uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
 		// Update the VST parameter variable
 		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::plainToNormMixerInputSelect(value));
@@ -571,6 +577,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
 			updateGainValuesInOptionMenus(moduleNumber, inputIndex - 1, ValueConversion::normToPlainInputGain(value));
 			updateGraphicsViewModule(moduleNumber, inputIndex - 1, ValueConversion::normToPlainInputGain(value));
+			splitView->invalid();
 		}
 	}
 	else if (tag >= id_mixer_textEdit_gainFirst && tag <= id_mixer_textEdit_gainLast)  {
@@ -586,6 +593,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
 			updateGainValuesInOptionMenus(moduleNumber, inputIndex - 1, value);
 			updateGraphicsViewModule(moduleNumber, inputIndex - 1, value);
+			splitView->invalid();
 		}
 	}
 	else if (tag >= id_mixer_button_muteFirst && tag <= id_mixer_button_muteLast)  {
@@ -819,6 +827,12 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
 		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
 		controller->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
+		if (value != 0.0) {
+			graphicsView->setVstOutputConnection(tag - id_general_optionMenu_vstOutputFirst, value - 1.0);
+		}
+		else {
+			graphicsView->setVstOutputConnection(tag - id_general_optionMenu_vstOutputFirst, -1);
+		}
 	}
 	else if (tag == id_general_textEdit_presetFilePath) {
 		editorUserData.presetName = dynamic_cast<CTextEdit*>(pControl)->getText();
@@ -854,9 +868,16 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	else if (tag == id_graphicsView_rearrangeModules) {
-		graphicsView->rearrangeModules();
+		if (value == 0.0) {
+			graphicsView->rearrangeModules();
+		}
 	}
-	graphicsView->setDirty();
+	else if (tag == id_graphicsView_addModule) {
+		if (value == 0.0) {
+			graphicsView->addModule();
+		}
+	}
+	//graphicsView->setDirty();
 }
 
 GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
@@ -1463,13 +1484,52 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 
 	}
 	else if (sender == graphicsView) {
-		
-		Connection connection = graphicsView->getDrawnConnection();
-		guiElements[id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source]->setValue(1.0);
-		valueChanged(guiElements[id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source]);
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source).c_str());
-		fclose(pFile);*/
+		if (message == "NewConnectionModuleToModule") {
+			Connection connection = graphicsView->getDrawnConnection();
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, 1.0);
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, 1.0);
+			updateGainValuesInOptionMenus(connection.destination, connection.source, 1.0);
+			updateGraphicsViewModule(connection.destination, connection.source, 1.0);
+			// Check if the input is already selected in an input menu
+			for (int i = 0; i < MAXMODULEINPUTS; ++i) {
+				if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1) {
+					// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
+					guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]->setValue(1.0);
+					valueChanged(guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]);
+				}
+			}
+			splitView->invalid();
+			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source).c_str());
+			fclose(pFile);*/
+		}
+		else if (message == "NewConnectionModuleToVst") {
+			Connection connection = graphicsView->getDrawnConnection();
+			guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1);
+			valueChanged(guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]);
+			splitView->invalid();
+		}
+		else if (message == "NewConnectionVstToModule") {
+			Connection connection = graphicsView->getDrawnConnection();
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, 1.0);
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, 1.0);
+			updateGainValuesInOptionMenus(connection.destination, connection.source + MAXMODULENUMBER, 1.0);
+			updateGraphicsViewModule(connection.destination, connection.source + MAXMODULENUMBER, 1.0);
+			for (int i = 0; i < MAXMODULEINPUTS; ++i) {
+				if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1 + MAXMODULENUMBER) {
+					// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
+					guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]->setValue(1.0);
+					valueChanged(guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]);
+				}
+			}
+			splitView->invalid();
+		}
+		else if (message == "NewConnectionVstToVst") {
+			Connection connection = graphicsView->getDrawnConnection();
+			guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1 + MAXMODULENUMBER);
+			valueChanged(guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]);
+			splitView->invalid();
+		}
 	}
 	return VSTGUIEditor::notify(sender, message);
 } 
@@ -1569,7 +1629,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 
 		apGuiModules[i]->setDirty();
 		workspaceView->setDirty();
-		//graphicsView->setDirty();
+		graphicsView->setDirty();
 	}
 	
 	for (unsigned int i = 0; i < presetStruct.generalParamters.vstOutputMenuIndexes.size(); ++i) {
@@ -1820,14 +1880,14 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 		inputNames.push_back("VST" + std::to_string(i));
 	}
 	for (int i = 0; i < MAXMODULENUMBER; ++i) {
-		graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
+		graphicsView->createModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
 		graphicsView->setModuleInputNames(i, inputNames);
 	}
 	for (int i = 0; i < MAXVSTINPUTS; ++i) {
-		graphicsView->addVstInput();
+		graphicsView->createVstInput();
 	}
 	for (int i = 0; i < MAXVSTOUTPUTS; ++i) {
-		graphicsView->addVstOutput();
+		graphicsView->createVstOutput();
 	}
 	graphicsView->rearrangeModules();
 	graphicsView->setDirty();

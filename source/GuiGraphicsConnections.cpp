@@ -76,7 +76,7 @@ namespace VSTGUI {
 		}
 	}
 
-	void GuiGraphicsConnections::setConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency) {
+	void GuiGraphicsConnections::addConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency) {
 		//if (id < connections.size()) {
 		connections.push_back(ConnectionLine(startPoint, endPoint, transparency, true));
 		this->setDirty();
@@ -90,6 +90,7 @@ namespace VSTGUI {
 			connections[id].transparency = 1.0;*/
 		//}
 		connections.clear();
+		setDirty();
 	}
 
 	void GuiGraphicsConnections::updateMouseConnectionLine(const CPoint& startPoint, const CPoint& endPoint) {
@@ -100,11 +101,7 @@ namespace VSTGUI {
 
 	void GuiGraphicsConnections::finishMouseConnectionLine(const double& transparency) {
 		connections.push_back(ConnectionLine(mouseStart, mouseEnd, transparency, true));
-		FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(connections.size()).c_str());
-		fclose(pFile);
 		setDirty();
-		
 	}
 
 	//CMouseEventResult GuiGraphicsConnections::onMouseDown(CPoint &where, const CButtonState& buttons)

@@ -13,19 +13,21 @@ namespace VSTGUI {
 		~GuiGraphicsModule();
 
 		void redraw(CDrawContext* pContext);
-		inline void setEnabled(const bool& enabled) { this->enabled = enabled; }
-		inline void setInputEnabled(const unsigned int& input, const bool& enabled) { if (input < inputsEnabled.size()) { inputsEnabled[input] = enabled; } }
+		//inline void setEnabled(const bool& enabled = true) { this->enabled = enabled; if (enabled) updateShape(); }
+		inline void setInputEnabled(const unsigned int& input, const bool& enabled) { if (input < inputsEnabled.size()) { inputsEnabled[input] = enabled; updateShape(); } }
 		void setInputNames(const std::vector<std::string>& inputNames);
 		inline void setOutputName(const std::string& name) { outputName = name; }
 		void updateInput(const int& input, const double& gainValue);
 		void clearInputs();
-		inline const bool& isEnabled() const { return enabled; }
+		//inline const bool& isEnabled() const { return enabled; }
 		inline const double& getGainValue(const int& input) { return inputGainValues[input]; }
+		inline const CRect getInputRect(const int& input) { return CRect(CPoint(localToFrame(inputRects[input].getTopLeft())), CPoint((inputRects[input].getWidth(), inputRects[input].getHeight()))); }
 		inline const CPoint& getInputRectCenter(const int& input) { return localToFrame(inputRects[input].getCenter()); }
 		inline const CPoint& getOutputRectCenter() { return localToFrame(outputRect.getCenter()); }
 		inline const int& getNumberOfUsedInputs() { return numberOfUsedInputs; }
 		inline const CPoint& getMouseMoveOutputRect() { return mouseMoveOutputRect; }
 		inline const CPoint& getMouseUpCoordinates() { return mouseUpCoordinates; }
+		inline const CPoint& getMouseDownCoordinates() { return mouseDownCoordinates; }
 
 
 		// Overrides
@@ -37,7 +39,7 @@ namespace VSTGUI {
 		
 
 	private:
-		bool enabled;
+		//bool enabled;
 		std::string title;
 		CRect completeRegion;
 		CRect handleRegion;

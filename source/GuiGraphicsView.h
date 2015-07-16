@@ -24,11 +24,14 @@ namespace VSTGUI {
 		~GuiGraphicsView();
 
 		
-		virtual void addModule(const std::string& title, const int& id, const int& numberOfInputs);
-		virtual void addVstInput();
-		virtual void addVstOutput();
+		virtual void createModule(const std::string& title, const int& id, const int& numberOfInputs);
+		// Makes another module visible; returns false if the maximum number of modules is reached
+		virtual bool addModule();
+		virtual void createVstInput();
+		virtual void createVstOutput();
 		virtual void setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames);
 		virtual void updateModule(const int& moduleId, const int& input, const double& gainValue);
+		virtual void setVstOutputConnection(const int& vstOutput, const int& moduleOrVstInput);
 		virtual void clearModules();
 		//virtual void setModuleEnabled(const int& id, const bool& enabled);
 		virtual void rearrangeModules();
@@ -47,6 +50,7 @@ namespace VSTGUI {
 		std::vector<GuiGraphicsModule*> modules;
 		std::vector<GuiGraphicsModule*> vstInputs;
 		std::vector<GuiGraphicsModule*> vstOutputs;
+		std::vector<int> vstOutputConnections;
 
 		GuiGraphicsConnections* connections;
 

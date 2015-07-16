@@ -23,7 +23,7 @@ namespace VSTGUI {
 		};
 
 		void redraw(CDrawContext* pContext);
-		void setConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency);
+		void addConnection(const CPoint& startPoint, const CPoint& endPoint, const double& transparency);
 		void clearConnections();
 		void updateMouseConnectionLine(const CPoint& startPoint, const CPoint& endPoint);
 		void finishMouseConnectionLine(const double& transparency);
