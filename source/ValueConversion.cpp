@@ -99,17 +99,34 @@ double ValueConversion::delayMillisecondsToSamples(const double& delayMillisecon
 }
 
 double ValueConversion::delaySamplesToMilliseconds(const double& delaySamples) {
+	if (sampleRate == 0.0) {
+		return 0.0;
+	}
 	return delaySamples / sampleRate * 1000;
 }
 
 double ValueConversion::calculateDiffK(const double& delayInMs, const double& decayInMs) {
 	if (decayInMs == 0.0) return 0.0;
 	if (delayInMs == 0.0) return 1.0;
-	return pow(10, (-60 * (delayInMs / decayInMs) / 20));
+	if (decayInMs > 0.0) {
+		return pow(10, (-60 * (delayInMs / decayInMs) / 20));
+	}
+	else {
+		return -pow(10, (-60 * (delayInMs / -decayInMs) / 20));
+	}
 }
 
 double ValueConversion::diffKToDecay(const double& diffK, const double& delayInMs) {
-	return (-60 / (20 * log10(diffK))) * delayInMs;
+	double absDiffK = std::abs(diffK);
+	if (absDiffK == 1.0) return MAX_ALLPASSDECAY;
+	if (absDiffK == 0.0) return 0.0;
+	if (absDiffK > 1.0) return 0.0;
+	if (diffK > 0.0) {
+		return (-60 / (20 * log10(diffK))) * delayInMs;
+	}
+	else {
+		return -(-60 / (20 * log10(-diffK))) * delayInMs;
+	}
 }
 
 double ValueConversion::normToPlainDecay(const double& normValue) {

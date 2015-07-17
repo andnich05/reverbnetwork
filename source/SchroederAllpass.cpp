@@ -81,20 +81,19 @@ void SchroederAllpass::setDecayTimeSec(const double& sec) {
 
 void SchroederAllpass::calculateGain() {
 	double dB = 0.0;
-	// Prevent division by zero
-	if (decayTimeSec > 0.0) {
+	
+	if (decayTimeSec > 0.0) { // gain has to be positive
 		dB = -60.0 * (delayTimeSec / decayTimeSec);
 		gain = pow(10.0, dB / 20);
 	}
-	else {
+	else if (decayTimeSec < 0.0) { // gain has to be negative => same result but 180° phase shift
+		dB = -60.0 * (delayTimeSec / -decayTimeSec);
+		gain = -pow(10.0, dB / 20);
+	}
+	else { // Prevent division by zero
 		// If decay time is zero gain should be zero also => samples are simply delayed by the specified delay time
 		gain = 0.0;
 	}
-	
-
-	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
-	fclose(pFile);*/
 }
 
 

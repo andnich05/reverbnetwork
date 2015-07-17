@@ -9,7 +9,7 @@
 // Maximum number of AP modules
 #define MAXMODULENUMBER 32
 
-// Maximum number of AP outputs (should be 1 for now)
+// Maximum number of AP outputs (should be 1)
 //#define MAXMODULEOUTPUTS 1
 
 
@@ -105,7 +105,7 @@
 //#define DEF_ALLPASSDELAY 0.0
 
 // Allpass decay in milliseconds
-#define MIN_ALLPASSDECAY 0.0
+#define MIN_ALLPASSDECAY -10000.0
 #define MAX_ALLPASSDECAY 10000.0
 #define DEF_ALLPASSDECAY 0.0
 #define UNIT_ALLPASSDECAY "ms"

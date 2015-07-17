@@ -1166,7 +1166,7 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 	userData2->unit = "";
 	textEditDiffK->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	textEditDiffK->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData2);
-	textEditDiffK->setMin(0.0);
+	textEditDiffK->setMin(-1.0);
 	textEditDiffK->setMax(1.0);
 	//textEditDiffK->setStringToTruncate("", true);
 	//textEditDiffK->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
@@ -1886,15 +1886,15 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 	for (int i = 0; i < MAXVSTINPUTS; ++i) {
 		inputNames.push_back("VST" + std::to_string(i));
 	}
-	for (int i = 0; i < MAXMODULENUMBER; ++i) {
-		graphicsView->createModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
-		graphicsView->setModuleInputNames(i, inputNames);
-	}
 	for (int i = 0; i < MAXVSTINPUTS; ++i) {
 		graphicsView->createVstInput();
 	}
 	for (int i = 0; i < MAXVSTOUTPUTS; ++i) {
 		graphicsView->createVstOutput();
+	}
+	for (int i = 0; i < MAXMODULENUMBER; ++i) {
+		graphicsView->createModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
+		graphicsView->setModuleInputNames(i, inputNames);
 	}
 	graphicsView->rearrangeModules();
 	graphicsView->setDirty();
