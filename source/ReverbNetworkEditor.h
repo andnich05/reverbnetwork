@@ -54,7 +54,7 @@ public:
 	inline void setUserData(const EditorUserData& userData) { editorUserData = userData; applyUserData(); }
 	void applyUserData();
 
-	//void updateEqualizerStability(const int moduleNumber, const bool isStable);
+	void updateEqualizerStability(const int moduleNumber, const bool isStable);
 	
 
 private:

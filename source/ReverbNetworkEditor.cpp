@@ -1464,6 +1464,9 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		// If there is something in the ToDo-queue
 		if (eqStabilityValues.size() > 0) {
 			for (auto&& i : eqStabilityValues) {
+				/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+				fprintf(pFile, "y(n): %s\n", std::to_string(283574).c_str());
+				fclose(pFile);*/
 				if (guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber]) {
 					if (i.isStable) {
 						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setTitle("Stable");
@@ -1929,6 +1932,16 @@ void ReverbNetworkEditor::updateGainValuesInOptionMenus(const int& moduleNumber,
 		dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + moduleNumber * MAXMODULEINPUTS + i])->getEntry(input + 1)->setTitle(temp.c_str());
 		dynamic_cast<COptionMenu*>(guiElements[id_mixer_optionMenu_inputSelectFirst + moduleNumber * MAXMODULEINPUTS + i])->setDirty();
 	}
+}
+
+void ReverbNetworkEditor::updateEqualizerStability(const int moduleNumber, const bool isStable) {
+	std::mutex mutex;
+	mutex.lock();
+	if (guiElements[id_equalizer_button_stabilityFirst]) {
+		//guiElements[id_equalizer_button_stabilityFirst]->setVisible(isStable);
+		std::cout << "SF";
+	}
+	mutex.unlock();
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

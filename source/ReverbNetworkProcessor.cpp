@@ -41,6 +41,7 @@
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 #include <algorithm>
 #include <string>
+#include <mutex>
 
 #include "ReverbNetworkDefines.h"
 #include "ReverbNetworkEnums.h"
@@ -49,6 +50,9 @@
 #include "ConnectionMatrix.h"
 #include "ValueConversion.h"
 #include "PresetReadWrite.h"
+
+//#include "TimerThread.h"
+
 
 #ifdef LOGGING
 #include "Logging.h"
@@ -62,7 +66,6 @@ namespace Vst {
 
 //-----------------------------------------------------------------------------
 ReverbNetworkProcessor::ReverbNetworkProcessor() {
-
 	setControllerClass(ReverbNetworkControllerUID);
 
 	moduleInputBuffer = new double[MAXMODULENUMBER]();
@@ -76,7 +79,6 @@ ReverbNetworkProcessor::ReverbNetworkProcessor() {
 	eqStabilityOldValues.resize(MAXMODULENUMBER, true);
 
 	preset = new PresetReadWrite();
-
 }
 
 ReverbNetworkProcessor::~ReverbNetworkProcessor() {
@@ -88,6 +90,8 @@ ReverbNetworkProcessor::~ReverbNetworkProcessor() {
 		delete[] moduleOutputBuffer;
 		moduleOutputBuffer = nullptr;
 	}
+	timerUpdateController->stop();
+	//updateControllerThreadRunning = false;
 	/*if (connectionMatrix) {
 		delete connectionMatrix;
 		connectionMatrix = nullptr;
@@ -132,6 +136,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 		connectionMatrix->setVstToModuleConnection(0, 1, 0);
 		connectionMatrix->setModuleToVstConnection(0, 0);
 		connectionMatrix->setModuleToVstConnection(1, 1);*/
+
+		// Create Timer
+		timerUpdateController = Timer::create(this, 500);
 	}
 	return result;
 }
@@ -246,6 +253,30 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 		}
 		*/
 	}
+
+	//if (!updateControllerThreadRunning) {
+	//	updateControllerThreadRunning = true;
+	//	updateControllerThread = std::thread([this]() { // []( is C++11 Lamdba => Passing object to the thread
+	//		updateController();
+	//	});
+	//	// Detach the thread => It runs completely independent from this thread
+	//	updateControllerThread.detach();
+	//}
+	////timer = TimerThread;
+	//TimerThread timer
+	////std::function<void(void)> f = std::bind(&ReverbNetworkProcessor::updateController, this);
+	//timer.start(1000, []() {
+	//	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	//	fprintf(pFile, "%s\n", std::to_string(111111).c_str());
+	//	fclose(pFile);
+	//});
+	///*std::thread updateControllerThread([&]() {
+	//	std::this_thread::sleep_for(std::chrono::seconds(2));
+	//	timer2.stop();
+	//});*/
+
+	
+	
 	return AudioEffect::setActive (state);
 }
 
@@ -269,6 +300,64 @@ tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 tresult PLUGIN_API ReverbNetworkProcessor::getState(IBStream* state)
 {
 	return preset->getParamterState(state);
+}
+
+void ReverbNetworkProcessor::onTimer(Timer* timer) {
+	/*bool finishThread = false;
+	while (true) {
+		if (this) {
+			FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "%s\n", std::to_string(111111).c_str());
+			fclose(pFile);
+			std::mutex mutex;
+			mutex.lock();
+			if (!updateControllerThreadRunning) finishThread = true;
+			for (unsigned int i = 0; i < eqStabilityValues.size(); ++i) {
+				if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
+					EqualizerStability* eqStability = new EqualizerStability();
+					eqStability->moduleNumber = i;
+					eqStability->isStable = eqStabilityValues[i];
+					IMessage* message = allocateMessage();
+					message->setMessageID("EqStability");
+					message->getAttributes()->setBinary(0, eqStability, sizeof(*eqStability));
+					tresult result = sendMessage(message);
+					message->release();
+				}
+			}
+			mutex.unlock();
+			if (finishThread) return;
+			std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+		}
+		else {
+			FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "%s\n", std::to_string(2222).c_str());
+			fclose(pFile);
+			return;
+		}
+	}*/
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "%s\n", std::to_string(111111).c_str());
+	fclose(pFile);*/
+	for (unsigned int i = 0; i < eqStabilityValues.size(); ++i) {
+		// Check if stability has changed in the modules
+		if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
+			// If so prepare new message for the controller
+			EqualizerStability* eqStability = new EqualizerStability();
+			eqStability->moduleNumber = i;
+			eqStability->isStable = eqStabilityValues[i];
+			// Create VST message
+			IMessage* message = allocateMessage();
+			message->setMessageID("EqStability");
+			// Set message content
+			message->getAttributes()->setBinary(0, eqStability, sizeof(*eqStability));
+			// Send the message to the controller
+			tresult result = sendMessage(message);
+			// Delete message
+			message->release();
+			// Update stability values
+			eqStabilityOldValues[i] = eqStabilityValues[i];
+		}
+	}
 }
 
 
@@ -620,7 +709,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						ppmOldValues[i] = ppmValues[i];
 					}
 				}
-				if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
+				/*if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
 					int32 index = 0;
 					IParamValueQueue* paramQueue = paramChanges->addParameterData(PARAM_EQSTABILITY_FIRST + i, index);
 					if (paramQueue) {
@@ -628,7 +717,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						paramQueue->addPoint(0, eqStabilityValues[i], index2);
 						eqStabilityOldValues[i] = eqStabilityValues[i];
 					}
-				}
+				}*/
 			}
 		}
 	}

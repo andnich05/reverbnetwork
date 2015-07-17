@@ -233,6 +233,7 @@
     <ClCompile Include="source\GuiWorkspaceView.cpp" />
     <ClCompile Include="source\GuiCustomValueEdit.cpp" />
     <ClCompile Include="source\GuiBaseAPModule.cpp" />
+    <ClCompile Include="source\TimerThread.cpp" />
     <ClCompile Include="source\ValueConversion.cpp" />
     <ClCompile Include="source\GainModule.cpp" />
     <ClCompile Include="source\EqualizerModule.cpp" />
@@ -284,6 +285,7 @@
     <ClInclude Include="source\GuiCustomValueEdit.h" />
     <ClInclude Include="source\GuiBaseAPModule.h" />
     <ClInclude Include="source\ReverbNetworkEnums.h" />
+    <ClInclude Include="source\TimerThread.h" />
     <ClInclude Include="source\ValueConversion.h" />
     <ClInclude Include="source\GainModule.h" />
     <ClInclude Include="source\EqualizerModule.h" />

@@ -469,24 +469,31 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 
 // Problems with thread safety when changing member variables of the Editor!
 tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
-	//if (!message) return kMessageUnknown;
-	//if (strncmp(message->getMessageID(), "EqStability", 128) == 0) {
-	//	const void* ptr;
-	//	EqualizerStability eqStability;
-	//	uint32 size = sizeof(eqStability);
-	//	message->getAttributes()->getBinary(0, ptr, size);
-	//	if (ptr) {
-	//		eqStability = *(EqualizerStability*)ptr;
-	//	}
-	//	for (int i = 0; i < viewsArray.size(); ++i) {
-	//		if (viewsArray.at(i)) {
-	//			//viewsArray.at(i)->updateEqualizerStability(eqStability.moduleNumber, eqStability.isStable);
-	//		}
-	//	}
-	//	
-	//	return kMessageNotified;
-	//}
+	if (!message) return kMessageUnknown;
+	if (strncmp(message->getMessageID(), "EqStability", 128) == 0) {
+		const void* ptr;
+		EqualizerStability eqStability;
+		uint32 size = sizeof(eqStability);
+		message->getAttributes()->getBinary(0, ptr, size);
+		if (ptr) {
+			eqStability = *(EqualizerStability*)ptr;
+		}
+		else {
+			return kMessageUnknown;
+		}
+		for (int i = 0; i < viewsArray.total(); ++i) {
+			if (viewsArray.at(i)) {
+				viewsArray.at(i)->updateEditorFromController(PARAM_EQSTABILITY_FIRST + eqStability.moduleNumber, eqStability.isStable);
+			}
+		}
+		//delete ptr;
+		return kMessageNotified;
+	}
 	return kMessageUnknown;
+	//FILE* pFile = fopen("E:\\logVst.txt", "a");
+	//			fprintf(pFile, "y(n): %s\n", message->getMessageID());
+	//			fclose(pFile);
+	//			return kMessageNotified;
 }
 
 ParamValue PLUGIN_API ReverbNetworkController::getParamNormalized(ParamID tag)

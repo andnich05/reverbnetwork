@@ -41,6 +41,12 @@
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include <vector>
 #include <memory>
+#include <thread>
+
+
+#include "TimerThread.h"
+
+#include "base/source/timer.h"
 
 class BaseAPModule;
 class ConnectionMatrix;
@@ -50,7 +56,7 @@ namespace Steinberg {
 namespace Vst {
 
 //-----------------------------------------------------------------------------
-class ReverbNetworkProcessor : public AudioEffect
+class ReverbNetworkProcessor : public AudioEffect, public ITimerCallback
 {
 public:
 	ReverbNetworkProcessor();
@@ -89,6 +95,10 @@ private:
 	std::vector<bool> eqStabilityOldValues;
 
 	PresetReadWrite* preset;
+
+	// From ITimerCallback (is called by the timer)
+	virtual void onTimer(Timer* timer);
+	Timer* timerUpdateController;
 };
 
 
