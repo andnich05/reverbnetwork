@@ -28,6 +28,7 @@ namespace VSTGUI {
 		inline const CPoint& getMouseMoveOutputRect() { return mouseMoveOutputRect; }
 		inline const CPoint& getMouseUpCoordinates() { return mouseUpCoordinates; }
 		inline const CPoint& getMouseDownCoordinates() { return mouseDownCoordinates; }
+		inline const int& getClickedInput() { return clickedInput; }
 
 
 		// Overrides
@@ -62,6 +63,8 @@ namespace VSTGUI {
 		bool mouseDownInOutputRect;
 		CPoint mouseMoveOutputRect;
 		CPoint mouseUpCoordinates;
+
+		int clickedInput;
 	};
 
 }

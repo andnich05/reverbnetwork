@@ -15,6 +15,7 @@ namespace VSTGUI {
 		connections = new GuiGraphicsConnections(size, numberOfModules);
 		connections->setMouseEnabled(false);
 		this->addView(connections);
+		drawnConnection = Connection();
 	}
 
 
@@ -266,18 +267,6 @@ namespace VSTGUI {
 		for (unsigned int i = 0; i < modules.size(); ++i) {
 			if (sender == modules[i]) {
 				if (message == "StartMouseLine") {
-					// ToDo: Click on an input set the connection to 0.0
-					/*for (unsigned int j = 0; j < modules.size(); ++j) {
-						for (unsigned int k = 0; k < numberOfInputs; ++k) {
-							if (modules[i]->getMouseDownCoordinates().isInside(modules[j]->getInputRect(k))) {
-								modules[i]->updateInput(k, 0.0);
-								FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-									fprintf(pFile, "y(n): %s\n", std::to_string(this->getWidth()).c_str());
-									fclose(pFile);
-								return kMessageNotified;
-							}
-						}
-					}*/
 					connections->updateMouseConnectionLine(modules[i]->getOutputRectCenter(), modules[i]->getOutputRectCenter());
 					return kMessageNotified;
 				}
@@ -289,8 +278,8 @@ namespace VSTGUI {
 					for (unsigned int j = 0; j < modules.size(); ++j) {
 						if (modules[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i) == 0.0) {
-								drawnConnection = Connection(i, j);
-								editor->notify(this, "NewConnectionModuleToModule");
+								drawnConnection = Connection(i, j, true);
+								editor->notify(this, "ConnectionToModule");
 								connections->updateMouseConnectionLine(0, 0);
 								return kMessageNotified;
 							}
@@ -298,12 +287,17 @@ namespace VSTGUI {
 					}
 					for (unsigned int j = 0; j < vstOutputs.size(); ++j) {
 						if (modules[i]->getMouseUpCoordinates().isInside(vstOutputs[j]->getViewSize())) {
-							drawnConnection = Connection(i, j);
-							editor->notify(this, "NewConnectionModuleToVst");
+							drawnConnection = Connection(i, j, true);
+							editor->notify(this, "ConnectionToVst");
 							connections->updateMouseConnectionLine(0, 0);
 							return kMessageNotified;
 						}
 					}
+				}
+				else if (message == "RemoveConnection") {
+					drawnConnection = Connection(modules[i]->getClickedInput(), i, false);
+					editor->notify(this, "ConnectionToModule");
+					return kMessageNotified;
 				}
 			}
 		}
@@ -322,8 +316,8 @@ namespace VSTGUI {
 					for (unsigned int j = 0; j < modules.size(); ++j) {
 						if (vstInputs[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i + numberOfModules) == 0.0) {
-								drawnConnection = Connection(i, j);
-								editor->notify(this, "NewConnectionVstToModule");
+								drawnConnection = Connection(i + numberOfModules, j, true);
+								editor->notify(this, "ConnectionToModule");
 								connections->updateMouseConnectionLine(0, 0);
 								return kMessageNotified;
 							}
@@ -331,8 +325,8 @@ namespace VSTGUI {
 					}
 					for (unsigned int j = 0; j < vstOutputs.size(); ++j) {
 						if (vstInputs[i]->getMouseUpCoordinates().isInside(vstOutputs[j]->getViewSize())) {
-							drawnConnection = Connection(i, j);
-							editor->notify(this, "NewConnectionVstToVst");
+							drawnConnection = Connection(i + numberOfModules, j, true);
+							editor->notify(this, "ConnectionToVst");
 							connections->updateMouseConnectionLine(0, 0);
 							return kMessageNotified;
 						}
@@ -340,6 +334,17 @@ namespace VSTGUI {
 				}
 			}
 		}
+
+		for (unsigned int i = 0; i < vstOutputs.size(); ++i) {
+			if (sender == vstOutputs[i]) {
+				if (message == "RemoveConnection") {
+					drawnConnection = Connection(vstOutputs[i]->getClickedInput(), i, false);
+					editor->notify(this, "ConnectionToVst");
+					return kMessageNotified;
+				}
+			}
+		}
+
 		connections->updateMouseConnectionLine(0, 0);
 		return kMessageNotified;
 	}

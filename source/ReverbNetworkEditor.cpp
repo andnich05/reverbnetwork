@@ -1484,52 +1484,59 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 
 	}
 	else if (sender == graphicsView) {
-		if (message == "NewConnectionModuleToModule") {
+		if (message == "ConnectionToModule") {
 			Connection connection = graphicsView->getDrawnConnection();
-			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, 1.0);
-			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, 1.0);
-			updateGainValuesInOptionMenus(connection.destination, connection.source, 1.0);
-			updateGraphicsViewModule(connection.destination, connection.source, 1.0);
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain((float)connection.establish));
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain((float)connection.establish));
+			updateGainValuesInOptionMenus(connection.destination, connection.source, (double)connection.establish);
+			updateGraphicsViewModule(connection.destination, connection.source, (double)connection.establish);
 			// Check if the input is already selected in an input menu
 			for (int i = 0; i < MAXMODULEINPUTS; ++i) {
 				if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1) {
 					// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
-					guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]->setValue(1.0);
+					guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]->setValue(ValueConversion::plainToNormInputGain((float)connection.establish));
 					valueChanged(guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]);
 				}
 			}
 			splitView->invalid();
-			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(id_mixer_knob_gainFirst + connection.destination * MAXINPUTS + connection.source).c_str());
+			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string(connection.destination).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string(connection.source).c_str());
+			fprintf(pFile, "y(n): %s\n", std::to_string((float)connection.establish).c_str());
 			fclose(pFile);*/
 		}
-		else if (message == "NewConnectionModuleToVst") {
+		else if (message == "ConnectionToVst") {
 			Connection connection = graphicsView->getDrawnConnection();
-			guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1);
+			if (connection.establish) {
+				guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1);
+			}
+			else {
+				guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(0);
+			}
 			valueChanged(guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]);
 			splitView->invalid();
 		}
-		else if (message == "NewConnectionVstToModule") {
-			Connection connection = graphicsView->getDrawnConnection();
-			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, 1.0);
-			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, 1.0);
-			updateGainValuesInOptionMenus(connection.destination, connection.source + MAXMODULENUMBER, 1.0);
-			updateGraphicsViewModule(connection.destination, connection.source + MAXMODULENUMBER, 1.0);
-			for (int i = 0; i < MAXMODULEINPUTS; ++i) {
-				if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1 + MAXMODULENUMBER) {
-					// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
-					guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]->setValue(1.0);
-					valueChanged(guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]);
-				}
-			}
-			splitView->invalid();
-		}
-		else if (message == "NewConnectionVstToVst") {
+		//else if (message == "ConnectionVstToModule") {
+		//	Connection connection = graphicsView->getDrawnConnection();
+		//	controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, connection.establish);
+		//	controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, connection.establish);
+		//	updateGainValuesInOptionMenus(connection.destination, connection.source + MAXMODULENUMBER, connection.establish);
+		//	updateGraphicsViewModule(connection.destination, connection.source + MAXMODULENUMBER, connection.establish);
+		//	for (int i = 0; i < MAXMODULEINPUTS; ++i) {
+		//		if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1 + MAXMODULENUMBER) {
+		//			// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
+		//			guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]->setValue(connection.establish);
+		//			valueChanged(guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]);
+		//		}
+		//	}
+		//	splitView->invalid();
+		//}
+		/*else if (message == "ConnectionVstToVst") {
 			Connection connection = graphicsView->getDrawnConnection();
 			guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1 + MAXMODULENUMBER);
 			valueChanged(guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]);
 			splitView->invalid();
-		}
+		}*/
 	}
 	return VSTGUIEditor::notify(sender, message);
 } 

@@ -27,6 +27,8 @@ namespace VSTGUI {
 		mouseDownInOutputRect = false;
 		mouseMoveOutputRect = 0;
 
+		clickedInput = 0;
+
 		updateShape();
 	}
 
@@ -108,6 +110,9 @@ namespace VSTGUI {
 				inputRects[i] = CRect(CPoint(0, handleRegion.getHeight() + spacing).offset(0, numberOfUsedInputs * (spacing + inoutRectHeight)), CPoint(inoutRectWidth, inoutRectHeight));
 				++numberOfUsedInputs;
 			}
+			else {
+				inputRects[i] = 0;
+			}
 		}
 		mainRegion = CRect(CPoint(0, handleRegion.getHeight()), CPoint(handleRegion.getWidth(), spacing + numberOfUsedInputs * (spacing + inoutRectHeight) + spacing));
 		completeRegion = CRect(CPoint(0, 0), CPoint(handleRegion.getWidth(), handleRegion.getHeight() + mainRegion.getHeight()));
@@ -154,6 +159,7 @@ namespace VSTGUI {
 		// Reference conversion!
 		frameToLocal(where);
 
+		// Start drawing new connection line at the output rect
 		if (where.isInside(outputRect)) {
 			if (!mouseDownInOutputRect) {
 				getParentView()->notify(this, "StartMouseLine");
@@ -161,7 +167,7 @@ namespace VSTGUI {
 				return kMouseEventHandled;
 			}
 		}
-
+		// Moving the modules around
 		if (where.isInside(handleRegion)) {
 			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 			fprintf(pFile, "y(n): %s\n", "INSIDE");
@@ -169,6 +175,15 @@ namespace VSTGUI {
 			mouseDownInHandleRegion = true;
 			mouseDownCoordinates = where;
 			return kMouseEventHandled;
+		}
+		// Remove connection to an input
+		for (unsigned int i = 0; i < inputRects.size(); ++i) {
+			if (where.isInside(inputRects[i])) {
+				inputGainValues[i] = 0.0;
+				clickedInput = i;
+				getParentView()->notify(this, "RemoveConnection");
+				return kMouseEventHandled;
+			}
 		}
 
 		return kMouseEventHandled;

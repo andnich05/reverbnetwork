@@ -9,10 +9,11 @@ namespace VSTGUI {
 	class GuiGraphicsConnections;
 
 	struct Connection {
-		Connection(int source = 0, int destination = 0)
-			: source(source), destination(destination) {}
+		Connection(int source = 0, int destination = 0, bool establish = true)
+			: source(source), destination(destination), establish(establish) {}
 		int source;
 		int destination;
+		bool establish; // True if establish, false if remove connection
 	};
 
 
