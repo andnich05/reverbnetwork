@@ -34,10 +34,20 @@ void SchroederAllpass::doProcessing(double& sample) {
 	
 	// Read the left node value from last time, it is now the right node value
 	nodeRight = buffer[readPointer];
+
+	//---
+	// Wrong signs!
+	//// Calculate the current left node value
+	//nodeLeft = sample - gain * nodeRight;
+	//// Calculate the output value
+	//sample = gain * nodeLeft + nodeRight;
+	//---
+
 	// Calculate the current left node value
-	nodeLeft = sample - gain * nodeRight;
+	nodeLeft = sample + gain * nodeRight;
 	// Calculate the output value
-	sample = gain * nodeLeft + nodeRight;
+	sample = -gain * nodeLeft + nodeRight;
+
 	// Save left node value (it will become the right node value next time)
 	buffer[writePointer] = nodeLeft;
 	// Increment write pointer
