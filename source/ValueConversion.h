@@ -53,6 +53,7 @@ public:
 	static bool textEditValueToStringConversion(float value, char utf8String[256], void* userData);
 
 	static double getMaxEqFrequency();
+	static bool checkEqStability(const double& b1, const double& b2);
 
 private:
 	static double sampleRate;

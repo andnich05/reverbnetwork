@@ -68,12 +68,12 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			for (uint32 j = 0; j < MAXMODULEINPUTS; ++j) {
 				std::string temp = "";
-				temp.append("Module ");
+				temp.append("APM");
 				temp.append(std::to_string(i));
-				temp.append(" - Mixer Input");
+				temp.append("-MXInput");
 				temp.append(std::to_string(j));
-				temp.append("Select");
-				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTSELECT_FIRST + pidCounter);
+				temp.append("-Select");
+				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTSELECT_FIRST + pidCounter, 0, ParameterInfo::kIsList | ParameterInfo::kIsReadOnly);
 				// Not connected is the first entry
 				parameter->appendString(USTRING("<Not Connected>"));
 				// Module outputs come first
@@ -100,12 +100,12 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			for (uint32 j = 0; j < MAXINPUTS; ++j) {
 				std::string temp = "";
-				temp.append("Module ");
+				temp.append("APM");
 				temp.append(std::to_string(i));
-				temp.append(" - Mixer Input ");
+				temp.append("MXInput");
 				temp.append(std::to_string(j));
-				temp.append(" Gain");
-				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING(UNIT_MIXERGAIN), MIN_MIXERGAIN, MAX_MIXERGAIN, DEF_MIXERGAIN);
+				temp.append("-Gain");
+				RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_MIXERGAIN_FIRST + pidCounter, USTRING(UNIT_MIXERGAIN), MIN_MIXERGAIN, MAX_MIXERGAIN, DEF_MIXERGAIN, 0, ParameterInfo::kCanAutomate);
 				EditControllerEx1::parameters.addParameter(parameter);
 				++pidCounter;
 			}
@@ -115,12 +115,12 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			for (uint32 j = 0; j < MAXINPUTS; ++j) {
 				std::string temp = "";
-				temp.append("Module ");
+				temp.append("APM");
 				temp.append(std::to_string(i));
-				temp.append(" - Mixer Input ");
+				temp.append("-MXInput");
 				temp.append(std::to_string(j));
-				temp.append(" Mute");
-				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTMUTED_FIRST + pidCounter);
+				temp.append("-Mute");
+				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTMUTED_FIRST + pidCounter, 0, ParameterInfo::kCanAutomate);
 				parameter->appendString(USTRING("False"));
 				parameter->appendString(USTRING("True"));
 				EditControllerEx1::parameters.addParameter(parameter);
@@ -132,12 +132,12 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			for (uint32 j = 0; j < MAXINPUTS; ++j) {
 				std::string temp = "";
-				temp.append("Module ");
+				temp.append("APM");
 				temp.append(std::to_string(i));
-				temp.append(" - Mixer Input ");
+				temp.append("-MXInput");
 				temp.append(std::to_string(j));
-				temp.append(" Solo");
-				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTSOLOED_FIRST + pidCounter);
+				temp.append("-Solo");
+				StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MIXERINPUTSOLOED_FIRST + pidCounter, 0, ParameterInfo::kCanAutomate);
 				parameter->appendString(USTRING("False"));
 				parameter->appendString(USTRING("True"));
 				EditControllerEx1::parameters.addParameter(parameter);
@@ -147,19 +147,19 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// QUANTIZER parameters
 		// Quantizer bitdepth
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Quantizer Bitdepth");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBITDEPTH_FIRST + i, USTRING(UNIT_QUANTIZERBITDEPTH), MIN_QUANTIZERBITDEPTH, MAX_QUANTIZERBITDEPTH, DEF_QUANTIZERBITDEPTH, 31);
+			temp.append("-QUANT-Quantization");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBITDEPTH_FIRST + i, USTRING(UNIT_QUANTIZERBITDEPTH), MIN_QUANTIZERBITDEPTH, MAX_QUANTIZERBITDEPTH, DEF_QUANTIZERBITDEPTH, 31, ParameterInfo::kCanAutomate);
 			parameter->setPrecision(0);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Quantizer Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append("Quantizer Bypass");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBYPASS_FIRST + i);
+			temp.append("-QUANT-Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_QUANTIZERBYPASS_FIRST + i, 0, ParameterInfo::kCanAutomate);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
@@ -169,10 +169,10 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// EQUALIZER parameters
 		// Equalizer Filter Type
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM ";
 			temp.append(std::to_string(i));
-			temp.append("Equalizer Filter Type");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQFILTERTYPE_FIRST + i);
+			temp.append("-EQ-FilterType");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQFILTERTYPE_FIRST + i, 0, ParameterInfo::kIsList);
 			parameter->appendString(USTRING("Low Pass"));
 			parameter->appendString(USTRING("High Pass"));
 			parameter->appendString(USTRING("Band Pass/Stop"));
@@ -183,69 +183,69 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		}
 		// Equalizer Center Frequency
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Equalizer Center Frequency");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING(UNIT_EQCENTERFREQ), MIN_EQCENTERFREQ, MAX_EQCENTERFREQ, DEF_EQCENTERFREQ);
+			temp.append("-EQ-Frequency");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQCENTERFREQ_FIRST + i, USTRING(UNIT_EQCENTERFREQ), MIN_EQCENTERFREQ, MAX_EQCENTERFREQ, DEF_EQCENTERFREQ, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Q Factor
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM ";
 			temp.append(std::to_string(i));
-			temp.append(" Equalizer Q Factor");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(UNIT_EQQFACTOR), MIN_EQQFACTOR, MAX_EQQFACTOR, DEF_EQQFACTOR);
+			temp.append("-EQ-QFactor");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQQFACTOR_FIRST + i, USTRING(UNIT_EQQFACTOR), MIN_EQQFACTOR, MAX_EQQFACTOR, DEF_EQQFACTOR, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Gain
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Equalizer Gain");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(UNIT_EQGAIN), MIN_EQGAIN, MAX_EQGAIN, DEF_EQGAIN);
+			temp.append("-EQ-Gain");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(UNIT_EQGAIN), MIN_EQGAIN, MAX_EQGAIN, DEF_EQGAIN, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		for (uint32 i = PARAM_EQCOEFFICIENTA0_FIRST; i <= PARAM_EQCOEFFICIENTA0_LAST; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA0_FIRST));
-			temp.append("Equalizer a0 coefficient");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			temp.append("-EQ-a0");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		for (uint32 i = PARAM_EQCOEFFICIENTA1_FIRST; i <= PARAM_EQCOEFFICIENTA1_LAST; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA1_FIRST));
-			temp.append("Equalizer a1 coefficient");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			temp.append("-EQ-a1");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		for (uint32 i = PARAM_EQCOEFFICIENTA2_FIRST; i <= PARAM_EQCOEFFICIENTA2_LAST; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA2_FIRST));
-			temp.append("Equalizer a2 coefficient");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			temp.append("-EQ-a2");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		for (uint32 i = PARAM_EQCOEFFICIENTB1_FIRST; i <= PARAM_EQCOEFFICIENTB1_LAST; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTB1_FIRST));
-			temp.append("Equalizer b1 coefficient");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			temp.append("-EQ-b1");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		for (uint32 i = PARAM_EQCOEFFICIENTB2_FIRST; i <= PARAM_EQCOEFFICIENTB2_LAST; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTB2_FIRST));
-			temp.append("Equalizer b2 coefficient");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS);
+			temp.append("-EQ-b2");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Equalizer Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append("Equalizer Bypass");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQBYPASS_FIRST + i);
+			temp.append("-EQ-Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQBYPASS_FIRST + i, 0, ParameterInfo::kCanAutomate);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
@@ -254,26 +254,26 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// ALLPASS paramters
 		// Allpass delay
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Allpass Delay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING(UNIT_ALLPASSDELAY), MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, DEF_ALLPASSDELAY);
+			temp.append("-ALLPASS-Delay");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDELAY_FIRST + i, USTRING(UNIT_ALLPASSDELAY), MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, DEF_ALLPASSDELAY, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass decay
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Allpass Decay");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING(UNIT_ALLPASSDECAY), MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, DEF_ALLPASSDECAY);
+			temp.append("-ALLPASS-Decay");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING(UNIT_ALLPASSDECAY), MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, DEF_ALLPASSDECAY, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append("Allpass Bypass");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSBYPASS_FIRST + i);
+			temp.append("-ALLPASS-Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSBYPASS_FIRST + i, 0, ParameterInfo::kCanAutomate);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
@@ -283,28 +283,28 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// OUTPUT parameters
 		// Gain
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Output Gain");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(UNIT_OUTPUTGAIN), MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, DEF_OUTPUTGAIN);
+			temp.append("-OUT-Gain");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(UNIT_OUTPUTGAIN), MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, DEF_OUTPUTGAIN, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append("Output Gain Bypass");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_OUTBYPASS_FIRST + i);
+			temp.append("-OUT-Bypass");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_OUTBYPASS_FIRST + i, 0, ParameterInfo::kCanAutomate);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			std::string temp = "Module ";
+			std::string temp = "APM";
 			temp.append(std::to_string(i));
-			temp.append(" Visible");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MODULEVISIBLE_FIRST + i);
+			temp.append("-Visible");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_MODULEVISIBLE_FIRST + i, 0, ParameterInfo::kIsReadOnly);
 			parameter->appendString(USTRING("False"));
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
@@ -314,10 +314,10 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		// VST output select
 		pidCounter = 0;
 		for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
-			std::string temp = "VST Output ";
+			std::string temp = "VSTOUT";
 			temp.append(std::to_string(i));
-			temp.append(" Select");
-			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_GENERALVSTOUTPUTSELECT_FIRST + i);
+			temp.append("-Select");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, 0, ParameterInfo::kIsList);
 			// Not connected is the first entry
 			parameter->appendString(USTRING("<Not Connected>"));
 			// Module outputs come first
@@ -454,7 +454,7 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 
 	// Update the GUI with values coming from Processor
-	if ((tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) || (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST)) {
+	//if ((tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) || (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST)) {
 		for (int32 i = 0; i < viewsArray.total(); i++)
 		{
 			if (viewsArray.at(i))
@@ -462,7 +462,7 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 				viewsArray.at(i)->updateEditorFromController(tag, value);
 			}
 		}
-	}
+	//}
 
 	return result;
 }
@@ -514,6 +514,23 @@ std::string ReverbNetworkController::getVersion() {
 	return pluginVersion;
 }
 
+tresult PLUGIN_API ReverbNetworkController::queryInterface(const char* iid, void** obj)
+{
+	QUERY_INTERFACE(iid, obj, IMidiMapping::iid, IMidiMapping)
+		return EditControllerEx1::queryInterface(iid, obj);
+}
+
+tresult PLUGIN_API ReverbNetworkController::getMidiControllerAssignment(int32 busIndex, int16 channel,
+	CtrlNumber midiControllerNumber, ParamID& tag)
+{
+	// we support for the Gain parameter all MIDI Channel but only first bus (there is only one!)
+	/*if (busIndex == 0 && midiControllerNumber == kCtrlVolume)
+	{
+		tag = kGainId;
+		return kResultTrue;
+	}*/
+	return kResultFalse;
+}
 
 #if TARGET_OS_IPHONE
 //-----------------------------------------------------------------------------

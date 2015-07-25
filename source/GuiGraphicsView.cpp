@@ -16,6 +16,7 @@ namespace VSTGUI {
 		connections->setMouseEnabled(false);
 		this->addView(connections);
 		drawnConnection = Connection();
+		moduleClicked = 0;
 	}
 
 
@@ -35,7 +36,7 @@ namespace VSTGUI {
 
 	void GuiGraphicsView::createModule(const std::string& title, const int& id, const int& numberOfInputs) {
 		if (id < modules.size()) {
-			GuiGraphicsModule* module = new GuiGraphicsModule(title, numberOfInputs, true);
+			GuiGraphicsModule* module = new GuiGraphicsModule(title, numberOfInputs, true, true);
 			this->addView(module);
 			modules[id] = module;
 			// Connections should be at the top of the view
@@ -56,7 +57,7 @@ namespace VSTGUI {
 	void GuiGraphicsView::createVstInput() {
 		std::string title = "VST IN ";
 		title.append(std::to_string(vstInputs.size()));
-		GuiGraphicsModule* vstInput = new GuiGraphicsModule(title, 0, true);
+		GuiGraphicsModule* vstInput = new GuiGraphicsModule(title, 0, true, false);
 		this->addView(vstInput);
 		vstInput->setOutputName("VST IN");
 		vstInputs.push_back(vstInput);
@@ -67,7 +68,7 @@ namespace VSTGUI {
 	void GuiGraphicsView::createVstOutput() {
 		std::string title = "VST OUT ";
 		title.append(std::to_string(vstOutputs.size()));
-		GuiGraphicsModule* vstOutput = new GuiGraphicsModule(title, 1, false);
+		GuiGraphicsModule* vstOutput = new GuiGraphicsModule(title, 1, false, false);
 		this->addView(vstOutput);
 		std::vector<std::string> name;
 		name.push_back("VST OUT");
@@ -278,7 +279,7 @@ namespace VSTGUI {
 					for (unsigned int j = 0; j < modules.size(); ++j) {
 						if (modules[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i) == 0.0) {
-								drawnConnection = Connection(i, j, true);
+								drawnConnection = Connection(i, j, 1.0);
 								editor->notify(this, "ConnectionToModule");
 								connections->updateMouseConnectionLine(0, 0);
 								return kMessageNotified;
@@ -287,16 +288,26 @@ namespace VSTGUI {
 					}
 					for (unsigned int j = 0; j < vstOutputs.size(); ++j) {
 						if (modules[i]->getMouseUpCoordinates().isInside(vstOutputs[j]->getViewSize())) {
-							drawnConnection = Connection(i, j, true);
+							drawnConnection = Connection(i, j, 1.0);
 							editor->notify(this, "ConnectionToVst");
 							connections->updateMouseConnectionLine(0, 0);
 							return kMessageNotified;
 						}
 					}
 				}
-				else if (message == "RemoveConnection") {
-					drawnConnection = Connection(modules[i]->getClickedInput(), i, false);
+				/*else if (message == "RemoveConnection") {
+					drawnConnection = Connection(modules[i]->getInputToUpdate(), i, 0.0);
 					editor->notify(this, "ConnectionToModule");
+					return kMessageNotified;
+				}*/
+				else if (message == "UpdateGainValue") {
+					drawnConnection = Connection(modules[i]->getInputToUpdate(), i, modules[i]->getGainValue(modules[i]->getInputToUpdate()));
+					editor->notify(this, "ConnectionToModule");
+					return kMessageNotified;
+				}
+				else if (message == "DoubleClick") {
+					moduleClicked = i;
+					editor->notify(this, "OpenModuleDetailView");
 					return kMessageNotified;
 				}
 			}
@@ -316,7 +327,7 @@ namespace VSTGUI {
 					for (unsigned int j = 0; j < modules.size(); ++j) {
 						if (vstInputs[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i + numberOfModules) == 0.0) {
-								drawnConnection = Connection(i + numberOfModules, j, true);
+								drawnConnection = Connection(i + numberOfModules, j, 1.0);
 								editor->notify(this, "ConnectionToModule");
 								connections->updateMouseConnectionLine(0, 0);
 								return kMessageNotified;
@@ -325,7 +336,7 @@ namespace VSTGUI {
 					}
 					for (unsigned int j = 0; j < vstOutputs.size(); ++j) {
 						if (vstInputs[i]->getMouseUpCoordinates().isInside(vstOutputs[j]->getViewSize())) {
-							drawnConnection = Connection(i + numberOfModules, j, true);
+							drawnConnection = Connection(i + numberOfModules, j, 1.0);
 							editor->notify(this, "ConnectionToVst");
 							connections->updateMouseConnectionLine(0, 0);
 							return kMessageNotified;
@@ -337,8 +348,13 @@ namespace VSTGUI {
 
 		for (unsigned int i = 0; i < vstOutputs.size(); ++i) {
 			if (sender == vstOutputs[i]) {
-				if (message == "RemoveConnection") {
-					drawnConnection = Connection(vstOutputs[i]->getClickedInput(), i, false);
+				/*if (message == "RemoveConnection") {
+					drawnConnection = Connection(vstOutputs[i]->getInputToUpdate(), i, 0.0);
+					editor->notify(this, "ConnectionToVst");
+					return kMessageNotified;
+				}*/
+				if (message == "UpdateGainValue") {
+					drawnConnection = Connection(vstOutputs[i]->getInputToUpdate(), i, 0.0);
 					editor->notify(this, "ConnectionToVst");
 					return kMessageNotified;
 				}

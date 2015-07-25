@@ -53,7 +53,7 @@ namespace Vst {
 class ReverbNetworkEditor;
 
 //-----------------------------------------------------------------------------
-class ReverbNetworkController : public EditControllerEx1
+class ReverbNetworkController : public EditControllerEx1, public IMidiMapping
 {
 public:
 	
@@ -64,7 +64,7 @@ public:
 	IPlugView* PLUGIN_API createView (FIDString name) override;
 #endif
 
-	static FUnknown* createInstance(void*) { return (IEditController*)new ReverbNetworkController(); }
+	static FUnknown* createInstance(void*) { return (IEditController*)new ReverbNetworkController; }
 
 	void editorDestroyed(EditorView* editor) {} // nothing to do here
 	void editorAttached(EditorView* editor);
@@ -85,6 +85,11 @@ public:
 	static std::string getVersion();
 
 	tresult PLUGIN_API notify(IMessage* message);
+
+	DELEGATE_REFCOUNT(EditController)
+	tresult PLUGIN_API queryInterface(const char* iid, void** obj);
+	//---from IMidiMapping-----------------
+	tresult PLUGIN_API getMidiControllerAssignment(int32 busIndex, int16 channel, CtrlNumber midiControllerNumber, ParamID& tag);
 
 private:
 	TArray <ReverbNetworkEditor*> viewsArray;

@@ -1,7 +1,9 @@
 #ifndef REVERBNETWORKEDITOR_H
 #define REVERBNETWORKEDITOR_H
 
+#include "pluginterfaces/vst/ivstplugview.h"
 #include "public.sdk/source/vst/vstguieditor.h"
+#include "pluginterfaces/vst/ivstcontextmenu.h"
 
 #include "GuiBaseAPModule.h"
 #include "XmlPresetReadWrite.h"
@@ -14,7 +16,9 @@ namespace Vst {
 
 class ReverbNetworkEditor :
 	public VSTGUIEditor,
-	public CControlListener
+	public CControlListener,
+	public IParameterFinder,
+	public IContextMenuTarget
 
 {
 public:
@@ -53,9 +57,15 @@ public:
 	inline const EditorUserData& getUserData() const { return editorUserData; }
 	inline void setUserData(const EditorUserData& userData) { editorUserData = userData; applyUserData(); }
 	void applyUserData();
-
-	void updateEqualizerStability(const int moduleNumber, const bool isStable);
 	
+	DELEGATE_REFCOUNT(VSTGUIEditor)
+	tresult PLUGIN_API queryInterface(const char* iid, void** obj);
+
+	//---from IParameterFinder---------------
+	tresult PLUGIN_API findParameter(int32 xPos, int32 yPos, ParamID& resultTag);
+
+	//---from IContextMenuTarget---------------
+	tresult PLUGIN_API executeMenuItem(int32 tag);
 
 private:
 	
@@ -148,6 +158,9 @@ private:
 	void updateGraphicsViewModule(const int& moduleId, const int& input, const double& gainValue);
 
 	void updateGainValuesInOptionMenus(const int& moduleNumber, const int& input, const double& gainValue);
+
+	void updateEqStability(const int& moduleNumber, const bool& stable);
+	void openModuleDetailView(const int& moduleNumber, const bool& open);
 };
 
 }} // namespaces

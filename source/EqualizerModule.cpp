@@ -30,6 +30,12 @@ EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, 
 	xn2 = 0.0;
 	yn1 = 0.0;
 	yn2 = 0.0;
+
+	a0 = 0.0;
+	a1 = 0.0;
+	a2 = 0.0;
+	b1 = 0.0;
+	b2 = 0.0;
 	
 	K = 0.0;
 	oneDividedByQ = 1 / qFactor;
@@ -209,6 +215,14 @@ const bool& EqualizerModule::checkStability() {
 			stable = true;
 		}
 	}
+	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", "------------");
+	fprintf(pFile, "y(n): %s\n", std::to_string(a0).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(a1).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(a2).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(b1).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(b2).c_str());
+	fclose(pFile);
 	return stable;
 }
 

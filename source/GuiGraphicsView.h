@@ -9,11 +9,12 @@ namespace VSTGUI {
 	class GuiGraphicsConnections;
 
 	struct Connection {
-		Connection(int source = 0, int destination = 0, bool establish = true)
-			: source(source), destination(destination), establish(establish) {}
+		Connection(int source = 0, int destination = 0, double gainValue = 1.0)
+			: source(source), destination(destination), gainValue(gainValue) {}
 		int source;
 		int destination;
-		bool establish; // True if establish, false if remove connection
+		//bool establish; // True if establish, false if remove connection
+		double gainValue;
 	};
 
 
@@ -38,6 +39,7 @@ namespace VSTGUI {
 		virtual void rearrangeModules();
 
 		inline const Connection& getDrawnConnection() { return drawnConnection; }
+		inline const int& getModuleClicked() { return moduleClicked; }
 
 		// Overrides
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);
@@ -65,6 +67,9 @@ namespace VSTGUI {
 		CBaseObject* editor;
 
 		Connection drawnConnection;
+
+		int moduleClicked;
+
 	};
 
 }

@@ -2,16 +2,22 @@
 #include "ReverbNetworkDefines.h"
 #include "../vstgui4/vstgui/lib/cdrawcontext.h"
 #include "../vstgui4/vstgui/lib/cbitmap.h"
+#include "../vstgui4/vstgui/lib/cframe.h"
 #include <sstream>
 #include <iomanip>
+#include "ValueConversion.h"
 
 namespace VSTGUI {
+
+#ifndef FOREACHSUBVIEW_REVERSE
+#define FOREACHSUBVIEW_REVERSE(reverse) ChildViewConstIterator it; ChildViewConstReverseIterator rit; if (reverse) rit = children.rbegin (); else it = children.begin (); while (reverse ? rit != children.rend () : it != children.end ()) { CView* pV; if (reverse) {	pV = (*rit); rit++; } else { pV = (*it); it++; } {
+#endif
 
 	const int inoutRectWidth = 8;
 	const int inoutRectHeight = 10;
 	const int spacing = 2;
 
-	GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput)
+	GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput, const bool& hasGainValue)
 		: CViewContainer(CRect(0, 0, 0, 0)), title(title), numberOfInputs(numberOfInputs), hasOutput(hasOutput) {
 
 		//enabled = true;
@@ -19,6 +25,32 @@ namespace VSTGUI {
 		inputsEnabled.resize(numberOfInputs, false);
 		inputGainValues.resize(numberOfInputs, 0.0);
 		inputRects.resize(numberOfInputs, CRect(0, 0, 0, 0));
+		
+		for (int i = 0; i < numberOfInputs; ++i) {
+			CTextLabel* textLabelInputName = new CTextLabel(CRect(CPoint(0, 0), CPoint(50, 12)), "");
+			textLabelInputName->setBackColor(CColor(0, 0, 0, 0));
+			textLabelInputName->setFrameColor(CColor(0, 0, 0, 0));
+			textLabelInputName->setFont(kNormalFontSmaller);
+			textLabelInputName->setAntialias(false);
+			this->addView(textLabelInputName);
+			textLabelInputName->setVisible(false);
+			inputNames.push_back(textLabelInputName);
+
+			if (hasGainValue) {
+				CTextEdit* textEditGainValue = new CTextEdit(CRect(CPoint(0, 0), CPoint(30, 12)), this, i, "");
+				textEditGainValue->setBackColor(CColor(0, 0, 0, 0));
+				textEditGainValue->setFrameColor(CColor(0, 0, 0, 0));
+				textEditGainValue->setAntialias(false);
+				textEditGainValue->setFont(kNormalFontSmaller);
+				textEditGainValue->setMin(MIN_MIXERGAIN);
+				textEditGainValue->setMax(MAX_MIXERGAIN);
+				textEditGainValue->setStringToValueProc(ValueConversion::textEditStringToValueConversion);
+				textEditGainValue->setValueToStringProc(ValueConversion::textEditValueToStringConversion);
+				this->addView(textEditGainValue);
+				textEditGainValue->setVisible(false);
+				textEditsGainValues.push_back(textEditGainValue);
+			}
+		}
 
 		mouseDownCoordinates = CPoint(0, 0);
 		mouseUpCoordinates = CPoint(0, 0);
@@ -27,17 +59,21 @@ namespace VSTGUI {
 		mouseDownInOutputRect = false;
 		mouseMoveOutputRect = 0;
 
-		clickedInput = 0;
+		inputToUpdate = 0;
 
 		updateShape();
 	}
 
 	GuiGraphicsModule::~GuiGraphicsModule() {
-
+		textEditsGainValues.clear();
 	}
 
 	void GuiGraphicsModule::setInputNames(const std::vector<std::string>& inputNames) {
-		this->inputNames = inputNames;
+		for (unsigned int i = 0; i < inputNames.size(); ++i) {
+			this->inputNames[i]->setText(inputNames[i].c_str());
+			this->inputNames[i]->sizeToFit();
+		}
+		
 		updateShape();
 	}
 
@@ -88,6 +124,9 @@ namespace VSTGUI {
 			else {
 				inputsEnabled[input] = true;
 			}
+			if (textEditsGainValues.size() > 0) {
+				textEditsGainValues[input]->setValue(gainValue);
+			}
 			updateShape();
 		}
 	}
@@ -137,13 +176,26 @@ namespace VSTGUI {
 				if (inputsEnabled[i]) {
 					pContext->setFillColor(CColor(50, 200, 50));
 					pContext->drawRect(inputRects[i], CDrawStyle::kDrawFilledAndStroked); // module inputs
-					temp.str(std::string());
+					inputNames[i]->setViewSize(CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(inputNames[i]->getWidth(), inputNames[i]->getHeight())));
+					inputNames[i]->setVisible(true);
+					if (textEditsGainValues.size() > 0) {
+						textEditsGainValues[i]->setViewSize(CRect(CPoint(inputNames[i]->getViewSize().right + spacing, inputRects[i].top), CPoint(textEditsGainValues[i]->getWidth(), textEditsGainValues[i]->getHeight())));
+						textEditsGainValues[i]->setMouseableArea(textEditsGainValues[i]->getViewSize());
+						textEditsGainValues[i]->setVisible(true);
+					}
+					/*temp.str(std::string());
 					temp.clear();
 					temp << inputNames[i];
 					if (inputGainValues[i] != 0.0) {
 						temp << " [" << std::setprecision(2) << inputGainValues[i] << "]";
 					}
-					pContext->drawString(temp.str().c_str(), CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(100, inoutRectHeight)), CHoriTxtAlign::kLeftText, false);
+					pContext->drawString(temp.str().c_str(), CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(100, inoutRectHeight)), CHoriTxtAlign::kLeftText, false);*/
+				}
+				else {
+					inputNames[i]->setVisible(false);
+					if (textEditsGainValues.size() > 0) {
+						textEditsGainValues[i]->setVisible(false);
+					}
 				}
 			}
 			if (hasOutput) {
@@ -154,13 +206,30 @@ namespace VSTGUI {
 		}
 	}
 
+	void GuiGraphicsModule::valueChanged(VSTGUI::CControl* pControl) {
+		for (unsigned int i = 0; i < textEditsGainValues.size(); ++i) {
+			if (textEditsGainValues[i] == pControl) {
+				inputToUpdate = i;
+				inputGainValues[i] = textEditsGainValues[i]->getValue();
+				getParentView()->notify(this, "UpdateGainValue");
+			}
+		}
+
+	}
+
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
+		if (buttons.isDoubleClick()) {
+			getParentView()->notify(this, "DoubleClick");
+			return kMouseEventHandled;
+		}
+
 		// Reference conversion!
-		frameToLocal(where);
+		CPoint whereLocal(where);
+		frameToLocal(whereLocal);
 
 		// Start drawing new connection line at the output rect
-		if (where.isInside(outputRect)) {
+		if (whereLocal.isInside(outputRect)) {
 			if (!mouseDownInOutputRect) {
 				getParentView()->notify(this, "StartMouseLine");
 				mouseDownInOutputRect = true;
@@ -168,25 +237,57 @@ namespace VSTGUI {
 			}
 		}
 		// Moving the modules around
-		if (where.isInside(handleRegion)) {
+		if (whereLocal.isInside(handleRegion)) {
 			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 			fprintf(pFile, "y(n): %s\n", "INSIDE");
 			fclose(pFile);*/
 			mouseDownInHandleRegion = true;
-			mouseDownCoordinates = where;
+			mouseDownCoordinates = whereLocal;
 			return kMouseEventHandled;
 		}
 		// Remove connection to an input
 		for (unsigned int i = 0; i < inputRects.size(); ++i) {
-			if (where.isInside(inputRects[i])) {
+			if (whereLocal.isInside(inputRects[i])) {
 				inputGainValues[i] = 0.0;
-				clickedInput = i;
-				getParentView()->notify(this, "RemoveConnection");
+				inputToUpdate = i;
+				getParentView()->notify(this, "UpdateGainValue");
 				return kMouseEventHandled;
 			}
 		}
 
-		return kMouseEventHandled;
+		// convert to relativ pos
+		CPoint where2(where);
+		where2.offset(-getViewSize().left, -getViewSize().top);
+
+		FOREACHSUBVIEW_REVERSE(true)
+		//	FILE* pFile = fopen("E:\\logVst.txt", "a");
+		//fprintf(pFile, "y(n): %s\n", "INSIDE");
+		//fclose(pFile);
+			if (pV && pV->isVisible() && pV->getMouseEnabled() && pV->hitTest(where2, buttons))
+			{
+			CControl* control = dynamic_cast<CControl*> (pV);
+			if (control && control->getListener() && buttons & (kAlt | kShift | kControl | kApple | kRButton))
+			{
+				if (control->getListener()->controlModifierClicked((CControl*)pV, buttons) != 0)
+					return kMouseEventHandled;
+			}
+			CBaseObjectGuard crg(pV);
+
+			if (pV->wantsFocus())
+				getFrame()->setFocusView(pV);
+
+			CMouseEventResult result = pV->onMouseDown(where2, buttons);
+			if (result != kMouseEventNotHandled && result != kMouseEventNotImplemented)
+			{
+				if (pV->getNbReference() > 1 && result == kMouseEventHandled)
+					mouseDownView = pV;
+				return result;
+			}
+			if (!pV->getTransparency())
+				return result;
+			}
+		ENDFOREACHSUBVIEW
+			return kMouseEventNotHandled;
 	}
 
 	CMouseEventResult GuiGraphicsModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
@@ -204,7 +305,23 @@ namespace VSTGUI {
 				return kMouseEventHandled;
 			}
 		}
-		return kMouseEventHandled;
+		
+		if (mouseDownView)
+		{
+			CBaseObjectGuard crg(mouseDownView);
+
+			// convert to relativ pos
+			CPoint where2(where);
+			where2.offset(-getViewSize().left, -getViewSize().top);
+			CMouseEventResult mouseResult = mouseDownView->onMouseMoved(where2, buttons);
+			if (mouseResult != kMouseEventHandled && mouseResult != kMouseEventNotImplemented)
+			{
+				mouseDownView = 0;
+				return kMouseEventNotHandled;
+			}
+			return kMouseEventHandled;
+		}
+		return kMouseEventNotHandled;
 	}
 
 	CMouseEventResult GuiGraphicsModule::onMouseUp(CPoint& where, const CButtonState& buttons) {
@@ -214,8 +331,20 @@ namespace VSTGUI {
 			mouseDownInOutputRect = false;
 			mouseUpCoordinates = where;
 			getParentView()->notify(this, "EndMouseLine");
+			return kMouseEventHandled;
 		}
 
-		return kMouseEventHandled;
+		if (mouseDownView)
+		{
+			CBaseObjectGuard crg(mouseDownView);
+
+			// convert to relativ pos
+			CPoint where2(where);
+			where2.offset(-getViewSize().left, -getViewSize().top);
+			mouseDownView->onMouseUp(where2, buttons);
+			mouseDownView = 0;
+			return kMouseEventHandled;
+		}
+		return kMouseEventNotHandled;
 	}
 }

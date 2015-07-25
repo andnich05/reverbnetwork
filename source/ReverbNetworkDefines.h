@@ -66,7 +66,7 @@
 // Equalizer Center frequency in Hertz
 #define MIN_EQCENTERFREQ 20.0
 // Only for the VST Parameter, maximum frequency depends on the Host's sample rate (should be smaller than sampleRate/2)
-#define MAX_EQCENTERFREQ 24000.0
+#define MAX_EQCENTERFREQ 88000.0
 #define DEF_EQCENTERFREQ 2000.0
 #define UNIT_EQCENTERFREQ "Hz"
 
@@ -83,8 +83,8 @@
 #define UNIT_EQGAIN "dB"
 
 // Equalizer Coefficients
-#define MIN_EQCOEFFICIENTS -1000.0
-#define MAX_EQCOEFFICIENTS 1000.0
+#define MIN_EQCOEFFICIENTS -100.0
+#define MAX_EQCOEFFICIENTS 100.0
 #define DEF_EQCOEFFICIENTS 0.0
 #define UNIT_EQCOEFFICIENTS ""
 
@@ -228,10 +228,6 @@
 // General parameters (outside the modules)
 #define PARAM_GENERALVSTOUTPUTSELECT_FIRST (PARAM_MODULEVISIBLE_LAST + 1)
 #define PARAM_GENERALVSTOUTPUTSELECT_LAST (PARAM_GENERALVSTOUTPUTSELECT_FIRST + MAXVSTOUTPUTS - 1)
-
-
-
-
 
 // ---------------
 // Intern parameters which aren't added to the Controller (must be at the end of this list!)

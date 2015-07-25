@@ -169,7 +169,7 @@ bool ValueConversion::textEditStringToValueConversion(const char* txt, float& re
 bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
 
 	if (userData == nullptr) {
-		sprintf(utf8String, "%1.5f", value);
+		sprintf(utf8String, "%1.2f", value);
 		return true;
 	}
 	valueToStringUserData* v = (valueToStringUserData*)userData;
@@ -194,7 +194,7 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 		sprintf(utf8String, "%1.5f", value);
 		break;
 	default:
-		sprintf(utf8String, "%1.5f", value);
+		sprintf(utf8String, "%1.2f", value);
 		break;
 	}
 	sprintf(utf8String + strlen(utf8String), " ");
@@ -251,4 +251,25 @@ double ValueConversion::getMaxEqFrequency() {
 		break;
 	}
 	return maxFreq;
+}
+
+bool ValueConversion::checkEqStability(const double& b1, const double& b2) {
+	// Source: Kammeyer p.77 / 78
+	bool stable = false;
+	if (b2 > (pow(b1, 2.0) / 4.0)) {
+		if (b2 < 1.0) {
+			stable = true;
+		}
+	}
+	else if (b2 < (pow(b1, 2.0) / 4.0)) {
+		if (b1 < (1.0 + b2) && b1 >(-1.0 - b2)) {
+			stable = true;
+		}
+	}
+	else if (b2 == (pow(b1, 2.0) / 4.0)) {
+		if (b1 < 2.0 && b1 > -2.0) {
+			stable = true;
+		}
+	}
+	return stable;
 }

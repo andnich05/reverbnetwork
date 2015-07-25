@@ -484,10 +484,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	else if (tag >= id_module_button_hideFirst && tag <= id_module_button_hideLast) {	// Close button of AP module pressed
-		// Update check box in the module list
-		guiElements[id_general_checkBox_moduleVisibleFirst + (tag - id_module_button_hideFirst)]->setValue(0.f);
-		// Update parameter
-		valueChanged(guiElements[id_general_checkBox_moduleVisibleFirst + (tag - id_module_button_hideFirst)]);
+		openModuleDetailView(tag - id_module_button_hideFirst, false);
 	}
 	else if (tag >= id_module_button_copyParametersFirst && tag <= id_module_button_copyParametersLast) {
 		copyModuleParameters(tag - id_module_button_copyParametersFirst, tempModuleParameters);
@@ -651,17 +648,26 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			controller->performEdit(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			updateEqStability(tag - id_equalizer_optionMenu_filterTypeFirst, 
+				ValueConversion::checkEqStability(guiElements[id_equalizer_textEdit_b1First + (tag - id_equalizer_optionMenu_filterTypeFirst)]->getValue(), 
+				guiElements[id_equalizer_textEdit_b2First + (tag - id_equalizer_optionMenu_filterTypeFirst)]->getValue()));
+		}
+		else {
+			updateEqStability(tag - id_equalizer_optionMenu_filterTypeFirst, true);
+			controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			controller->performEdit(PARAM_EQGAIN_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQGAIN_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 		}
 	}
-	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(ValueConversion::normToPlainProcCenterFreq(value)));
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(ValueConversion::normToPlainProcCenterFreq(value)));
+	else if (tag >= id_equalizer_knob_centerFreqFirst && tag <= id_equalizer_knob_centerFreqLast)  {	
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst), value);
 		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->setValue(ValueConversion::normToPlainProcCenterFreq(value));
 		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - id_equalizer_knob_centerFreqFirst)]->invalid();
 	}
 	else if (tag >= id_equalizer_textEdit_centerFreqFirst && tag <= id_equalizer_textEdit_centerFreqLast)  {
-		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(value));
-		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormVstCenterFreq(value));
+		controller->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormProcCenterFreq(value));
+		controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_textEdit_centerFreqFirst), ValueConversion::plainToNormProcCenterFreq(value));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setValue(ValueConversion::plainToNormProcCenterFreq(value));
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - id_equalizer_textEdit_centerFreqFirst)]->setDirty();
 	}
@@ -704,10 +710,13 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_equalizer_textEdit_b1First && tag <= id_equalizer_textEdit_b1Last) {
 		controller->setParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_textEdit_b1First), ValueConversion::plainToNormEqCoefficients(value));
 		controller->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_textEdit_b1First), ValueConversion::plainToNormEqCoefficients(value));
+		// Simulate the transmission to the processing components by convert the plain values to norm and back to plain values (=> rounding errors!)
+		updateEqStability(tag - id_equalizer_textEdit_b1First, ValueConversion::checkEqStability(ValueConversion::normToPlainEqCoefficients(ValueConversion::plainToNormEqCoefficients(value)), ValueConversion::normToPlainEqCoefficients(ValueConversion::plainToNormEqCoefficients(guiElements[id_equalizer_textEdit_b2First + (tag - id_equalizer_textEdit_b1First)]->getValue()))));
 	}
 	else if (tag >= id_equalizer_textEdit_b2First && tag <= id_equalizer_textEdit_b2Last) {
 		controller->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_textEdit_b2First), ValueConversion::plainToNormEqCoefficients(value));
 		controller->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_textEdit_b2First), ValueConversion::plainToNormEqCoefficients(value));
+		updateEqStability(tag - id_equalizer_textEdit_b2First, ValueConversion::checkEqStability(ValueConversion::normToPlainEqCoefficients(ValueConversion::plainToNormEqCoefficients(guiElements[id_equalizer_textEdit_b1First + (tag - id_equalizer_textEdit_b2First)]->getValue())), ValueConversion::normToPlainEqCoefficients(ValueConversion::plainToNormEqCoefficients(value))));
 	}
 	else if (tag >= id_equalizer_switch_bypassFirst && tag <= id_equalizer_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_EQBYPASS_FIRST + (tag - id_equalizer_switch_bypassFirst), value);
@@ -878,6 +887,22 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	//graphicsView->setDirty();
+}
+
+void ReverbNetworkEditor::controlBeginEdit(CControl* pControl)
+{
+	int32_t tag = pControl->getTag();
+	if (tag >= PARAM_EQCENTERFREQ_FIRST && tag <= PARAM_EQCENTERFREQ_LAST) {
+		controller->beginEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst));
+	}
+}
+
+void ReverbNetworkEditor::controlEndEdit(CControl* pControl)
+{
+	int32_t tag = pControl->getTag();
+	if (tag >= PARAM_EQCENTERFREQ_FIRST && tag <= PARAM_EQCENTERFREQ_LAST) {
+		controller->endEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst));
+	}
 }
 
 GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
@@ -1417,6 +1442,75 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		// Add the change to the ToDo-queue
 		eqStabilityValues.push_back(stability);
 	}
+	else if (tag >= PARAM_MIXERGAIN_FIRST && tag <= PARAM_MIXERGAIN_LAST) {
+		int moduleNumber = (int)((tag - PARAM_MIXERGAIN_FIRST) / MAXINPUTS);
+		for (unsigned int i = 0; i < MAXMODULEINPUTS; ++i) {
+			if (guiElements[id_mixer_optionMenu_inputSelectFirst + MAXMODULEINPUTS * moduleNumber + i]->getValue() == (tag - PARAM_MIXERGAIN_FIRST - moduleNumber * MAXINPUTS + 1)) {
+				guiElements[id_mixer_knob_gainFirst + MAXMODULEINPUTS * moduleNumber + i]->setValueNormalized(value);
+				guiElements[id_mixer_textEdit_gainFirst + MAXMODULEINPUTS * moduleNumber + i]->setValueNormalized(value);
+			}
+		}
+	}
+	else if (tag >= PARAM_QUANTIZERBITDEPTH_FIRST && tag <= PARAM_QUANTIZERBITDEPTH_LAST) {
+		guiElements[id_quantizer_knob_quantizationFirst + (tag - PARAM_QUANTIZERBITDEPTH_FIRST)]->setValueNormalized(value);
+		guiElements[id_quantizer_textEdit_quantizationFirst + (tag - PARAM_QUANTIZERBITDEPTH_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_QUANTIZERBYPASS_FIRST && tag <= PARAM_QUANTIZERBYPASS_LAST) {
+		guiElements[id_quantizer_switch_bypassFirst]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQCENTERFREQ_FIRST && tag <= PARAM_EQCENTERFREQ_LAST) {
+		guiElements[id_equalizer_knob_centerFreqFirst + (tag - PARAM_EQCENTERFREQ_FIRST)]->setValueNormalized(value);
+		guiElements[id_equalizer_textEdit_centerFreqFirst + (tag - PARAM_EQCENTERFREQ_FIRST)]->setValue(ValueConversion::normToPlainProcCenterFreq(value));
+	}
+	else if (tag >= PARAM_EQQFACTOR_FIRST && tag <= PARAM_EQQFACTOR_LAST) {
+		guiElements[id_equalizer_knob_qFactorFirst + (tag - PARAM_EQQFACTOR_FIRST)]->setValueNormalized(value);
+		guiElements[id_equalizer_textEdit_qFactorFirst + (tag - PARAM_EQQFACTOR_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQGAIN_FIRST && tag <= PARAM_EQGAIN_LAST) {
+		guiElements[id_equalizer_knob_gainFirst + (tag - PARAM_EQGAIN_FIRST)]->setValueNormalized(value);
+		guiElements[id_equalizer_textEdit_gainFirst + (tag - PARAM_EQGAIN_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQCOEFFICIENTA0_FIRST && tag <= PARAM_EQCOEFFICIENTA0_LAST) {
+		guiElements[id_equalizer_textEdit_a0First + (tag - PARAM_EQCOEFFICIENTA0_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQCOEFFICIENTA1_FIRST && tag <= PARAM_EQCOEFFICIENTA1_LAST) {
+		guiElements[id_equalizer_textEdit_a1First + (tag - PARAM_EQCOEFFICIENTA1_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQCOEFFICIENTA2_FIRST && tag <= PARAM_EQCOEFFICIENTA2_LAST) {
+		guiElements[id_equalizer_textEdit_a2First + (tag - PARAM_EQCOEFFICIENTA2_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQCOEFFICIENTB1_FIRST && tag <= PARAM_EQCOEFFICIENTB1_LAST) {
+		guiElements[id_equalizer_textEdit_b1First + (tag - PARAM_EQCOEFFICIENTB1_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQCOEFFICIENTB2_FIRST && tag <= PARAM_EQCOEFFICIENTB2_LAST) {
+		guiElements[id_equalizer_textEdit_b2First + (tag - PARAM_EQCOEFFICIENTB2_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_EQBYPASS_FIRST && tag <= PARAM_EQBYPASS_LAST) {
+		guiElements[id_equalizer_switch_bypassFirst + (tag - PARAM_EQBYPASS_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_ALLPASSDELAY_FIRST && tag <= PARAM_ALLPASSDELAY_LAST) {
+		guiElements[id_allpass_knob_delayFirst + (tag - PARAM_ALLPASSDELAY_FIRST)]->setValueNormalized(value);
+		guiElements[id_allpass_textEdit_delayFirst + (tag - PARAM_ALLPASSDELAY_FIRST)]->setValueNormalized(value);
+		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - PARAM_ALLPASSDELAY_FIRST)]->setValue(ValueConversion::delayMillisecondsToSamples(ValueConversion::normToPlainDelay(value)));
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - PARAM_ALLPASSDELAY_FIRST)]
+			->setValue(ValueConversion::calculateDiffK(ValueConversion::normToPlainDelay(value), guiElements[id_allpass_textEdit_decayFirst + (tag - PARAM_ALLPASSDELAY_FIRST)]->getValue()));
+	}
+	else if (tag >= PARAM_ALLPASSDECAY_FIRST && tag <= PARAM_ALLPASSDECAY_LAST) {
+		guiElements[id_allpass_knob_decayFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]->setValueNormalized(value);
+		guiElements[id_allpass_textEdit_decayFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]->setValueNormalized(value);
+		guiElements[id_allpass_textEdit_diffKFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]
+			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]->getValue(), ValueConversion::normToPlainDecay(value)));
+	}
+	else if (tag >= PARAM_ALLPASSBYPASS_FIRST && tag <= PARAM_ALLPASSBYPASS_LAST) {
+		guiElements[id_allpass_switch_bypassFirst + (tag - PARAM_ALLPASSBYPASS_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_OUTGAIN_FIRST && tag <= PARAM_OUTGAIN_LAST) {
+		guiElements[id_output_knob_gainFirst + (tag - PARAM_OUTGAIN_FIRST)]->setValueNormalized(value);
+		guiElements[id_output_textEdit_gainFirst + (tag - PARAM_OUTGAIN_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_OUTBYPASS_FIRST && tag <= PARAM_OUTBYPASS_LAST) {
+		guiElements[id_output_switch_bypassFirst + (tag - PARAM_OUTBYPASS_FIRST)]->setValueNormalized(value);
+	}
 }
 
 CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
@@ -1468,17 +1562,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 				fprintf(pFile, "y(n): %s\n", std::to_string(283574).c_str());
 				fclose(pFile);*/
 				if (guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber]) {
-					if (i.isStable) {
-						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setTitle("Stable");
-						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setGradientStartColor(CColor(0, 200, 0, 255));
-					}
-					else {
-						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setTitle("Unstable");
-						dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setGradientStartColor(CColor(200, 0, 0, 255));
-						guiElements[id_equalizer_switch_bypassFirst + i.moduleNumber]->setValue(1.0);
-						valueChanged(guiElements[id_equalizer_switch_bypassFirst + i.moduleNumber]);
-					}
-					dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber])->setDirty();
+					updateEqStability(i.moduleNumber, i.isStable);
 				}
 			}
 			// Clear the queue
@@ -1489,28 +1573,24 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 	else if (sender == graphicsView) {
 		if (message == "ConnectionToModule") {
 			Connection connection = graphicsView->getDrawnConnection();
-			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain((float)connection.establish));
-			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain((float)connection.establish));
-			updateGainValuesInOptionMenus(connection.destination, connection.source, (double)connection.establish);
-			updateGraphicsViewModule(connection.destination, connection.source, (double)connection.establish);
+			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain(connection.gainValue));
+			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain(connection.gainValue));
+			updateGainValuesInOptionMenus(connection.destination, connection.source, connection.gainValue);
+			updateGraphicsViewModule(connection.destination, connection.source, connection.gainValue);
 			// Check if the input is already selected in an input menu
 			for (int i = 0; i < MAXMODULEINPUTS; ++i) {
 				if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1) {
 					// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
-					guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]->setValue(ValueConversion::plainToNormInputGain((float)connection.establish));
+					guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]->setValue(ValueConversion::plainToNormInputGain(connection.gainValue));
 					valueChanged(guiElements[id_mixer_knob_gainFirst + connection.destination * MAXMODULEINPUTS + i]);
+					
 				}
 			}
 			splitView->invalid();
-			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(connection.destination).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string(connection.source).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string((float)connection.establish).c_str());
-			fclose(pFile);*/
 		}
 		else if (message == "ConnectionToVst") {
 			Connection connection = graphicsView->getDrawnConnection();
-			if (connection.establish) {
+			if (connection.gainValue == 1.0) {
 				guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1);
 			}
 			else {
@@ -1519,27 +1599,9 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			valueChanged(guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]);
 			splitView->invalid();
 		}
-		//else if (message == "ConnectionVstToModule") {
-		//	Connection connection = graphicsView->getDrawnConnection();
-		//	controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, connection.establish);
-		//	controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source + MAXMODULENUMBER, connection.establish);
-		//	updateGainValuesInOptionMenus(connection.destination, connection.source + MAXMODULENUMBER, connection.establish);
-		//	updateGraphicsViewModule(connection.destination, connection.source + MAXMODULENUMBER, connection.establish);
-		//	for (int i = 0; i < MAXMODULEINPUTS; ++i) {
-		//		if (guiElements[id_mixer_optionMenu_inputSelectFirst + connection.destination * MAXMODULEINPUTS + i]->getValue() == connection.source + 1 + MAXMODULENUMBER) {
-		//			// If so => set the gain knob value to 1.0 (happens only if knob is at 0.0 => see Graphics View)
-		//			guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]->setValue(connection.establish);
-		//			valueChanged(guiElements[id_mixer_knob_gainFirst + (connection.destination + MAXMODULENUMBER) * MAXMODULEINPUTS + i]);
-		//		}
-		//	}
-		//	splitView->invalid();
-		//}
-		/*else if (message == "ConnectionVstToVst") {
-			Connection connection = graphicsView->getDrawnConnection();
-			guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1 + MAXMODULENUMBER);
-			valueChanged(guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]);
-			splitView->invalid();
-		}*/
+		else if (message == "OpenModuleDetailView") {
+			openModuleDetailView(graphicsView->getModuleClicked(), true);
+		}
 	}
 	return VSTGUIEditor::notify(sender, message);
 } 
@@ -1934,28 +1996,126 @@ void ReverbNetworkEditor::updateGainValuesInOptionMenus(const int& moduleNumber,
 	}
 }
 
-void ReverbNetworkEditor::updateEqualizerStability(const int moduleNumber, const bool isStable) {
-	std::mutex mutex;
-	mutex.lock();
-	if (guiElements[id_equalizer_button_stabilityFirst]) {
-		//guiElements[id_equalizer_button_stabilityFirst]->setVisible(isStable);
-		std::cout << "SF";
+void ReverbNetworkEditor::updateEqStability(const int& moduleNumber, const bool& stable) {
+	if (stable) {
+		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setTitle("Stable");
+		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setGradientStartColor(CColor(0, 200, 0, 255));
 	}
-	mutex.unlock();
+	else {
+		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setTitle("Unstable");
+		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setGradientStartColor(CColor(200, 0, 0, 255));
+		guiElements[id_equalizer_switch_bypassFirst + moduleNumber]->setValue(1.0);
+		valueChanged(guiElements[id_equalizer_switch_bypassFirst + moduleNumber]);
+	}
+	dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setDirty();
+}
+
+void ReverbNetworkEditor::openModuleDetailView(const int& moduleNumber, const bool& open) {
+	// Update check box in the module list
+	guiElements[id_general_checkBox_moduleVisibleFirst + moduleNumber]->setValue(open);
+	// Update parameter
+	valueChanged(guiElements[id_general_checkBox_moduleVisibleFirst + moduleNumber]);
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;
 }
 
-//------------------------------------------------------------------------
-void ReverbNetworkEditor::controlBeginEdit(CControl* pControl) {
-
+tresult PLUGIN_API ReverbNetworkEditor::queryInterface(const char* iid, void** obj)
+{
+	QUERY_INTERFACE(iid, obj, IParameterFinder::iid, IParameterFinder)
+	QUERY_INTERFACE(iid, obj, IContextMenuTarget::iid, IContextMenuTarget)
+	return VSTGUIEditor::queryInterface(iid, obj);
 }
 
-//------------------------------------------------------------------------
-void ReverbNetworkEditor::controlEndEdit(CControl* pControl) {
+tresult PLUGIN_API ReverbNetworkEditor::findParameter(int32 xPos, int32 yPos, ParamID& resultTag)
+{
+	//// look up the parameter (view) which is located at xPos/yPos.
 
+	//CPoint where(xPos, yPos);
+
+	//// Implementation 1:
+	//// The parameter xPos/yPos are relative coordinates to the AGainEditorView coordinates.
+	//// If the window of the VST 3 plugin is moved, xPos is always >= 0 and <= AGainEditorView width.
+	//// yPos is always >= 0 and <= AGainEditorView height.
+	//// 
+	//// gainSlider->hitTest() is a short cut for:
+	//// CRect sliderRect = gainSlider->getMouseableArea ();
+	//// if (where.isInside (sliderRect))
+	//// {
+	////      resultTag = kGainId;
+	////      return kResultOk;
+	//// }
+
+	//// test wether xPos/yPos is inside the gainSlider.
+	//if (gainSlider->hitTest(where, 0))
+	//{
+	//	// return the VST 3 parameter ID, which is also used for IParamValueQueue::getParameterId(),
+	//	// IComponentHandler::performEdit() or IEditController::getParamStringByValue() etc.
+	//	resultTag = kGainId;
+	//	return kResultOk;
+	//}
+
+	//// test wether xPos/yPos is inside the gain text view.
+	//if (gainTextEdit->hitTest(where, 0))
+	//{
+	//	resultTag = kGainId;
+	//	return kResultOk;
+	//}
+
+	//// Implementation 2:
+	//// An alternative solution with VSTGui can look like this. (This requires C++ RTTI)
+	//// 
+	//// if (frame)
+	//// {
+	////  CControl* controlAtPos = dynamic_cast<CControl*>(frame->getViewAt (where, true);
+	////  if (controlAtPos)
+	////  {
+	////      switch (controlAtPos->getTag ())
+	////      {
+	////          case 'Gain':
+	////          case 'GaiT':
+	////              resultTag = resultTag;
+	////              return kResultOk;
+	////      }
+	////  }
+	//// 
+
+	//// Implementation 3:
+	//// The another "dirty" way is to hard code the coordinates for the views (see also AGainEditorView::open):
+	//// CRect gainSliderSize (0, 0, 130, 18);
+	//// gainSliderSize.offset (45, 40);
+	//// if (where.isInside (gainSliderSize))
+	////  {
+	////      resultTag = kGainId;
+	////      return kResultOk;
+	////  }
+	//// CRect gainTextSize (0, 0, 40, 18);
+	//// gainTextSize.offset (50 + gainSliderSize.getWidth (), 40);
+	//// if (where.isInside (gainTextSize))
+	////  {
+	////      resultTag = kGainId;
+	////      return kResultOk;
+	////  }
+	return kResultFalse;
+}
+
+tresult ReverbNetworkEditor::executeMenuItem(int32 tag)
+{
+	//// our menu item was choosen by the user
+	//if (tag == 1234)
+	//{
+	//	ParameterInfo paramInfo;
+	//	controller->getParameterInfo(kGainId, paramInfo);
+
+	//	controller->beginEdit(kGainId);
+	//	controller->setParamNormalized(kGainId, paramInfo.defaultNormalizedValue);
+	//	controller->performEdit(kGainId, paramInfo.defaultNormalizedValue);
+	//	controller->endEdit(kGainId);
+
+	//	return kResultTrue;
+	//}
+	return kResultFalse;
 }
 
 }} // namespaces

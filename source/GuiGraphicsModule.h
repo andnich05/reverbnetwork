@@ -2,14 +2,13 @@
 #define GUIGRAPHICSMODULE_H
 
 #include "../vstgui4/vstgui/lib/cviewcontainer.h"
+#include "../vstgui4/vstgui/lib/controls/ctextedit.h"
 #include <vector>
 
 namespace VSTGUI {
-
-
-	class GuiGraphicsModule : public CViewContainer {
+	class GuiGraphicsModule : public CViewContainer, public CControlListener {
 	public:
-		GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput);
+		GuiGraphicsModule(const std::string& title, const int& numberOfInputs, const bool& hasOutput, const bool& hasGainValue);
 		~GuiGraphicsModule();
 
 		void redraw(CDrawContext* pContext);
@@ -28,8 +27,7 @@ namespace VSTGUI {
 		inline const CPoint& getMouseMoveOutputRect() { return mouseMoveOutputRect; }
 		inline const CPoint& getMouseUpCoordinates() { return mouseUpCoordinates; }
 		inline const CPoint& getMouseDownCoordinates() { return mouseDownCoordinates; }
-		inline const int& getClickedInput() { return clickedInput; }
-
+		inline const int& getInputToUpdate() { return inputToUpdate; }
 
 		// Overrides
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);
@@ -37,6 +35,8 @@ namespace VSTGUI {
 		virtual CMouseEventResult onMouseUp(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 		virtual CMouseEventResult onMouseMoved(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 		//virtual CMouseEventResult onMouseCancel() VSTGUI_OVERRIDE_VMETHOD;
+
+		virtual void valueChanged(VSTGUI::CControl* pControl);
 		
 
 	private:
@@ -49,11 +49,13 @@ namespace VSTGUI {
 		int numberOfUsedInputs;
 		std::vector<bool> inputsEnabled;
 		std::vector<double> inputGainValues;
-		std::vector<std::string> inputNames;
+		std::vector<CTextLabel*> inputNames;
 		std::vector<CRect> inputRects;
 		bool hasOutput;
 		CRect outputRect;
 		std::string outputName;
+
+		std::vector<CTextEdit*> textEditsGainValues;
 
 		CPoint mouseDownCoordinates;
 		bool mouseDownInHandleRegion;
@@ -64,9 +66,8 @@ namespace VSTGUI {
 		CPoint mouseMoveOutputRect;
 		CPoint mouseUpCoordinates;
 
-		int clickedInput;
+		int inputToUpdate;
 	};
-
 }
 
 #endif // GUIGRAPHICSMODULE_H
