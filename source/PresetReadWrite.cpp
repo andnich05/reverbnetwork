@@ -27,7 +27,7 @@ PresetReadWrite::PresetReadWrite() {
 		parameterValues.push_back(ValueConversion::plainToNormFilterTypeSelect(DEF_EQFILTERTYPE));
 	}
 	for (auto i = PARAM_EQCENTERFREQ_FIRST; i <= PARAM_EQCENTERFREQ_LAST; ++i) {
-		parameterValues.push_back(ValueConversion::plainToNormVstCenterFreq(DEF_EQCENTERFREQ));
+		parameterValues.push_back(ValueConversion::plainToNormProcCenterFreq(DEF_EQCENTERFREQ));
 	}
 	for (auto i = PARAM_EQQFACTOR_FIRST; i <= PARAM_EQQFACTOR_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormQFactor(DEF_EQQFACTOR));
@@ -59,6 +59,9 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_ALLPASSDECAY_FIRST; i <= PARAM_ALLPASSDECAY_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormDecay(DEF_ALLPASSDECAY));
 	}
+	for (auto i = PARAM_ALLPASSDIFFKSIGN_FIRST; i <= PARAM_ALLPASSDIFFKSIGN_LAST; ++i) {
+		parameterValues.push_back(DEF_ALLPASSDIFFKSIGN);
+	}
 	for (auto i = PARAM_ALLPASSBYPASS_FIRST; i <= PARAM_ALLPASSBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_ALLPASSBYPASS);
 	}
@@ -74,6 +77,7 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_GENERALVSTOUTPUTSELECT_FIRST; i <= PARAM_GENERALVSTOUTPUTSELECT_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormMixerInputSelect(DEF_OUTPUTSELECT));
 	}
+	
 }
 
 PresetReadWrite::~PresetReadWrite() {
@@ -104,7 +108,6 @@ Steinberg::tresult PresetReadWrite::setParamterState(Steinberg::IBStream* state)
 		// Read and save the values
 		if (!streamer.readDouble(parameterValues[i])) return Steinberg::kResultFalse;
 	}
-
 	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(parameterValues[PARAM_GENERALVSTOUTPUTSELECT_FIRST]).c_str());
 	fclose(pFile);*/

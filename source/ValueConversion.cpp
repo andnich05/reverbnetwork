@@ -4,7 +4,7 @@
 #include <string>
 #include "ReverbNetworkEnums.h"
 
-double ValueConversion::sampleRate = 0.0;
+double ValueConversion::sampleRate = 44100.0;
 
 ValueConversion::ValueConversion() {
 	
@@ -46,13 +46,13 @@ double ValueConversion::plainToNormQuantization(const double& plainValue) {
 	return ((double)plainValue - (double)MIN_QUANTIZERBITDEPTH) / ((double)MAX_QUANTIZERBITDEPTH - (double)MIN_QUANTIZERBITDEPTH);
 }
 
-double ValueConversion::normToPlainVstCenterFreq(const double& normValue) {
-	return (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
-}
-
-double ValueConversion::plainToNormVstCenterFreq(const double& plainValue) {
-	return (plainValue - MIN_EQCENTERFREQ) / (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ);
-}
+//double ValueConversion::normToPlainVstCenterFreq(const double& normValue) {
+//	return (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
+//}
+//
+//double ValueConversion::plainToNormVstCenterFreq(const double& plainValue) {
+//	return (plainValue - MIN_EQCENTERFREQ) / (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ);
+//}
 
 double ValueConversion::normToPlainProcCenterFreq(const double& normValue) {
 	return (getMaxEqFrequency() - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;

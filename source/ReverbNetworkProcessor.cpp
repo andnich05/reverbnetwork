@@ -303,6 +303,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::getState(IBStream* state)
 }
 
 void ReverbNetworkProcessor::onTimer(Timer* timer) {
+	if (ValueConversion::getSampleRate() != (processSetup.sampleRate)) {
+		ValueConversion::setSampleRate(processSetup.sampleRate);
+		for (auto&& module : apModules) {
+			module->setSampleRate(processSetup.sampleRate);
+		}
+	}
 	/*bool finishThread = false;
 	while (true) {
 		if (this) {
@@ -550,6 +556,14 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						apModules[pid - PARAM_ALLPASSDECAY_FIRST]->updateAllpassDecay(ValueConversion::normToPlainDecay(value));
 						#ifdef LOGGING
 						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSDECAY_FIRST) + " - Decay set to " + std::to_string(ValueConversion::normToPlainDecay(value)));
+						#endif
+					}
+				}
+				else if (pid >= PARAM_ALLPASSDIFFKSIGN_FIRST && pid <= PARAM_ALLPASSDIFFKSIGN_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSDIFFKSIGN_FIRST]->updateAllpassDiffKSign(value);
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSDIFFKSIGN_FIRST) + " - DiffK sign is positive: " + std::to_string(value));
 						#endif
 					}
 				}

@@ -215,14 +215,14 @@ const bool& EqualizerModule::checkStability() {
 			stable = true;
 		}
 	}
-	FILE* pFile = fopen("E:\\logVst.txt", "a");
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", "------------");
 	fprintf(pFile, "y(n): %s\n", std::to_string(a0).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(a1).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(a2).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(b1).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(b2).c_str());
-	fclose(pFile);
+	fclose(pFile);*/
 	return stable;
 }
 

@@ -78,6 +78,7 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 			a.bypass = tool.child("allpass").child("bypass").text().as_bool();
 			a.delay = tool.child("allpass").child("delay").text().as_double();
 			a.decay = tool.child("allpass").child("decay").text().as_double();
+			a.diffKSignPositive = tool.child("allpass").child("diffKSignPositive").text().as_bool();
 			m.allpassParameters = a;
 
 			output o = {};
@@ -176,6 +177,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const
 		moduleNode.child("allpass").append_child("bypass").text().set(module.allpassParameters.bypass);
 		moduleNode.child("allpass").append_child("delay").text().set(module.allpassParameters.delay);
 		moduleNode.child("allpass").append_child("decay").text().set(module.allpassParameters.decay);
+		moduleNode.child("allpass").append_child("diffKSignPositive").text().set(module.allpassParameters.diffKSignPositive);
 
 		// Output
 		moduleNode.append_child("output");

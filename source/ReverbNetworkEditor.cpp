@@ -90,7 +90,7 @@ namespace Vst {
 	const int32_t id_equalizer_switch_bypassFirst = id_equalizer_textEdit_b2Last + 1;
 	const int32_t id_equalizer_switch_bypassLast = id_equalizer_switch_bypassFirst + MAXMODULENUMBER - 1;
 
-	// Schroeder allpass GUI ids
+	// Allpass GUI ids
 	const int32_t id_allpass_knob_delayFirst = id_equalizer_switch_bypassLast + 1;
 	const int32_t id_allpass_knob_delayLast = id_allpass_knob_delayFirst + MAXMODULENUMBER - 1;
 	const int32_t id_allpass_textEdit_delayFirst = id_allpass_knob_delayLast + 1;
@@ -103,7 +103,9 @@ namespace Vst {
 	const int32_t id_allpass_textEdit_decayLast = id_allpass_textEdit_decayFirst + MAXMODULENUMBER - 1;
 	const int32_t id_allpass_textEdit_diffKFirst = id_allpass_textEdit_decayLast + 1;
 	const int32_t id_allpass_textEdit_diffKLast = id_allpass_textEdit_diffKFirst + MAXMODULENUMBER - 1;
-	const int32_t id_allpass_switch_bypassFirst = id_allpass_textEdit_diffKLast + 1;
+	const int32_t id_allpass_optionMenu_diffKSignFirst = id_allpass_textEdit_diffKLast + 1;
+	const int32_t id_allpass_optionMenu_diffKSignLast = id_allpass_optionMenu_diffKSignFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_switch_bypassFirst = id_allpass_optionMenu_diffKSignLast + 1;
 	const int32_t id_allpass_switch_bypassLast = id_allpass_switch_bypassFirst + MAXMODULENUMBER - 1;
 
 	// Output gain GUI ids
@@ -731,11 +733,11 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		//guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->invalid();
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_knob_delayFirst)]
 			->setValue(ValueConversion::calculateDiffK(ValueConversion::normToPlainDelay(value), guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue()));
-			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(value) / 1000).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
-			fprintf(pFile, "y(n): %s\n", std::to_string(-60.0 * ((ValueConversion::normToPlainDelay(value) / 1000) / guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
-			fclose(pFile);*/
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(value) / 1000).c_str());
+		fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
+		fprintf(pFile, "y(n): %s\n", std::to_string(-60.0 * ((ValueConversion::normToPlainDelay(value) / 1000) / guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
+		fclose(pFile);*/
 	}
 	else if (tag >= id_allpass_textEdit_delayFirst && tag <= id_allpass_textEdit_delayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::plainToNormDelay(value));
@@ -778,6 +780,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_ALLPASSDECAY_FIRST + (tag - id_allpass_textEdit_diffKFirst), ValueConversion::plainToNormDecay(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue())));
 		guiElements[id_allpass_knob_decayFirst + (tag - id_allpass_textEdit_diffKFirst)]->setValue(ValueConversion::plainToNormDecay(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue())));
 		guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_textEdit_diffKFirst)]->setValue(ValueConversion::diffKToDecay(value, guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_diffKFirst)]->getValue()));
+	}
+	else if (tag >= id_allpass_optionMenu_diffKSignFirst && tag <= id_allpass_optionMenu_diffKSignLast) {
+		controller->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + (tag - id_allpass_optionMenu_diffKSignFirst), value);
+		controller->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + (tag - id_allpass_optionMenu_diffKSignFirst), value);
 	}
 	else if (tag >= id_allpass_switch_bypassFirst && tag <= id_allpass_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + (tag - id_allpass_switch_bypassFirst), value);
@@ -891,18 +897,18 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 
 void ReverbNetworkEditor::controlBeginEdit(CControl* pControl)
 {
-	int32_t tag = pControl->getTag();
+	/*int32_t tag = pControl->getTag();
 	if (tag >= PARAM_EQCENTERFREQ_FIRST && tag <= PARAM_EQCENTERFREQ_LAST) {
 		controller->beginEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst));
-	}
+	}*/
 }
 
 void ReverbNetworkEditor::controlEndEdit(CControl* pControl)
 {
-	int32_t tag = pControl->getTag();
+	/*int32_t tag = pControl->getTag();
 	if (tag >= PARAM_EQCENTERFREQ_FIRST && tag <= PARAM_EQCENTERFREQ_LAST) {
 		controller->endEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_knob_centerFreqFirst));
-	}
+	}*/
 }
 
 GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
@@ -1180,10 +1186,14 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 	allpassView->addView(checkBoxAllpassBypass);
 	CRowColumnView* diffKView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
 	diffKView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelDiffK = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "k:");
+	COptionMenu* labelDiffK = new COptionMenu(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_allpass_optionMenu_diffKSignFirst + moduleId);
+	addGuiElementPointer(labelDiffK, id_allpass_optionMenu_diffKSignFirst + moduleId);
+	labelDiffK->addEntry("-k:");
+	labelDiffK->addEntry("+k:");
+	labelDiffK->setCurrent(1);
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
-	labelDiffK->setBackColor(CColor(0, 0, 0, 0));
-	labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
+	//labelDiffK->setBackColor(CColor(0, 0, 0, 0));
+	//labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
 	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth(), 20.0)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
 	valueToStringUserData* userData2 = new valueToStringUserData;
@@ -1200,6 +1210,7 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 	textEditDiffK->setFrameColor(CColor(0, 0, 0, 0));
 	diffKView->addView(labelDiffK);
 	diffKView->addView(textEditDiffK);
+	diffKView->setSpacing(3);
 	diffKView->sizeToFit();
 	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId,
 		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
@@ -1218,6 +1229,7 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
 		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
 	allpassView->addView(diffKView);
+
 	return allpassView;
 }
 
@@ -1384,18 +1396,18 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 		valueChanged(guiElements[i]);
 	}
 
-	for (uint32 i = PARAM_EQCENTERFREQ_FIRST; i < PARAM_EQCENTERFREQ_LAST + 1; ++i) { // Iterate over all parameters
-		if (guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]) { // Check if the GUI element is valid
-			guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]->setValue(ValueConversion::plainToNormProcCenterFreq(ValueConversion::normToPlainVstCenterFreq(getController()->getParamNormalized(i)))); // Set GUI element value
-			valueChanged(guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]); // Update the corresponding textEdit (if there exists one)
-		}
-	}
+	//for (uint32 i = PARAM_EQCENTERFREQ_FIRST; i < PARAM_EQCENTERFREQ_LAST + 1; ++i) { // Iterate over all parameters
+	//	if (guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]) { // Check if the GUI element is valid
+	//		guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]->setValue(ValueConversion::plainToNormProcCenterFreq(getController()->getParamNormalized(i))); // Set GUI element value
+	//		valueChanged(guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]); // Update the corresponding textEdit (if there exists one)
+	//	}
+	//}
 
 	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBITDEPTH_FIRST, PARAM_QUANTIZERBITDEPTH_LAST, id_quantizer_knob_quantizationFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBYPASS_FIRST, PARAM_QUANTIZERBYPASS_LAST, id_quantizer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_EQFILTERTYPE_FIRST, PARAM_EQFILTERTYPE_LAST, id_equalizer_optionMenu_filterTypeFirst, &ValueConversion::normToPlainFilterTypeSelect);
-	//updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
+	updateGuiParameter(PARAM_EQCENTERFREQ_FIRST, PARAM_EQCENTERFREQ_LAST, id_equalizer_knob_centerFreqFirst, nullptr);
 	updateGuiParameter(PARAM_EQQFACTOR_FIRST, PARAM_EQQFACTOR_LAST, id_equalizer_knob_qFactorFirst, nullptr);
 	updateGuiParameter(PARAM_EQGAIN_FIRST, PARAM_EQGAIN_LAST, id_equalizer_knob_gainFirst, nullptr);
 	updateGuiParameter(PARAM_EQCOEFFICIENTA0_FIRST, PARAM_EQCOEFFICIENTA0_LAST, id_equalizer_textEdit_a0First, &ValueConversion::normToPlainEqCoefficients);
@@ -1406,6 +1418,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_EQBYPASS_FIRST, PARAM_EQBYPASS_LAST, id_equalizer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDELAY_FIRST, PARAM_ALLPASSDELAY_LAST, id_allpass_knob_delayFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDECAY_FIRST, PARAM_ALLPASSDECAY_LAST, id_allpass_knob_decayFirst, nullptr);
+	updateGuiParameter(PARAM_ALLPASSDIFFKSIGN_FIRST, PARAM_ALLPASSDIFFKSIGN_LAST, id_allpass_optionMenu_diffKSignFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSBYPASS_FIRST, PARAM_ALLPASSBYPASS_LAST, id_allpass_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_OUTGAIN_FIRST, PARAM_OUTGAIN_LAST, id_output_knob_gainFirst, nullptr);
 	updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
@@ -1500,6 +1513,9 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		guiElements[id_allpass_textEdit_decayFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]->setValueNormalized(value);
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]
 			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - PARAM_ALLPASSDECAY_FIRST)]->getValue(), ValueConversion::normToPlainDecay(value)));
+	}
+	else if (tag >= PARAM_ALLPASSDIFFKSIGN_FIRST && tag <= PARAM_ALLPASSDIFFKSIGN_LAST) {
+		guiElements[id_allpass_optionMenu_diffKSignFirst + (tag - PARAM_ALLPASSDIFFKSIGN_FIRST)]->setValueNormalized(value);
 	}
 	else if (tag >= PARAM_ALLPASSBYPASS_FIRST && tag <= PARAM_ALLPASSBYPASS_LAST) {
 		guiElements[id_allpass_switch_bypassFirst + (tag - PARAM_ALLPASSBYPASS_FIRST)]->setValueNormalized(value);
@@ -1666,8 +1682,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		// Set equalizer parameters
 		getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
 		getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
-		getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormVstCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
-		getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormVstCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
+		getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormProcCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
+		getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + i, ValueConversion::plainToNormProcCenterFreq(presetStruct.modules[i].equalizerParameters.frequency));
 		getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
 		getController()->performEdit(PARAM_EQQFACTOR_FIRST + i, ValueConversion::plainToNormQFactor(presetStruct.modules[i].equalizerParameters.qFactor));
 		getController()->setParamNormalized(PARAM_EQGAIN_FIRST + i, ValueConversion::plainToNormEqGain(presetStruct.modules[i].equalizerParameters.gain));
@@ -1690,6 +1706,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::plainToNormDelay(presetStruct.modules[i].allpassParameters.delay));
 		getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::plainToNormDecay(presetStruct.modules[i].allpassParameters.decay));
 		getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::plainToNormDecay(presetStruct.modules[i].allpassParameters.decay));
+		getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignPositive);
+		getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignPositive);
 		getController()->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i, presetStruct.modules[i].allpassParameters.bypass);
 		getController()->performEdit(PARAM_ALLPASSBYPASS_FIRST + i, presetStruct.modules[i].allpassParameters.bypass);
 
@@ -1769,7 +1787,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 		XmlPresetReadWrite::equalizer e = {};
 		e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
-		e.frequency = ValueConversion::normToPlainVstCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
+		e.frequency = ValueConversion::normToPlainProcCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
 		e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
 		e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + i));
 		e.a0 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + i));
@@ -1783,6 +1801,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		XmlPresetReadWrite::allpass a = {};
 		a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + i));
 		a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
+		a.diffKSignPositive = getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i);
 		a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i);
 		m.allpassParameters = a;
 
@@ -1831,7 +1850,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 
 	XmlPresetReadWrite::equalizer e = {};
 	e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + sourceModuleId));
-	e.frequency = ValueConversion::normToPlainVstCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
+	e.frequency = ValueConversion::normToPlainProcCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
 	e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + sourceModuleId));
 	e.gain = ValueConversion::normToPlainEqGain(getController()->getParamNormalized(PARAM_EQGAIN_FIRST + sourceModuleId));
 	e.a0 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + sourceModuleId));
@@ -1845,6 +1864,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	XmlPresetReadWrite::allpass a = {};
 	a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + sourceModuleId));
 	a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + sourceModuleId));
+	a.diffKSignPositive = getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + sourceModuleId);
 	a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + sourceModuleId);
 	m.allpassParameters = a;
 
@@ -1889,8 +1909,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	// Set equalizer parameters
 	getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));
 	getController()->performEdit(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));
-	getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormVstCenterFreq(m.equalizerParameters.frequency));
-	getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormVstCenterFreq(m.equalizerParameters.frequency));
+	getController()->setParamNormalized(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormProcCenterFreq(m.equalizerParameters.frequency));
+	getController()->performEdit(PARAM_EQCENTERFREQ_FIRST + destModuleId, ValueConversion::plainToNormProcCenterFreq(m.equalizerParameters.frequency));
 	getController()->setParamNormalized(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
 	getController()->performEdit(PARAM_EQQFACTOR_FIRST + destModuleId, ValueConversion::plainToNormQFactor(m.equalizerParameters.qFactor));
 	getController()->setParamNormalized(PARAM_EQGAIN_FIRST + destModuleId, ValueConversion::plainToNormEqGain(m.equalizerParameters.gain));
@@ -1913,6 +1933,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + destModuleId, ValueConversion::plainToNormDelay(m.allpassParameters.delay));
 	getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + destModuleId, ValueConversion::plainToNormDecay(m.allpassParameters.decay));
 	getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + destModuleId, ValueConversion::plainToNormDecay(m.allpassParameters.decay));
+	getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignPositive);
+	getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignPositive);
 	getController()->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + destModuleId, m.allpassParameters.bypass);
 	getController()->performEdit(PARAM_ALLPASSBYPASS_FIRST + destModuleId, m.allpassParameters.bypass);
 

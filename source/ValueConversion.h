@@ -20,8 +20,8 @@ public:
 
 	static double normToPlainFilterTypeSelect(const double& normValue);
 	static double plainToNormFilterTypeSelect(const double& plainValue);
-	static double normToPlainVstCenterFreq(const double& normValue);
-	static double plainToNormVstCenterFreq(const double& plainValue);
+	//static double normToPlainVstCenterFreq(const double& normValue);
+	//static double plainToNormVstCenterFreq(const double& plainValue);
 	static double normToPlainProcCenterFreq(const double& normValue);
 	static double plainToNormProcCenterFreq(const double& plainValue);
 	static double normToPlainQFactor(const double& normValue);

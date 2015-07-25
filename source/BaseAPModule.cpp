@@ -144,6 +144,10 @@ void BaseAPModule::updateAllpassDecay(const double& decay) {
 	allpass->setDecayTimeSec(decay / 1000.0);
 }
 
+void BaseAPModule::updateAllpassDiffKSign(const bool& positive) {
+	allpass->setGainSign(positive);
+}
+
 void BaseAPModule::updateOutputGain(const double& gain) {
 	
 	gainOutput->setGain(ValueConversion::logToLinear(gain));

@@ -45,6 +45,7 @@ public:
 	// Allpass update functions
 	void updateAllpassDelay(const double& delay);
 	void updateAllpassDecay(const double& decay);
+	void updateAllpassDiffKSign(const bool& positive);
 	inline void switchAllpassBypass(const double& bypass) { bypassAllpass = (bypass != 0.0); }
 
 	// Output update functions

@@ -23,6 +23,7 @@ public:
 	void setDecayTimeSec (const double& sec);
 	// Set Allpass gain
 	//inline void setGain(const double& g) { gain = g; };
+	inline void setGainSign(const bool& positive) { this->gainSignIsPositive = positive; calculateGain(); }
 
 private:
 	//double* inputBuffer; // Circular buffer for input samples x(n)
@@ -36,6 +37,7 @@ private:
 	double delayTimeSec; // Delay time in seconds
 	double decayTimeSec; // Decay time in seconds
 	double gain; // Gain vaulue for processing
+	bool gainSignIsPositive;
 
 	// Temp values for processing
 	//double xn; // = sample

@@ -268,6 +268,15 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING(UNIT_ALLPASSDECAY), MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, DEF_ALLPASSDECAY, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-AP-DiffKSign");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSDIFFKSIGN_FIRST + i, 0, ParameterInfo::kCanAutomate | ParameterInfo::kIsList);
+			parameter->appendString(USTRING("Negative"));
+			parameter->appendString(USTRING("Positive"));
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
 		// Allpass Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
@@ -413,10 +422,10 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 	// Load filestream into object
 	tresult result = preset.setParamterState(state);
 	if (result == kResultTrue) {
-
 		// Read the values from the file stream and update the parameters
 		for (int32 i = 0; i < parameters.getParameterCount(); ++i) {
 			setParamNormalized(i, preset.getNormValueByParamId(i));
+			
 		}
 		// Update the GUI with the loaded parameters
 		for (int32 i = 0; i < viewsArray.total(); i++)
@@ -433,6 +442,7 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 // Nötig?
 tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID tag, ParamValue value)
 {
+
 	Parameter* parameter = getParameterObject(tag);
 	if (parameter)
 	{
@@ -444,12 +454,12 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID
 
 tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, ParamValue value)
 {
+
 	Parameter* parameter = getParameterObject(tag);
 	if (parameter)
 	{
 		parameter->setNormalized(value);
 	}
-
 	// called from host to update our parameters state
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 

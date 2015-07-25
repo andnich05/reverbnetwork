@@ -105,10 +105,16 @@
 //#define DEF_ALLPASSDELAY 0.0
 
 // Allpass decay in milliseconds
-#define MIN_ALLPASSDECAY -10000.0
+#define MIN_ALLPASSDECAY 0.0
 #define MAX_ALLPASSDECAY 10000.0
 #define DEF_ALLPASSDECAY 0.0
 #define UNIT_ALLPASSDECAY "ms"
+
+// Allpass diffK sign
+#define MIN_ALLPASSDIFFKSIGN 0.0
+#define MAX_ALLPASSDIFFKSIGN 1.0
+#define DEF_ALLPASSDIFFKSIGN 1.0
+#define UNIT_ALLPASSDIFFKSIGN ""
 
 // Allpass bypass in bool
 #define MIN_ALLPASSBYPASS 0.0
@@ -146,7 +152,7 @@
 
 
 // New parameter? Need to change: Defines (here), Controller (create new VST paramter), Processor (process function), 
-// PresetReadWrite (initialization of vector), Editor (GUI), Value Conversion, BaseAPModule, XML Preset
+// PresetReadWrite (initialization of vector), Editor (valueChanged), Value Conversion, BaseAPModule, XML Preset
 
 // Mixer
 #define PARAM_MIXERINPUTSELECT_FIRST 0
@@ -209,7 +215,10 @@
 #define PARAM_ALLPASSDECAY_FIRST (PARAM_ALLPASSDELAY_LAST + 1)
 #define PARAM_ALLPASSDECAY_LAST (PARAM_ALLPASSDECAY_FIRST + MAXMODULENUMBER - 1)
 
-#define PARAM_ALLPASSBYPASS_FIRST (PARAM_ALLPASSDECAY_LAST + 1)
+#define PARAM_ALLPASSDIFFKSIGN_FIRST (PARAM_ALLPASSDECAY_LAST + 1)
+#define PARAM_ALLPASSDIFFKSIGN_LAST (PARAM_ALLPASSDIFFKSIGN_FIRST + MAXMODULENUMBER - 1)
+
+#define PARAM_ALLPASSBYPASS_FIRST (PARAM_ALLPASSDIFFKSIGN_LAST + 1)
 #define PARAM_ALLPASSBYPASS_LAST (PARAM_ALLPASSBYPASS_FIRST + MAXMODULENUMBER - 1)
 
 

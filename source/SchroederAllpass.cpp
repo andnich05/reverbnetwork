@@ -15,6 +15,7 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	/*yn = 0;
 	xnD = 0;
 	ynD = 0;*/
+	gainSignIsPositive = true;
 	nodeLeft = 0.0;
 	nodeRight = 0.0;
 	setDecayTimeSec(decaySec);
@@ -36,7 +37,7 @@ void SchroederAllpass::doProcessing(double& sample) {
 	nodeRight = buffer[readPointer];
 
 	//---
-	// Wrong signs!
+	// !!!
 	//// Calculate the current left node value
 	//nodeLeft = sample - gain * nodeRight;
 	//// Calculate the output value
@@ -92,17 +93,28 @@ void SchroederAllpass::setDecayTimeSec(const double& sec) {
 void SchroederAllpass::calculateGain() {
 	double dB = 0.0;
 	
-	if (decayTimeSec > 0.0) { // gain has to be positive
+	//if (decayTimeSec > 0.0) { // gain has to be positive
+	//	dB = -60.0 * (delayTimeSec / decayTimeSec);
+	//	gain = pow(10.0, dB / 20);
+	//}
+	//else if (decayTimeSec < 0.0) { // gain has to be negative => same result but 180° phase shift
+	//	dB = -60.0 * (delayTimeSec / -decayTimeSec);
+	//	gain = -pow(10.0, dB / 20);
+	//}
+	//else { // Prevent division by zero
+	//	// If decay time is zero gain should be zero also => samples are simply delayed by the specified delay time
+	//	gain = 0.0;
+	//}
+
+	if (decayTimeSec != 0.0) {
 		dB = -60.0 * (delayTimeSec / decayTimeSec);
 		gain = pow(10.0, dB / 20);
 	}
-	else if (decayTimeSec < 0.0) { // gain has to be negative => same result but 180° phase shift
-		dB = -60.0 * (delayTimeSec / -decayTimeSec);
-		gain = -pow(10.0, dB / 20);
-	}
-	else { // Prevent division by zero
-		// If decay time is zero gain should be zero also => samples are simply delayed by the specified delay time
+	else {
 		gain = 0.0;
+	}
+	if (!gainSignIsPositive) {
+		gain = -gain;
 	}
 }
 
