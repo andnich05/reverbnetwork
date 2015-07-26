@@ -188,19 +188,19 @@ void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32
 
 tresult PLUGIN_API ReverbNetworkEditor::canResize() {
 	// Make Editor resizeable
-	return kResultTrue;
+	return kResultFalse;
 }
 
 tresult PLUGIN_API ReverbNetworkEditor::onSize(ViewRect* newSize) {
 	// Change the views sizes
-	frame->setSize(newSize->getWidth(), newSize->getHeight());
+	/*frame->setSize(newSize->getWidth(), newSize->getHeight());
 	frame->setViewSize(CRect(CPoint(0, 0), CPoint(newSize->getWidth(), newSize->getHeight())));
 	frame->setMouseableArea(frame->getViewSize());
 	mainView->setViewSize(CRect(CPoint(0, 0), CPoint(newSize->getWidth(), newSize->getHeight())));
 	mainView->setMouseableArea(mainView->getViewSize());
 	splitView->setViewSize(CRect(CPoint(0, 0), CPoint(newSize->getWidth() - viewVstOutputSelect->getWidth() - viewModuleListMain->getWidth() - 40, newSize->getHeight())));
 	splitView->setMouseableArea(splitView->getViewSize());
-	splashOverrideParametersQuery->setViewSize(mainView->getViewSize());
+	splashOverrideParametersQuery->setViewSize(mainView->getViewSize());*/
 	return kResultTrue;
 }
 
@@ -224,53 +224,18 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	frame = new CFrame(editorSize, parent, this);
 	frame->setBackgroundColor(CColor(110, 110, 110, 255));
 
-	workspaceView = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
-	workspaceView->setBackgroundColor(CColor(80, 80, 80, 255));
+	splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(1000, frame->getHeight())), CSplitView::kVertical, 8);
+
+	//workspaceView = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
+	workspaceView = new CViewContainer(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight() / 2)));
+	workspaceView->setBackgroundColor(CColor(30, 30, 30, 255));
 	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
-	workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
-	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	/*workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));*/
 
-	// Create Module List
-	viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
-	CScrollView* viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(100, 500)), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
-	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
-	CRowColumnView* viewModuleList = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
-	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-		apGuiModules.push_back(createAPModule());
-		CRowColumnView* viewModuleRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
-		std::string title = "APM";
-		title.append(std::to_string(i));
-		CTextLabel* labelModuleTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(45, 18)), title.c_str());
-		labelModuleTitle->setFont(kNormalFontSmall);
-		labelModuleTitle->setBackColor(CColor(0, 0, 0, 0));
-		labelModuleTitle->setFrameColor(CColor(0, 0, 0, 0));
-		labelModuleTitle->setHoriAlign(CHoriTxtAlign::kLeftText);
-		CCheckBox* checkBoxShowHideModule = new CCheckBox(CRect(CPoint(0, 0), CPoint(18, 18)), this, id_general_checkBox_moduleVisibleFirst + i, "");
-		addGuiElementPointer(checkBoxShowHideModule, id_general_checkBox_moduleVisibleFirst + i);
-		viewModuleRow->addView(labelModuleTitle);
-		viewModuleRow->addView(checkBoxShowHideModule);
-		viewModuleRow->sizeToFit();
-		viewModuleList->addView(viewModuleRow);
-		viewModuleRow->setBackgroundColor(CColor(0, 0, 0, 0));
-	}
-	viewModuleScrollList->addView(viewModuleList);
-	viewModuleScrollList->setContainerSize(viewModuleList->getViewSize());
-	viewModuleList->sizeToFit();
-	viewModuleListMain->addView(createGroupTitle("Module List:", viewModuleScrollList->getWidth()));
-	viewModuleListMain->addView(viewModuleScrollList);
 
-	// ToDo: Move those buttons into the graphics view (like a tool box or something...)
-	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(120, 20)), this, id_graphicsView_addModule, "Add module");
-	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
-	viewModuleListMain->addView(buttonAddModule);
-	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(120, 20)), this, id_graphicsView_rearrangeModules, "Rearrange Modules");
-	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
-	viewModuleListMain->addView(buttonRearrange);
+	
 
-	viewModuleListMain->sizeToFit();
-	viewModuleListMain->setBackgroundColor(CColor(0, 0, 0, 0));
-	viewModuleScrollList->setBackgroundColor(CColor(50, 50, 50, 255));
-	viewModuleList->setBackgroundColor(CColor(0, 0, 0, 0));
 
 	// Save the default module parameters for later
 	if (apGuiModules.size() > 0) {
@@ -279,7 +244,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	// Create VST output selection 
 	viewVstOutputSelect = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
-	viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
+	//viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
 		CRowColumnView* viewOutputSelectRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 0.0);
@@ -321,13 +286,15 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	textEditPresetFilePath->setFont(kNormalFontSmall);
 	CTextButton* buttonOpenPreset = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_openPreset, "Open Preset");
 	addGuiElementPointer(buttonOpenPreset, id_general_button_openPreset);
+	buttonOpenPreset->setRoundRadius(1);
 	CTextButton* buttonSavePreset = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_savePreset, "Save Preset");
 	addGuiElementPointer(buttonSavePreset, id_general_button_savePreset);
+	buttonSavePreset->setRoundRadius(1);
 	viewVstOutputSelect->addView(textEditPresetFilePath);
 	viewVstOutputSelect->addView(buttonOpenPreset);
 	viewVstOutputSelect->addView(buttonSavePreset);
 
-	temp = "VST Inputs: ";
+	/*temp = "VST Inputs: ";
 	temp.append(std::to_string((int)(MAXVSTINPUTS)));
 	CTextLabel* labelNumberOfVstInputs = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
 	labelNumberOfVstInputs->setFont(kNormalFontSmall);
@@ -350,29 +317,84 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	labelNumberOfModules->setHoriAlign(CHoriTxtAlign::kLeftText);
 	viewVstOutputSelect->addView(labelNumberOfVstInputs);
 	viewVstOutputSelect->addView(labelNumberOfVstOutputs);
-	viewVstOutputSelect->addView(labelNumberOfModules);
+	viewVstOutputSelect->addView(labelNumberOfModules);*/
 
 
 	viewVstOutputSelect->sizeToFit();
 
-	splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(800, 600)), CSplitView::kVertical);
+	
 
-	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(2000, 1000)), MAXMODULENUMBER, this);
-	graphicsView->setBackgroundColor(CColor(0, 0, 0, 0));
+	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())), MAXMODULENUMBER, this);
+	graphicsView->setBackgroundColor(CColor(30, 30, 30, 255));
+	//graphicsView->setViewSize(CRect(CPoint(0, 0), CPoint(graphicsView->getViewSize().getWidth(), graphicsView->getViewSize().getHeight() / 2)));
 	//splitView->addView(graphicsView);
-	CScrollView* scrollViewGraphics = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
+	/*CScrollView* scrollViewGraphics = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
 	scrollViewGraphics->addView(graphicsView);
 	scrollViewGraphics->setBackgroundColor(CColor(80, 80, 80, 255));
 	scrollViewGraphics->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
 	scrollViewGraphics->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
-	scrollViewGraphics->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
-	splitView->addView(scrollViewGraphics);
-	splitView->addView(workspaceView);
+	scrollViewGraphics->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));*/
+
+	// ToDo: Move those buttons into the graphics view (like a tool box or something...)
+	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_addModule, "Add");
+	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
+	buttonAddModule->setRoundRadius(1);
+	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_rearrangeModules, "Sort");
+	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
+	buttonRearrange->setRoundRadius(1);
+	CRowColumnView* viewGraphicsViewToolBox = new CRowColumnView(CRect(CPoint(0, 0), CPoint(100, graphicsView->getHeight())), CRowColumnView::kRowStyle);
+	viewGraphicsViewToolBox->addView(buttonAddModule);
+	viewGraphicsViewToolBox->addView(buttonRearrange);
+	viewGraphicsViewToolBox->setBackgroundColor(CColor(50, 50, 50, 255));
+	CRowColumnView* graphicsMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight() / 2)), CRowColumnView::kColumnStyle);
+	graphicsMainView->addView(graphicsView);
+	graphicsMainView->addView(viewGraphicsViewToolBox);
+	//graphicsMainView->sizeToFit();
+
+
+
+	// Create Module List
+	viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	CScrollView* viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(90, splitView->getHeight())), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
+	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	viewModuleScrollList->setStyle(CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars);
+	CRowColumnView* viewModuleList = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
+	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+		apGuiModules.push_back(createAPModule());
+		std::string title = "APM";
+		title.append(std::to_string(i));
+		CCheckBox* checkBoxShowHideModule = new CCheckBox(CRect(CPoint(0, 0), CPoint(80, 18)), this, id_general_checkBox_moduleVisibleFirst + i, title.c_str());
+		checkBoxShowHideModule->setFont(kNormalFontSmall);
+		addGuiElementPointer(checkBoxShowHideModule, id_general_checkBox_moduleVisibleFirst + i);
+		viewModuleList->addView(checkBoxShowHideModule);
+	}
+	viewModuleScrollList->addView(viewModuleList);
+	viewModuleScrollList->setContainerSize(viewModuleList->getViewSize());
+	viewModuleList->sizeToFit();
+	//viewModuleListMain->addView(createGroupTitle("Module List:", viewModuleScrollList->getWidth()));
+	viewModuleListMain->addView(viewModuleScrollList);
+	viewModuleListMain->sizeToFit();
+	viewModuleListMain->setBackgroundColor(CColor(0, 0, 0, 0));
+	viewModuleScrollList->setBackgroundColor(CColor(50, 50, 50, 255));
+	viewModuleList->setBackgroundColor(CColor(0, 0, 0, 0));
+
+
+
+	CRowColumnView* workspaceMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight())), CRowColumnView::kColumnStyle);
+	workspaceMainView->addView(workspaceView);
+	workspaceMainView->addView(viewModuleListMain);
+	workspaceMainView->setBackgroundColor(CColor(50, 50, 50, 255));
+
+	splitView->addView(graphicsMainView);
+	splitView->addView(workspaceMainView);
 	initializeGraphicsView();
+	workspaceView->setViewSize(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())));
+	
+
 
 	mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
-	mainView->addView(viewModuleListMain);
+	//mainView->addView(viewModuleListMain);
 	mainView->addView(viewVstOutputSelect);
 	mainView->sizeToFit();
 	mainView->setBackgroundColor(CColor(0, 0, 0, 0));
@@ -406,7 +428,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
 	
 	mainView->addView(splashOverrideParametersQuery);
-	frame->sizeToFit();
+	//frame->sizeToFit();
 	
 	knobBackground->forget();
 	knobBackgroundSmall->forget();
@@ -817,6 +839,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 					workspaceView->getView(i)->setVisible(value != 0.0);
 					if (value == 1.0) {
 						dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(workspaceView->getView(i), workspaceView->getNbViews() - 1);
+						graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst);
 					}
 					//// Draw the module if check box is checked
 					//if (value == 1.0) {
@@ -930,19 +953,27 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 
 	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_module_button_hideFirst + moduleId, "X");
 	addGuiElementPointer(closeViewButton, id_module_button_hideFirst + moduleId);
+	closeViewButton->setRoundRadius(1);
 	handleView->addView(closeViewButton);
 	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 40, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_module_button_collapseFirst + moduleId, "^");
 	addGuiElementPointer(hideViewButton, id_module_button_collapseFirst + moduleId);
+	hideViewButton->setRoundRadius(1);
 	hideViewButton->setStyle(CTextButton::kOnOffStyle);
 	handleView->addView(hideViewButton);
 	CTextButton* defaultParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 220, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_defaultParametersFirst + moduleId, "Default");
 	addGuiElementPointer(defaultParametersButton, id_module_button_defaultParametersFirst + moduleId);
+	defaultParametersButton->setRoundRadius(1);
+	defaultParametersButton->setFont(kNormalFontSmall);
 	handleView->addView(defaultParametersButton);
 	CTextButton* copyParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 160, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_copyParametersFirst + moduleId, "Copy");
 	addGuiElementPointer(copyParametersButton, id_module_button_copyParametersFirst + moduleId);
+	copyParametersButton->setRoundRadius(1);
+	copyParametersButton->setFont(kNormalFontSmall);
 	handleView->addView(copyParametersButton);
 	CTextButton* pasteParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 100, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_pasteParametersFirst + moduleId, "Paste");
 	addGuiElementPointer(pasteParametersButton, id_module_button_pasteParametersFirst + moduleId);
+	pasteParametersButton->setRoundRadius(1);
+	pasteParametersButton->setFont(kNormalFontSmall);
 	handleView->addView(pasteParametersButton);
 
 	CRect handleViewSize = handleView->getViewSize();
@@ -951,7 +982,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 
 	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
 		CPoint(0, 0)), handleViewSize, moduleId, this);
-	baseModuleView->setBackgroundColor(CColor(50, 50, 50, 255));
+	baseModuleView->setBackgroundColor(CColor(60, 60, 60, 255));
 
 	std::string temp = "APM";
 	temp.append(std::to_string(moduleId));
@@ -1062,6 +1093,7 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
 	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonStability, id_equalizer_button_stabilityFirst + moduleId);
+	buttonStability->setRoundRadius(1);
 	buttonStability->setMouseEnabled(false);
 	buttonStability->setFont(CFontRef(kNormalFontSmall));
 	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
@@ -1354,6 +1386,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	buttonMute->setTextColor(CColor(180, 0, 0, 255));
 	buttonMute->setGradientStartColorHighlighted(CColor(160, 0, 0, 255));
 	buttonMute->setGradientEndColorHighlighted(CColor(100, 0, 0, 255));
+	buttonMute->setRoundRadius(1);
 	
 	CTextButton* buttonSolo = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_soloFirst + idOffset, "S", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonSolo, id_mixer_button_soloFirst + idOffset);
@@ -1361,6 +1394,7 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 	buttonSolo->setTextColor(CColor(0, 180, 0, 255));
 	buttonSolo->setGradientStartColorHighlighted(CColor(0, 160, 0, 255));
 	buttonSolo->setGradientEndColorHighlighted(CColor(0, 100, 0, 255));
+	buttonSolo->setRoundRadius(1);
 
 	mixerRow->addView(inputTitle);
 	mixerRow->addView(inputSelect);

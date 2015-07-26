@@ -142,9 +142,6 @@
     <ClCompile Include="source\GuiBaseAPModule.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
-    <ClCompile Include="source\GuiWorkspaceView.cpp">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClCompile>
     <ClCompile Include="source\PresetReadWrite.cpp">
       <Filter>Source Files\source</Filter>
     </ClCompile>
@@ -189,6 +186,9 @@
     </ClCompile>
     <ClCompile Include="source\TimerThread.cpp">
       <Filter>Source Files\source</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiScrollViewAutoSizeable.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -351,9 +351,6 @@
     <ClInclude Include="source\ReverbNetworkEnums.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
-    <ClInclude Include="source\GuiWorkspaceView.h">
-      <Filter>Source Files\sourceVstGui</Filter>
-    </ClInclude>
     <ClInclude Include="source\PresetReadWrite.h">
       <Filter>Source Files\source</Filter>
     </ClInclude>
@@ -395,6 +392,9 @@
     </ClInclude>
     <ClInclude Include="source\TimerThread.h">
       <Filter>Source Files\source</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiScrollViewAutoSizeable.h">
+      <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

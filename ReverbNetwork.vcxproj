@@ -230,7 +230,7 @@
     <ClCompile Include="source\Logging.cpp" />
     <ClCompile Include="source\QuantizerModule.cpp" />
     <ClCompile Include="source\PresetReadWrite.cpp" />
-    <ClCompile Include="source\GuiWorkspaceView.cpp" />
+    <ClCompile Include="source\GuiScrollViewAutoSizeable.cpp" />
     <ClCompile Include="source\GuiCustomValueEdit.cpp" />
     <ClCompile Include="source\GuiBaseAPModule.cpp" />
     <ClCompile Include="source\TimerThread.cpp" />
@@ -281,7 +281,7 @@
     <ClInclude Include="source\Logging.h" />
     <ClInclude Include="source\QuantizerModule.h" />
     <ClInclude Include="source\PresetReadWrite.h" />
-    <ClInclude Include="source\GuiWorkspaceView.h" />
+    <ClInclude Include="source\GuiScrollViewAutoSizeable.h" />
     <ClInclude Include="source\GuiCustomValueEdit.h" />
     <ClInclude Include="source\GuiBaseAPModule.h" />
     <ClInclude Include="source\ReverbNetworkEnums.h" />

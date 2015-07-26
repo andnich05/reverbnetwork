@@ -21,7 +21,7 @@ public:
 	virtual CMouseEventResult onMouseMoved(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 	virtual CMouseEventResult onMouseUp(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
 
-	//virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
+	virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);	///< draw the background
 
 	virtual void setViewSize(const CRect& rect, bool invalid = true) VSTGUI_OVERRIDE_VMETHOD;
 

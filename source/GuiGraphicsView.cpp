@@ -54,6 +54,10 @@ namespace VSTGUI {
 		return false;
 	}
 
+	void GuiGraphicsView::makeModuleVisible(const int& moduleId) {
+		modules[moduleId]->setVisible(true);
+	}
+
 	void GuiGraphicsView::createVstInput() {
 		std::string title = "VST IN ";
 		title.append(std::to_string(vstInputs.size()));

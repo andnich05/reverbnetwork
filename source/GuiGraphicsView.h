@@ -29,6 +29,7 @@ namespace VSTGUI {
 		virtual void createModule(const std::string& title, const int& id, const int& numberOfInputs);
 		// Makes another module visible; returns false if the maximum number of modules is reached
 		virtual bool addModule();
+		virtual void makeModuleVisible(const int& moduleId);
 		virtual void createVstInput();
 		virtual void createVstOutput();
 		virtual void setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames);

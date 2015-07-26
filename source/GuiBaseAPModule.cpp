@@ -5,6 +5,7 @@
 #include "cframe.h"
 #include "ifocusdrawing.h"
 #include "controls/ccontrol.h"
+//#include "cscrollview.h"
 
 #include <algorithm>
 #include <assert.h>
@@ -123,20 +124,27 @@ CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonStat
 		this->setViewSize(CRect(CPoint(where.x - mousePressedX, where.y - mousePressedY), CPoint(this->getWidth(), this->getHeight())));
 		// invalid() updates the GUI; setDirty() is similar but does not force an immediate redraw, although setDirty() is thread safe
 
-		// Don't paint the modules outside the parent module
+		//CRect size = dynamic_cast<CScrollView*>(getParentView())->getContainerSize();
+
+		// Don't paint the modules outside the parent view
 		if (this->getViewSize().getBottomRight().y > getParentView()->getViewSize().getBottomRight().y) {
 			this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		if (this->getViewSize().getBottomRight().x > getParentView()->getViewSize().getBottomRight().x) {
 			this->setViewSize(CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
-		if (this->getViewSize().getTopLeft().x < getParentView()->getViewSize().getTopLeft().x) {
+		if (this->getViewSize().getTopLeft().x < 0.0) {
 			this->setViewSize(CRect(CPoint(0, getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
-		if (this->getViewSize().getTopLeft().y < getParentView()->getViewSize().getTopLeft().y) {
+		if (this->getViewSize().getTopLeft().y < 0.0) {
 			this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, 0), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(getViewSize().getBottomRight().y).c_str());
+		fprintf(pFile, "y(n): %s\n", std::to_string(getParentView()->getViewSize().getBottomRight().y).c_str());
+		fclose(pFile);*/
+
 		this->setMouseableArea(this->getViewSize());
 		this->getParentView()->setDirty();
 	}
@@ -257,48 +265,56 @@ void GuiBaseAPModule::setViewSize(const CRect &rect, bool invalid)
 }
 
 
-//void GuiBaseAPModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
-//{
-//	if (getDrawBackground())
-//	{
-//		CRect oldClip;
-//		pContext->getClipRect(oldClip);
-//		CRect newClip(_updateRect);
-//		newClip.bound(oldClip);
-//		pContext->setClipRect(newClip);
-//		CRect tr(0, 0, getViewSize().getWidth(), getViewSize().getHeight());
-//		getDrawBackground()->draw(pContext, tr, backgroundOffset);
-//		pContext->setClipRect(oldClip);
-//	}
-//	else if ((backgroundColor.alpha != 255 && getTransparency()) || !getTransparency())
-//	{
-//		pContext->setDrawMode(kAliasing);
-//		pContext->setLineWidth(1);
-//		pContext->setFillColor(backgroundColor);
-//		pContext->setFrameColor(CColor(100, 100, 100, 255));
-//		pContext->setLineStyle(kLineSolid);
-//		/*CRect r;
-//		if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
-//		{
-//			r = _updateRect;
-//			r.inset(-1, -1);
-//		}
-//		else
-//		{
-//			r = getViewSize();
-//			r.offset(-r.left, -r.top);
-//		}*/
-//
-//		CRect s = this->getViewSize();
-//		s.setTopLeft(frameToLocal(s.getTopLeft()));
-//		s.setBottomRight(frameToLocal(s.getBottomRight()));
-//		s.offset(1, 0);
-//		pContext->drawRect(s, backgroundColorDrawStyle);
-//
-//		pContext->setLineWidth(1);
-//		pContext->setFillColor(CColor(30, 30, 30, 255));
-//		pContext->drawRect(handleRegion, backgroundColorDrawStyle);
-//	}
-//}
+//-----------------------------------------------------------------------------
+/**
+* @param pContext the context which to use to draw the background
+* @param _updateRect the area which to draw
+*/
+void GuiBaseAPModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect)
+{
+	if (getDrawBackground())
+	{
+		CRect oldClip;
+		pContext->getClipRect(oldClip);
+		CRect newClip(_updateRect);
+		newClip.bound(oldClip);
+		pContext->setClipRect(newClip);
+		CRect tr(0, 0, getViewSize().getWidth(), getViewSize().getHeight());
+		getDrawBackground()->draw(pContext, tr, backgroundOffset);
+		pContext->setClipRect(oldClip);
+	}
+	else if ((backgroundColor.alpha != 255 && getTransparency()) || !getTransparency())
+	{
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(34576).c_str());
+		fclose(pFile);*/
+		pContext->setDrawMode(kAliasing);
+		pContext->setLineWidth(1);
+		pContext->setFillColor(backgroundColor);
+		pContext->setFrameColor(backgroundColor);
+		pContext->setLineStyle(kLineSolid);
+		CRect r;
+		if (backgroundColorDrawStyle == kDrawFilled || (backgroundColorDrawStyle == kDrawFilledAndStroked && backgroundColor.alpha == 255))
+		{
+			r = _updateRect;
+			r.inset(-1, -1);
+		}
+		else
+		{
+			r = getViewSize();
+			r.offset(-r.left, -r.top);
+		}
+		//r.inset(1, 1);
+		pContext->drawRect(r, backgroundColorDrawStyle);
+
+
+	}
+
+	pContext->setFillColor(CColor(0, 0, 0, 0));
+	pContext->setFrameColor(CColor(0, 0, 0, 255));
+	CRect rect = getViewSize();
+	rect.offset(-rect.left, -rect.top);
+	pContext->drawRect(rect);
+}
 
 }

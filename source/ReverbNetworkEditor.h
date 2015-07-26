@@ -79,7 +79,8 @@ private:
 	double sampleRate;
 
 	// View where the modules are placed and where they can be moved around and stuff
-	CScrollView* workspaceView;
+	//CScrollView* workspaceView;
+	CViewContainer* workspaceView;
 	CSplitView* splitView;
 	CRowColumnView* mainView;
 	CRowColumnView* viewVstOutputSelect;
