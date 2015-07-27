@@ -163,15 +163,15 @@ namespace VSTGUI {
 	void GuiGraphicsModule::redraw(CDrawContext* pContext) {
 		if (isVisible()) {
 			pContext->setFrameColor(CColor(0, 0, 0, 0));
-			pContext->setFillColor(CColor(50, 50, 50));
+			pContext->setFillColor(CCOLOR_GRAPHICSVIEW_MODULEHANDLE);
 			pContext->setLineWidth(1);
 			pContext->setFont(kNormalFontSmaller);
 			pContext->setFontColor(CColor(255, 255, 255));
 			pContext->drawRect(handleRegion, CDrawStyle::kDrawFilledAndStroked); // title rect
 			pContext->drawString(title.c_str(), CPoint(2, 10), false); // title string
-			pContext->setFillColor(CColor(50, 50, 50));
+			pContext->setFillColor(CCOLOR_GRAPHICSVIEW_MODULEBACKGROUND);
 			pContext->drawRect(mainRegion, kDrawFilledAndStroked); // main rect
-			pContext->setFrameColor(CColor(0, 0, 0));
+			pContext->setFrameColor(CCOLOR_MODULE_MAINFRAME);
 			pContext->setFillColor(CColor(0, 0, 0, 0));
 			pContext->drawRect(completeRegion); // Frame
 			std::stringstream temp;

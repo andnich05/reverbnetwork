@@ -29,7 +29,8 @@ namespace VSTGUI {
 		virtual void createModule(const std::string& title, const int& id, const int& numberOfInputs);
 		// Makes another module visible; returns false if the maximum number of modules is reached
 		virtual bool addModule();
-		virtual void makeModuleVisible(const int& moduleId);
+		virtual void makeModuleVisible(const int& moduleId, const bool& visible);
+		virtual bool isModuleVisible(const int& moduleId);
 		virtual void createVstInput();
 		virtual void createVstOutput();
 		virtual void setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames);
@@ -39,8 +40,17 @@ namespace VSTGUI {
 		//virtual void setModuleEnabled(const int& id, const bool& enabled);
 		virtual void rearrangeModules();
 
+		virtual void setModulePosition(const int& moduleId, const CPoint& position);
+		virtual CPoint getModulePosition(const int& moduleId) const;
+		virtual void setVstInputPosition(const int& vstInput, const CPoint& position);
+		virtual CPoint getVstInputPosition(const int& vstInput) const;
+		virtual void setVstOutputPosition(const int& vstOutput, const CPoint& position);
+		virtual CPoint getVstOutputPosition(const int& vstOutput) const;
+
 		inline const Connection& getDrawnConnection() { return drawnConnection; }
 		inline const int& getModuleClicked() { return moduleClicked; }
+
+		void setModuleTitle(const int& moduleId, const std::string& title);
 
 		// Overrides
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);

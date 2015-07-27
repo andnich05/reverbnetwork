@@ -28,6 +28,7 @@ namespace VSTGUI {
 		inline const CPoint& getMouseUpCoordinates() { return mouseUpCoordinates; }
 		inline const CPoint& getMouseDownCoordinates() { return mouseDownCoordinates; }
 		inline const int& getInputToUpdate() { return inputToUpdate; }
+		inline void setTitle(const std::string& title) { this->title = title; }
 
 		// Overrides
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);

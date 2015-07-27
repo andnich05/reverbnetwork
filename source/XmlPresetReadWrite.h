@@ -75,6 +75,28 @@ public:
 		std::vector<int> vstOutputMenuIndexes;
 	};
 
+	struct graphicsModule {
+		bool isVisible;
+		double positionX;
+		double positionY;
+	};
+
+	struct graphicsVstInput {
+		double positionX;
+		double positionY;
+	};
+
+	struct graphicsVstOutput {
+		double positionX;
+		double positionY;
+	};
+
+	struct graphicsView {
+		std::vector<graphicsModule> modules;
+		std::vector<graphicsVstInput> vstInputs;
+		std::vector<graphicsVstOutput> vstOutputs;
+	};
+
 	struct preset {
 		std::string name;
 		std::string buildVersion;
@@ -84,6 +106,7 @@ public:
 		int maxVstInputs;
 		int maxVstOutputs;
 		std::vector<module> modules;
+		graphicsView graphicsView;
 		general generalParamters;
 	};
 

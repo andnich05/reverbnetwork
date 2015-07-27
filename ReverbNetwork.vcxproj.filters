@@ -190,6 +190,12 @@
     <ClCompile Include="source\GuiScrollViewAutoSizeable.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
+    <ClCompile Include="source\GuiCustomTextLabel.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
+    <ClCompile Include="source\GuiCustomRowColumnView.cpp">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -394,6 +400,12 @@
       <Filter>Source Files\source</Filter>
     </ClInclude>
     <ClInclude Include="source\GuiScrollViewAutoSizeable.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiCustomTextLabel.h">
+      <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\GuiCustomRowColumnView.h">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClInclude>
   </ItemGroup>

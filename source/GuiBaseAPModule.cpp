@@ -1,5 +1,7 @@
 #include "GuiBaseAPModule.h"
 
+#include "ReverbNetworkDefines.h"
+
 #include "coffscreencontext.h"
 #include "cbitmap.h"
 #include "cframe.h"
@@ -311,7 +313,7 @@ void GuiBaseAPModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _u
 	}
 
 	pContext->setFillColor(CColor(0, 0, 0, 0));
-	pContext->setFrameColor(CColor(0, 0, 0, 255));
+	pContext->setFrameColor(CCOLOR_MODULE_MAINFRAME);
 	CRect rect = getViewSize();
 	rect.offset(-rect.left, -rect.top);
 	pContext->drawRect(rect);

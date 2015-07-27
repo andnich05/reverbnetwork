@@ -95,6 +95,28 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 		}
 		loadedPreset.generalParamters = g;
 
+		graphicsView gV = {};
+		for (tool = doc.child("reverbNetwork").child("preset").child("graphicsView").child("module"); tool; tool = tool.next_sibling("module")) {
+			graphicsModule gM = {};
+			gM.isVisible = tool.child("isVisible").text().as_bool();
+			gM.positionX = tool.child("position").child("x").text().as_double();
+			gM.positionY = tool.child("position").child("y").text().as_double();
+			gV.modules.push_back(gM);
+		}
+		for (tool = doc.child("reverbNetwork").child("preset").child("graphicsView").child("vstInput"); tool; tool = tool.next_sibling("vstInput")) {
+			graphicsVstInput gI = {};
+			gI.positionX = tool.child("position").child("x").text().as_double();
+			gI.positionY = tool.child("position").child("y").text().as_double();
+			gV.vstInputs.push_back(gI);
+		}
+		for (tool = doc.child("reverbNetwork").child("preset").child("graphicsView").child("vstOutput"); tool; tool = tool.next_sibling("vstOutput")) {
+			graphicsVstOutput gO = {};
+			gO.positionX = tool.child("position").child("x").text().as_double();
+			gO.positionY = tool.child("position").child("y").text().as_double();
+			gV.vstOutputs.push_back(gO);
+		}
+		loadedPreset.graphicsView = gV;
+
 		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(tool.child("name").text().as_double()).c_str());
 		fclose(pFile);*/
@@ -190,6 +212,27 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const
 	for (auto&& vstOut : p.generalParamters.vstOutputMenuIndexes) {
 		generalNode.append_child("vstOutputMenuIndex").text().set(vstOut);
 	}
+
+	// Graphics View
+	pugi::xml_node graphicsNode = presetNode.append_child("graphicsView");
+	for (auto&& module : p.graphicsView.modules) {
+		pugi::xml_node moduleNode = graphicsNode.append_child("module");
+		moduleNode.append_child("position").append_child("x").text().set(module.positionX);
+		moduleNode.child("position").append_child("y").text().set(module.positionY);
+		moduleNode.append_child("isVisible").text().set(module.isVisible);
+	}
+	for (auto&& vstInput : p.graphicsView.vstInputs) {
+		pugi::xml_node moduleNode = graphicsNode.append_child("vstInput");
+		moduleNode.append_child("position").append_child("x").text().set(vstInput.positionX);
+		moduleNode.child("position").append_child("y").text().set(vstInput.positionY);
+	}
+	for (auto&& vstOutput : p.graphicsView.vstOutputs) {
+		pugi::xml_node moduleNode = graphicsNode.append_child("vstOutput");
+		moduleNode.append_child("position").append_child("x").text().set(vstOutput.positionX);
+		moduleNode.child("position").append_child("y").text().set(vstOutput.positionY);
+	}
+
+
 
 	// Save XML file
 	bool result = false;

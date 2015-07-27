@@ -10,6 +10,7 @@
 #include "GuiGraphicsView.h"
 #include "ReverbNetworkEnums.h"
 #include "GuiCustomSplashScreen.h"
+#include "GuiCustomRowColumnView.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -28,6 +29,7 @@ public:
 	typedef struct EditorUserData{
 		std::string presetName;
 		std::vector<std::string> moduleNames;
+		XmlPresetReadWrite::graphicsView graphicsView;
 	};
 	EditorUserData editorUserData;
 
@@ -82,9 +84,9 @@ private:
 	//CScrollView* workspaceView;
 	CViewContainer* workspaceView;
 	CSplitView* splitView;
-	CRowColumnView* mainView;
-	CRowColumnView* viewVstOutputSelect;
-	CRowColumnView* viewModuleListMain;
+	GuiCustomRowColumnView* mainView;
+	GuiCustomRowColumnView* viewVstOutputSelect;
+	GuiCustomRowColumnView* viewModuleListMain;
 	GuiCustomSplashScreen* splashOverrideParametersQuery;
 
 	// True if the id (= the index of the vector) is already taken
@@ -110,11 +112,11 @@ private:
 	// Create the GUI for a Allpass module
 	GuiBaseAPModule* createAPModule();
 
-	CRowColumnView* createMixer(const CRect& parentViewSize, const int& moduleId);
-	CRowColumnView* createQuantizer(const CRect& parentViewSize, const int& moduleId);
-	CRowColumnView* createEqualizer(const CRect& parentViewSize, const int& moduleId);
-	CRowColumnView* createAllpass(const CRect& parentViewSize, const int& moduleId);
-	CRowColumnView* createOutput(const CRect& parentViewSize, const int& moduleId);
+	GuiCustomRowColumnView* createMixer(const CRect& parentViewSize, const int& moduleId);
+	GuiCustomRowColumnView* createQuantizer(const CRect& parentViewSize, const int& moduleId);
+	GuiCustomRowColumnView* createEqualizer(const CRect& parentViewSize, const int& moduleId);
+	GuiCustomRowColumnView* createAllpass(const CRect& parentViewSize, const int& moduleId);
+	GuiCustomRowColumnView* createOutput(const CRect& parentViewSize, const int& moduleId);
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
@@ -125,7 +127,7 @@ private:
 	// Create a text label with a title for a group
 	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) const;
 
-	CRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset);
+	GuiCustomRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset);
 
 	// Add a GUI element pointer to the vector with the GUI-ID as the index
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);

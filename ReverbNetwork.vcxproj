@@ -219,6 +219,8 @@
     <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
     <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
     <ClCompile Include="source\ComponentMessage.cpp" />
+    <ClCompile Include="source\GuiCustomRowColumnView.cpp" />
+    <ClCompile Include="source\GuiCustomTextLabel.cpp" />
     <ClCompile Include="source\GuiGraphicsConnections.cpp" />
     <ClCompile Include="source\GuiGraphicsModule.cpp" />
     <ClCompile Include="source\GuiGraphicsView.cpp" />
@@ -271,6 +273,8 @@
     <ClInclude Include="..\..\..\..\source\vst\vstguieditor.h" />
     <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
     <ClInclude Include="source\ComponentMessage.h" />
+    <ClInclude Include="source\GuiCustomRowColumnView.h" />
+    <ClInclude Include="source\GuiCustomTextLabel.h" />
     <ClInclude Include="source\GuiGraphicsConnections.h" />
     <ClInclude Include="source\GuiGraphicsModule.h" />
     <ClInclude Include="source\GuiGraphicsView.h" />

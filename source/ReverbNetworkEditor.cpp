@@ -6,6 +6,9 @@
 #include "GuiOptionMenuInputSelector.h"
 #include "GuiGraphicsView.h"
 
+
+#include "GuiCustomTextLabel.h"
+
 #include <mutex>
 
 #include <iostream>
@@ -158,6 +161,7 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 	setRect(viewRect);
 	editorUserData.presetName = "Preset 1";
 	editorUserData.moduleNames.resize(MAXMODULENUMBER, "");
+	editorUserData.graphicsView = {};
 
 	// Set GUI refresh timer to 40 ms (25 Hz)
 	setIdleRate(40);
@@ -166,7 +170,7 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 }
 
 ReverbNetworkEditor::~ReverbNetworkEditor() {
-
+	
 }
 
 void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32_t& guiId) {
@@ -222,43 +226,34 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	CRect editorSize(0, 0, 1200, 700);
 	frame = new CFrame(editorSize, parent, this);
-	frame->setBackgroundColor(CColor(110, 110, 110, 255));
+	frame->setBackgroundColor(CCOLOR_GRAPHICSVIEW_BACKGROUND);
 
 	splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(1000, frame->getHeight())), CSplitView::kVertical, 8);
 
 	//workspaceView = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
 	workspaceView = new CViewContainer(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight() / 2)));
-	workspaceView->setBackgroundColor(CColor(30, 30, 30, 255));
+	workspaceView->setBackgroundColor(CCOLOR_WORKSPACE_BACKGROUND);
 	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
 	/*workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
 	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));*/
 
 
-	
-
-
-	// Save the default module parameters for later
-	if (apGuiModules.size() > 0) {
-		copyModuleParameters(0, defaultModuleParameters);
-	}
 
 	// Create VST output selection 
-	viewVstOutputSelect = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
+	viewVstOutputSelect = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
 	//viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
-		CRowColumnView* viewOutputSelectRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 0.0);
+		GuiCustomRowColumnView* viewOutputSelectRow = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 0.0);
 		std::string title = "VST";
 		title.append(std::to_string(i));
 		title.append(" OUT:");
-		CTextLabel* labelVstOutputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(70, 20)), title.c_str());
-		labelVstOutputTitle->setFont(kNormalFontSmall);
-		labelVstOutputTitle->setBackColor(CColor(0, 0, 0, 0));
-		labelVstOutputTitle->setFrameColor(CColor(0, 0, 0, 0));
-		//labelVstOutputTitle->setHoriAlign(CHoriTxtAlign::kLeftText);
+		GuiCustomTextLabel* labelVstOutputTitle = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(70, 20)), title.c_str(), kNormalFontSmall);
 		viewOutputSelectRow->addView(labelVstOutputTitle);
 		GuiOptionMenuInputSelector* menu = new GuiOptionMenuInputSelector(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_optionMenu_vstOutputFirst + i);
 		addGuiElementPointer(menu, id_general_optionMenu_vstOutputFirst + i);
+		menu->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
+		menu->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
 		menu->setFont(kNormalFontSmall);
 		menu->addEntry("<Not Connected>");
 		for (uint32 j = 0; j < MAXMODULENUMBER; ++j) {
@@ -273,21 +268,34 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 			temp.append(" IN");
 			menu->addEntry((temp).c_str());
 		}
-		menu->setFrameColor(CColor(0, 0, 0, 0));
 		viewOutputSelectRow->addView(menu);
 		viewOutputSelectRow->sizeToFit();
-		viewOutputSelectRow->setBackgroundColor(CColor(50, 50, 50, 255));
+		viewOutputSelectRow->setBackgroundColor(CCOLOR_NOCOLOR);
 		viewVstOutputSelect->addView(viewOutputSelectRow);
 	}
-	viewVstOutputSelect->setBackgroundColor(CColor(0, 0, 0, 0));
+	viewVstOutputSelect->setBackgroundColor(CCOLOR_NOCOLOR);
 
 	CTextEdit* textEditPresetFilePath = new CTextEdit(CRect(CPoint(0, 0), CPoint(170, 20)), this, id_general_textEdit_presetFilePath, "Preset 1");
 	addGuiElementPointer(textEditPresetFilePath, id_general_textEdit_presetFilePath);
+	textEditPresetFilePath->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	textEditPresetFilePath->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	textEditPresetFilePath->setFont(kNormalFontSmall);
 	CTextButton* buttonOpenPreset = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_openPreset, "Open Preset");
+	buttonOpenPreset->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonOpenPreset->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonOpenPreset->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonOpenPreset->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonOpenPreset->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonOpenPreset->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	addGuiElementPointer(buttonOpenPreset, id_general_button_openPreset);
 	buttonOpenPreset->setRoundRadius(1);
 	CTextButton* buttonSavePreset = new CTextButton(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_general_button_savePreset, "Save Preset");
+	buttonSavePreset->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonSavePreset->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonSavePreset->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonSavePreset->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonSavePreset->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonSavePreset->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	addGuiElementPointer(buttonSavePreset, id_general_button_savePreset);
 	buttonSavePreset->setRoundRadius(1);
 	viewVstOutputSelect->addView(textEditPresetFilePath);
@@ -325,7 +333,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	
 
 	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())), MAXMODULENUMBER, this);
-	graphicsView->setBackgroundColor(CColor(30, 30, 30, 255));
+	graphicsView->setBackgroundColor(CCOLOR_GRAPHICSVIEW_BACKGROUND);
 	//graphicsView->setViewSize(CRect(CPoint(0, 0), CPoint(graphicsView->getViewSize().getWidth(), graphicsView->getViewSize().getHeight() / 2)));
 	//splitView->addView(graphicsView);
 	/*CScrollView* scrollViewGraphics = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
@@ -338,15 +346,29 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	// ToDo: Move those buttons into the graphics view (like a tool box or something...)
 	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_addModule, "Add");
 	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
+	buttonAddModule->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonAddModule->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonAddModule->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonAddModule->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonAddModule->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonAddModule->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonAddModule->setRoundRadius(1);
 	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_rearrangeModules, "Sort");
 	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
+	buttonRearrange->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonRearrange->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonRearrange->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonRearrange->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonRearrange->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonRearrange->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonRearrange->setRoundRadius(1);
-	CRowColumnView* viewGraphicsViewToolBox = new CRowColumnView(CRect(CPoint(0, 0), CPoint(100, graphicsView->getHeight())), CRowColumnView::kRowStyle);
+	GuiCustomRowColumnView* viewGraphicsViewToolBox = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(100, graphicsView->getHeight())), GuiCustomRowColumnView::kRowStyle);
+	viewGraphicsViewToolBox->setFrameWidth(1);
+	viewGraphicsViewToolBox->setFrameColor(CCOLOR_FRAME);
 	viewGraphicsViewToolBox->addView(buttonAddModule);
 	viewGraphicsViewToolBox->addView(buttonRearrange);
-	viewGraphicsViewToolBox->setBackgroundColor(CColor(50, 50, 50, 255));
-	CRowColumnView* graphicsMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight() / 2)), CRowColumnView::kColumnStyle);
+	viewGraphicsViewToolBox->setBackgroundColor(CCOLOR_GRAPHICSVIEW_TOOLBOXBACKGROUND);
+	GuiCustomRowColumnView* graphicsMainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight() / 2)), GuiCustomRowColumnView::kColumnStyle);
 	graphicsMainView->addView(graphicsView);
 	graphicsMainView->addView(viewGraphicsViewToolBox);
 	//graphicsMainView->sizeToFit();
@@ -354,11 +376,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 
 	// Create Module List
-	viewModuleListMain = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
+	viewModuleListMain = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
 	CScrollView* viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(90, splitView->getHeight())), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
-	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CCOLOR_SCROLLVIEW_SCROLLBAR);
 	viewModuleScrollList->setStyle(CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars);
-	CRowColumnView* viewModuleList = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
+	GuiCustomRowColumnView* viewModuleList = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
 	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 		apGuiModules.push_back(createAPModule());
 		std::string title = "APM";
@@ -374,47 +396,61 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	//viewModuleListMain->addView(createGroupTitle("Module List:", viewModuleScrollList->getWidth()));
 	viewModuleListMain->addView(viewModuleScrollList);
 	viewModuleListMain->sizeToFit();
-	viewModuleListMain->setBackgroundColor(CColor(0, 0, 0, 0));
-	viewModuleScrollList->setBackgroundColor(CColor(50, 50, 50, 255));
-	viewModuleList->setBackgroundColor(CColor(0, 0, 0, 0));
+	viewModuleListMain->setBackgroundColor(CCOLOR_MODULELIST_BACKGROUND);
+	viewModuleScrollList->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewModuleListMain->setFrameWidth(1);
+	viewModuleListMain->setFrameColor(CCOLOR_FRAME);
+	viewModuleList->setBackgroundColor(CCOLOR_NOCOLOR);
 
 
 
-	CRowColumnView* workspaceMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight())), CRowColumnView::kColumnStyle);
+	GuiCustomRowColumnView* workspaceMainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight())), GuiCustomRowColumnView::kColumnStyle);
 	workspaceMainView->addView(workspaceView);
 	workspaceMainView->addView(viewModuleListMain);
-	workspaceMainView->setBackgroundColor(CColor(50, 50, 50, 255));
+	workspaceMainView->setBackgroundColor(CCOLOR_NOCOLOR);
 
 	splitView->addView(graphicsMainView);
 	splitView->addView(workspaceMainView);
 	initializeGraphicsView();
 	workspaceView->setViewSize(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())));
+	workspaceView->setMouseableArea(workspaceView->getViewSize());
 	
 
 
-	mainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 15.0);
+	mainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
 	//mainView->addView(viewModuleListMain);
 	mainView->addView(viewVstOutputSelect);
 	mainView->sizeToFit();
-	mainView->setBackgroundColor(CColor(0, 0, 0, 0));
+	mainView->setBackgroundColor(CCOLOR_SIDEBAR_BACKGROUND);
 	frame->addView(mainView);
 
-	CTextLabel* labelQueryMessage = new CTextLabel(CRect(CPoint(0, 0), CPoint(200, 20)), "Override the current parameters?");
-	labelQueryMessage->setHoriAlign(CHoriTxtAlign::kLeftText);
-	labelQueryMessage->setBackColor(CColor(0, 0, 0, 0));
-	labelQueryMessage->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomTextLabel* labelQueryMessage = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(200, 20)), "Override the current parameters?", kNormalFont, CHoriTxtAlign::kLeftText);
 	CTextButton* buttonOk = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewOk, "Yes");
 	addGuiElementPointer(buttonOk, id_general_button_splashViewOk);
+	buttonOk->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonOk->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonOk->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonOk->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonOk->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonOk->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
+	buttonOk->setRoundRadius(1);
 	CTextButton* buttonCancel = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewCancel, "No");
 	addGuiElementPointer(buttonCancel, id_general_button_splashViewCancel);
-	CRowColumnView* buttonView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	buttonCancel->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonCancel->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonCancel->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonCancel->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonCancel->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonCancel->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
+	buttonCancel->setRoundRadius(1);
+	GuiCustomRowColumnView* buttonView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle);
 	buttonView->addView(buttonOk);
 	buttonView->addView(buttonCancel);
 	buttonView->sizeToFit();
-	buttonView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CRowColumnView* querySubView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
-	querySubView->setBackgroundColor(CColor(0, 0, 0, 0));
+	buttonView->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomRowColumnView* querySubView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
+	querySubView->setBackgroundColor(CCOLOR_NOCOLOR);
 	querySubView->addView(labelQueryMessage);
 	querySubView->addView(buttonView);
 	querySubView->sizeToFit();
@@ -422,7 +458,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	querySubView->setMouseableArea(querySubView->getViewSize());
 	CViewContainer* queryView = new CViewContainer(mainView->getViewSize());
 	queryView->addView(querySubView);
-	queryView->setBackgroundColor(CColor(0, 0, 0, 150));
+	queryView->setBackgroundColor(CCOLOR_SPLASHVIEW_BACKGROUND);
 	splashOverrideParametersQuery = new GuiCustomSplashScreen(CRect(CPoint(0, 0), CPoint(0, 0)), this, id_general_splashScreen_overrideParametersQuery, queryView);
 	splashOverrideParametersQuery->sizeToFit();
 	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
@@ -435,10 +471,16 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	ppmOff->forget();
 	ppmOn->forget();
 
+	// Save the default module parameters for later
+	if (apGuiModules.size() > 0) {
+		copyModuleParameters(0, defaultModuleParameters);
+	}
+
 	updateGuiWithControllerParameters();
 	for (int i = 0; i < MAXMODULENUMBER; ++i) {
 		updateEditorFromController(PARAM_EQSTABILITY_FIRST + i, 1.0);
 	}
+	graphicsView->rearrangeModules();
 	return true;
 }
 
@@ -498,6 +540,12 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			guiElements[i]->setDirty();
 		} 
 		editorUserData.moduleNames[tag - id_module_textEdit_titleFirst] = dynamic_cast<CTextEdit*>(pControl)->getText();
+		std::string temp = "APM";
+		temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
+		temp.append(" ");
+		temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
+		graphicsView->setModuleTitle(tag - id_module_textEdit_titleFirst, temp);
+		graphicsView->setDirty();
 	}
 	else if (tag >= id_module_button_collapseFirst && tag <= id_module_button_collapseLast) {
 		if (apGuiModules[tag - id_module_button_collapseFirst]->isCollapsed()) {
@@ -839,7 +887,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 					workspaceView->getView(i)->setVisible(value != 0.0);
 					if (value == 1.0) {
 						dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(workspaceView->getView(i), workspaceView->getNbViews() - 1);
-						graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst);
+						graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
 					}
 					//// Draw the module if check box is checked
 					//if (value == 1.0) {
@@ -948,33 +996,60 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	}
 
 	// Handle view to grab and move the module with the mouse
-	CViewContainer* handleView = new CViewContainer(CRect(0, 0, 650, 25));
-	handleView->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* handleView = new GuiCustomRowColumnView(CRect(0, 0, 630, 25), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0, 1.0);
+	handleView->setFrameWidth(1);
+	handleView->setFrameColor(CCOLOR_MODULE_HANDLEFRAME);
+	handleView->setBackgroundColor(CCOLOR_MODULE_HANDLEBACKGROUND);
 
-	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 20, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_module_button_hideFirst + moduleId, "X");
+	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(0, 0), CPoint(16, 16)), this, id_module_button_hideFirst + moduleId, "X");
 	addGuiElementPointer(closeViewButton, id_module_button_hideFirst + moduleId);
+	closeViewButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	closeViewButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	closeViewButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	closeViewButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	closeViewButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	closeViewButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	closeViewButton->setRoundRadius(1);
-	handleView->addView(closeViewButton);
-	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 40, handleView->getHeight() / 2 - 8), CPoint(16, 16)), this, id_module_button_collapseFirst + moduleId, "^");
+	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(0, 0), CPoint(16, 16)), this, id_module_button_collapseFirst + moduleId, "^");
 	addGuiElementPointer(hideViewButton, id_module_button_collapseFirst + moduleId);
+	hideViewButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	hideViewButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	hideViewButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	hideViewButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	hideViewButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	hideViewButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	hideViewButton->setRoundRadius(1);
 	hideViewButton->setStyle(CTextButton::kOnOffStyle);
-	handleView->addView(hideViewButton);
-	CTextButton* defaultParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 220, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_defaultParametersFirst + moduleId, "Default");
+	CTextButton* defaultParametersButton = new CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_defaultParametersFirst + moduleId, "Default");
 	addGuiElementPointer(defaultParametersButton, id_module_button_defaultParametersFirst + moduleId);
+	defaultParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	defaultParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	defaultParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	defaultParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	defaultParametersButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	defaultParametersButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	defaultParametersButton->setRoundRadius(1);
 	defaultParametersButton->setFont(kNormalFontSmall);
-	handleView->addView(defaultParametersButton);
-	CTextButton* copyParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 160, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_copyParametersFirst + moduleId, "Copy");
+	CTextButton* copyParametersButton = new CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_copyParametersFirst + moduleId, "Copy");
 	addGuiElementPointer(copyParametersButton, id_module_button_copyParametersFirst + moduleId);
+	copyParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	copyParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	copyParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	copyParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	copyParametersButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	copyParametersButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	copyParametersButton->setRoundRadius(1);
 	copyParametersButton->setFont(kNormalFontSmall);
-	handleView->addView(copyParametersButton);
-	CTextButton* pasteParametersButton = new CTextButton(CRect(CPoint(handleView->getWidth() - 100, handleView->getHeight() / 2 - 8), CPoint(56, 16)), this, id_module_button_pasteParametersFirst + moduleId, "Paste");
+	CTextButton* pasteParametersButton = new CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_pasteParametersFirst + moduleId, "Paste");
 	addGuiElementPointer(pasteParametersButton, id_module_button_pasteParametersFirst + moduleId);
+	pasteParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	pasteParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	pasteParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	pasteParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	pasteParametersButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	pasteParametersButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	pasteParametersButton->setRoundRadius(1);
 	pasteParametersButton->setFont(kNormalFontSmall);
-	handleView->addView(pasteParametersButton);
 
 	CRect handleViewSize = handleView->getViewSize();
 	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + hideViewButton->getWidth() + defaultParametersButton->getWidth() + 
@@ -982,22 +1057,32 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 
 	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
 		CPoint(0, 0)), handleViewSize, moduleId, this);
-	baseModuleView->setBackgroundColor(CColor(60, 60, 60, 255));
+	baseModuleView->setBackgroundColor(CCOLOR_MODULE_MAINBACKGROUND);
 
 	std::string temp = "APM";
 	temp.append(std::to_string(moduleId));
 	temp.append(" ");
 	GuiCustomTextEdit* moduleTitle = new GuiCustomTextEdit(handleViewSize, this, id_module_textEdit_titleFirst + moduleId, temp.c_str());
+	moduleTitle->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	moduleTitle->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	addGuiElementPointer(moduleTitle, id_module_textEdit_titleFirst + moduleId);
 	moduleTitle->setStringToTruncate(temp);
 	int* userDataModuleId = new int(moduleId);
-	moduleTitle->setBackColor(CColor(0, 0, 0, 0));
-	moduleTitle->setFrameColor(CColor(0, 0, 0, 0));
+	moduleTitle->setBackColor(CCOLOR_TEXTLABEL_BACKGROUND);
+	moduleTitle->setFrameColor(CCOLOR_TEXTLABEL_FRAME);
+
 	handleView->addView(moduleTitle);
+	handleView->addView(defaultParametersButton);
+	handleView->addView(copyParametersButton);
+	handleView->addView(pasteParametersButton);
+	handleView->addView(hideViewButton);
+	handleView->addView(closeViewButton);
 	
 	// Control view which holds the individual processing modules
-	CRowColumnView* controlView = new CRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 300), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	controlView->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* controlView = new GuiCustomRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 300), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 3.0, 1.0);
+	controlView->setBackgroundColor(CCOLOR_NOCOLOR);
+	controlView->setFrameWidth(1);
+	controlView->setFrameColor(CCOLOR_MODULE_MAINFRAME);
 
 	// Add process views to the control view
 	controlView->addView(createMixer(controlView->getViewSize(), moduleId));
@@ -1009,6 +1094,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	baseModuleView->addView(handleView);
 	baseModuleView->addView(controlView);
 	baseModuleView->sizeToFit();
+	//baseModuleView->setViewSize(CRect(CPoint(baseModuleView->getViewSize().getTopLeft()), CPoint(baseModuleView->getWidth(), baseModuleView->getHeight() + 5)));
 
 	workspaceView->addView(baseModuleView);
 
@@ -1017,38 +1103,42 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	return baseModuleView;
 }
 
-CRowColumnView* ReverbNetworkEditor::createMixer(const CRect& parentViewSize, const int& moduleId) {
+GuiCustomRowColumnView* ReverbNetworkEditor::createMixer(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the input mixer controls (input gain for each channel)
-	CRowColumnView* mixerMainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(230, parentViewSize.getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	CRowColumnView* mixerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
+	GuiCustomRowColumnView* mixerMainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(220, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
+	GuiCustomRowColumnView* mixerView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 0.0);
 	for (uint32 i = 0; i < MAXMODULEINPUTS; ++i) {
 		/*temp = "IN ";
 		temp.append(std::to_string(i));
 		temp.append(":");*/
 		mixerView->addView(createMixerRow("", mixerMainView->getWidth(), i + moduleId * MAXMODULEINPUTS));
 	}
-	mixerView->setBackgroundColor(CColor(50, 50, 50, 255));
+	mixerView->setBackgroundColor(CCOLOR_NOCOLOR);
 	mixerView->sizeToFit();
 	CScrollView* mixerScrollView = new CScrollView(CRect(CPoint(0, 0), CPoint(mixerMainView->getWidth(), parentViewSize.getHeight() - 50)), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
 	mixerScrollView->addView(mixerView);
-	mixerScrollView->setBackgroundColor(CColor(0, 0, 0, 0));
+	mixerScrollView->setBackgroundColor(CCOLOR_NOCOLOR);
 	mixerScrollView->sizeToFit();
-	mixerScrollView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
+	mixerScrollView->getVerticalScrollbar()->setScrollerColor(CCOLOR_NOCOLOR);
 
 
 	if (mixerView->getHeight() < mixerScrollView->getHeight()) {
 		mixerScrollView->getVerticalScrollbar()->setVisible(false);
 	}
-	mixerMainView->setBackgroundColor(CColor(0, 0, 0, 0));
+	mixerMainView->setBackgroundColor(CCOLOR_NOCOLOR);
+	//mixerMainView->setFrameWidth(1);
+	//mixerMainView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	mixerMainView->addView(createGroupTitle("INPUT MIXER", mixerMainView->getWidth()));
 	mixerMainView->addView(mixerScrollView);
 	return mixerMainView;
 }
 
-CRowColumnView* ReverbNetworkEditor::createQuantizer(const CRect& parentViewSize, const int& moduleId) {
+GuiCustomRowColumnView* ReverbNetworkEditor::createQuantizer(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the quantizer controls
-	CRowColumnView* quantizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	quantizerView->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* quantizerView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(90, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
+	quantizerView->setBackgroundColor(CCOLOR_NOCOLOR);
+	//quantizerView->setFrameWidth(1);
+	//quantizerView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	quantizerView->addView(createGroupTitle("QUANTIZER", quantizerView->getWidth()));
 	CCheckBox* checkBoxQuantizerBypass = new CCheckBox(CRect(CPoint(0, 0), CPoint(60, 20)), this, id_quantizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxQuantizerBypass, id_quantizer_switch_bypassFirst + moduleId);
@@ -1058,18 +1148,19 @@ CRowColumnView* ReverbNetworkEditor::createQuantizer(const CRect& parentViewSize
 	return quantizerView;
 }
 
-CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize, const int& moduleId) {
+GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the equalizer controls
-	CRowColumnView* equalizerView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(150, parentViewSize.getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	equalizerView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CRowColumnView* filterTypeView = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
-	filterTypeView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* filterTypeTextLabel = new CTextLabel(CRect(0, 0, 64, 20), "Filter Type:");
-	filterTypeTextLabel->setFont(CFontRef(kNormalFontSmall));
-	filterTypeTextLabel->setBackColor(CColor(0, 0, 0, 0));
-	filterTypeTextLabel->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* equalizerView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(150, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
+	equalizerView->setBackgroundColor(CCOLOR_NOCOLOR);
+	//equalizerView->setFrameWidth(1);
+	//equalizerView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
+	GuiCustomRowColumnView* filterTypeView = new GuiCustomRowColumnView(CRect(0, 0, 0, 0), GuiCustomRowColumnView::kColumnStyle);
+	filterTypeView->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* filterTypeTextLabel = new GuiCustomTextLabel(CRect(0, 0, 64, 20), "Filter Type:", kNormalFontSmall);
 	GuiOptionMenuInputSelector* filterTypeMenu = new GuiOptionMenuInputSelector(CRect(0, 0, 85, 20), this, id_equalizer_optionMenu_filterTypeFirst + moduleId);
 	addGuiElementPointer(filterTypeMenu, id_equalizer_optionMenu_filterTypeFirst + moduleId);
+	filterTypeMenu->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
+	filterTypeMenu->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
 	filterTypeMenu->setFont(CFontRef(kNormalFontSmall));
 	filterTypeMenu->addEntry("Low Pass");
 	filterTypeMenu->addEntry("High Pass");
@@ -1081,8 +1172,8 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	filterTypeView->addView(filterTypeTextLabel);
 	filterTypeView->addView(filterTypeMenu);
 	filterTypeView->sizeToFit();
-	CRowColumnView* paramFirstRow = new CRowColumnView(CRect(0, 0, 0, 0), CRowColumnView::kColumnStyle);
-	paramFirstRow->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* paramFirstRow = new GuiCustomRowColumnView(CRect(0, 0, 0, 0), GuiCustomRowColumnView::kColumnStyle);
+	paramFirstRow->setBackgroundColor(CCOLOR_NOCOLOR);
 	paramFirstRow->addView(createKnobGroup("Frequency", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId,
 		MIN_EQCENTERFREQ, ValueConversion::getMaxEqFrequency(), 2, UNIT_EQCENTERFREQ));
 
@@ -1093,6 +1184,12 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
 	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonStability, id_equalizer_button_stabilityFirst + moduleId);
+	buttonStability->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonStability->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonStability->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonStability->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonStability->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonStability->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonStability->setRoundRadius(1);
 	buttonStability->setMouseEnabled(false);
 	buttonStability->setFont(CFontRef(kNormalFontSmall));
@@ -1100,25 +1197,22 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	equalizerView->addView(checkBoxEqualizerBypass);
 	equalizerView->addView(buttonStability);
 	equalizerView->addView(filterTypeView);
-	CRowColumnView* equalizerNormalView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
-	equalizerNormalView->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* equalizerNormalView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
+	equalizerNormalView->setBackgroundColor(CCOLOR_NOCOLOR);
 	equalizerNormalView->addView(paramFirstRow);
 	equalizerNormalView->addView(createKnobGroup("Gain", equalizerView->getWidth(), id_equalizer_knob_gainFirst + moduleId, id_equalizer_textEdit_gainFirst + moduleId,
 		MIN_EQGAIN, MAX_EQGAIN, 2, UNIT_EQGAIN));
 	equalizerNormalView->sizeToFit();
-	CRowColumnView* equalizerRawView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle);
-	equalizerRawView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), "Biquad Cofficients:");
-	labelTitle->setBackColor(CColor(0, 0, 0, 0));
-	labelTitle->setFrameColor(CColor(0, 0, 0, 0));
-	CRowColumnView* a0View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
-	a0View->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelA0 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a0:");
-	labelA0->setFont(CFontRef(kNormalFontSmall));
-	labelA0->setBackColor(CColor(0, 0, 0, 0));
-	labelA0->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* equalizerRawView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
+	equalizerRawView->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* labelTitle = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), "Biquad Cofficients:");
+	GuiCustomRowColumnView* a0View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
+	a0View->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* labelA0 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a0:", kNormalFontSmall);
 	CTextEdit* editA0 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a0First + moduleId);
 	addGuiElementPointer(editA0, id_equalizer_textEdit_a0First + moduleId);
+	editA0->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editA0->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	editA0->setFont(CFontRef(kNormalFontSmall));
 	editA0->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	editA0->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
@@ -1127,14 +1221,13 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	editA0->setPrecision(5);
 	a0View->addView(labelA0);
 	a0View->addView(editA0);
-	CRowColumnView* a1View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
-	a1View->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelA1 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a1:");
-	labelA1->setFont(CFontRef(kNormalFontSmall));
-	labelA1->setBackColor(CColor(0, 0, 0, 0));
-	labelA1->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* a1View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
+	a1View->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* labelA1 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a1:", kNormalFontSmall);
 	CTextEdit* editA1 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a1First + moduleId);
 	addGuiElementPointer(editA1, id_equalizer_textEdit_a1First + moduleId);
+	editA1->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editA1->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	editA1->setFont(CFontRef(kNormalFontSmall));
 	editA1->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	editA1->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
@@ -1143,14 +1236,13 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	editA1->setPrecision(5);
 	a1View->addView(labelA1);
 	a1View->addView(editA1);
-	CRowColumnView* a2View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
-	a2View->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelA2 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a2:");
-	labelA2->setFont(CFontRef(kNormalFontSmall));
-	labelA2->setBackColor(CColor(0, 0, 0, 0));
-	labelA2->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* a2View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
+	a2View->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* labelA2 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a2:", kNormalFontSmall);
 	CTextEdit* editA2 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a2First + moduleId);
 	addGuiElementPointer(editA2, id_equalizer_textEdit_a2First + moduleId);
+	editA2->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editA2->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	editA2->setFont(CFontRef(kNormalFontSmall));
 	editA2->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	editA2->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
@@ -1159,14 +1251,13 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	editA2->setPrecision(5);
 	a2View->addView(labelA2);
 	a2View->addView(editA2);
-	CRowColumnView* b1View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
-	b1View->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelB1 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b1:");
-	labelB1->setFont(CFontRef(kNormalFontSmall));
-	labelB1->setBackColor(CColor(0, 0, 0, 0));
-	labelB1->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* b1View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
+	b1View->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* labelB1 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b1:", kNormalFontSmall);
 	CTextEdit* editB1 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b1First + moduleId);
 	addGuiElementPointer(editB1, id_equalizer_textEdit_b1First + moduleId);
+	editB1->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editB1->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	editB1->setFont(CFontRef(kNormalFontSmall));
 	editB1->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	editB1->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
@@ -1175,14 +1266,13 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	editB1->setPrecision(5);
 	b1View->addView(labelB1);
 	b1View->addView(editB1);
-	CRowColumnView* b2View = new CRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), CRowColumnView::kColumnStyle);
-	b2View->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* labelB2 = new CTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b2:");
-	labelB2->setFont(CFontRef(kNormalFontSmall));
-	labelB2->setBackColor(CColor(0, 0, 0, 0));
-	labelB2->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* b2View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
+	b2View->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* labelB2 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b2:", kNormalFontSmall);
 	CTextEdit* editB2 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b2First + moduleId);
 	addGuiElementPointer(editB2, id_equalizer_textEdit_b2First + moduleId);
+	editB2->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editB2->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	editB2->setFont(CFontRef(kNormalFontSmall));
 	editB2->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	editB2->setValueToStringProc(&ValueConversion::textEditValueToStringConversion);
@@ -1199,7 +1289,7 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	equalizerRawView->addView(b2View);
 	equalizerRawView->sizeToFit();
 	CViewContainer* layeredView = new CViewContainer(CRect(CPoint(0, 0), CPoint(0, 0)));
-	layeredView->setBackgroundColor(CColor(0, 0, 0, 0));
+	layeredView->setBackgroundColor(CCOLOR_NOCOLOR);
 	layeredView->addView(equalizerNormalView);
 	layeredView->addView(equalizerRawView);
 	layeredView->sizeToFit();
@@ -1208,26 +1298,32 @@ CRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parentViewSize
 	return equalizerView;
 }
 
-CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, const int& moduleId) {
+GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the allpass controls (delay and decay)
-	CRowColumnView* allpassView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
-	allpassView->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
+	allpassView->setBackgroundColor(CCOLOR_NOCOLOR);
+	//allpassView->setFrameWidth(1);
+	//allpassView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	CCheckBox *checkBoxAllpassBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_allpass_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxAllpassBypass, id_allpass_switch_bypassFirst + moduleId);
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
 	allpassView->addView(checkBoxAllpassBypass);
-	CRowColumnView* diffKView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
-	diffKView->setBackgroundColor(CColor(0, 0, 0, 0));
+	GuiCustomRowColumnView* diffKView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle);
+	diffKView->setBackgroundColor(CCOLOR_NOCOLOR);
 	COptionMenu* labelDiffK = new COptionMenu(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_allpass_optionMenu_diffKSignFirst + moduleId);
 	addGuiElementPointer(labelDiffK, id_allpass_optionMenu_diffKSignFirst + moduleId);
+	labelDiffK->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
+	labelDiffK->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
 	labelDiffK->addEntry("-k:");
 	labelDiffK->addEntry("+k:");
 	labelDiffK->setCurrent(1);
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
 	//labelDiffK->setBackColor(CColor(0, 0, 0, 0));
 	//labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
-	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth(), 20.0)), this, id_allpass_textEdit_diffKFirst + moduleId);
+	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth() - 3, 20.0)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
+	textEditDiffK->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	textEditDiffK->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	valueToStringUserData* userData2 = new valueToStringUserData;
 	userData2->precision = 5;
 	userData2->unit = "";
@@ -1239,7 +1335,6 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 	//textEditDiffK->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	textEditDiffK->setFont(CFontRef(kNormalFontSmall));
 	//textEditDiffK->setBackColor(CColor(0, 0, 0, 0));
-	textEditDiffK->setFrameColor(CColor(0, 0, 0, 0));
 	diffKView->addView(labelDiffK);
 	diffKView->addView(textEditDiffK);
 	diffKView->setSpacing(3);
@@ -1248,6 +1343,8 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
 	GuiCustomValueEdit* textEditDelayInSamples = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
 	addGuiElementPointer(textEditDelayInSamples, id_allpass_textEdit_samplesDelayFirst + moduleId);
+	textEditDelayInSamples->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	textEditDelayInSamples->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	valueToStringUserData* userData = new valueToStringUserData;
 	userData->precision = 0;
 	userData->unit = "samples";
@@ -1265,23 +1362,25 @@ CRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, 
 	return allpassView;
 }
 
-CRowColumnView* ReverbNetworkEditor::createOutput(const CRect& parentViewSize, const int& moduleId) {
+GuiCustomRowColumnView* ReverbNetworkEditor::createOutput(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the output gain control
-	CRowColumnView* gainView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	GuiCustomRowColumnView* gainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	CCheckBox *checkBoxGainBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_output_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxGainBypass, id_output_switch_bypassFirst + moduleId);
 	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
 	gainView->addView(checkBoxGainBypass);
-	CRowColumnView* knobPpmView = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	GuiCustomRowColumnView* knobPpmView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0);
 	knobPpmView->addView(createKnobGroup("Gain", gainView->getWidth() - 20, id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId,
 		MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, 2, UNIT_OUTPUTGAIN));
 	CVuMeter* ppm = new CVuMeter(CRect(CPoint(0, 0), CPoint(5, 200)), ppmOn, ppmOff, 200);
 	addGuiElementPointer(ppm, id_output_ppmFirst + moduleId);
 	knobPpmView->addView(ppm);
-	knobPpmView->setBackgroundColor(CColor(0, 0, 0, 0));
+	knobPpmView->setBackgroundColor(CCOLOR_NOCOLOR);
 	knobPpmView->sizeToFit();
 	gainView->addView(knobPpmView);
-	gainView->setBackgroundColor(CColor(0, 0, 0, 0));
+	gainView->setBackgroundColor(CCOLOR_NOCOLOR);
+	//gainView->setFrameWidth(1);
+	//gainView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	return gainView;
 }
 
@@ -1290,16 +1389,15 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	const double& valueEditMinValue, const double& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit) {
 
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
-	groupView->setBackgroundColor(CColor(0, 0, 0, 0));
-	CTextLabel* groupNameLabel = new CTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), title);
-	groupNameLabel->setFont(kNormalFontSmall);
-	groupNameLabel->setBackColor(CColor(0, 0, 0, 0));
-	groupNameLabel->setFrameColor(CColor(0, 0, 0, 0));
+	groupView->setBackgroundColor(CCOLOR_NOCOLOR);
+	GuiCustomTextLabel* groupNameLabel = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(groupView->getWidth(), 15)), title, kNormalFontSmall);
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0 + (groupView->getWidth() - knobBackground->getWidth()) / 2, groupNameLabel->getViewSize().bottom + 3), 
 		CPoint(knobBackground->getWidth(), knobBackground->getWidth())), this, knobTag, knobBackground->getHeight() / knobBackground->getWidth(), knobBackground->getWidth(), knobBackground);
 	addGuiElementPointer(knob, knobTag);
 	GuiCustomValueEdit* groupTextEdit = new GuiCustomValueEdit(CRect(CPoint(0, knob->getViewSize().bottom + 3), CPoint(groupView->getWidth(), 15)), this, valueEditTag, "0.0");
 	addGuiElementPointer(groupTextEdit, valueEditTag);
+	groupTextEdit->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	groupTextEdit->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	groupTextEdit->setStringToValueProc(ValueConversion::textEditStringToValueConversion);
 	//int* precision = new int(valueEditPrecision);
 	valueToStringUserData* userData = new valueToStringUserData;
@@ -1325,23 +1423,22 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 CTextLabel* ReverbNetworkEditor::createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) const {
 	CTextLabel* label = new CTextLabel(CRect(CPoint(0, 0), CPoint(width, 30)), title);
 	label->setFont(kNormalFontBig);
-	label->setBackColor(CColor(0, 0, 0, 0));
-	label->setFrameColor(CColor(0, 0, 0, 0));
+	label->setBackColor(CCOLOR_NOCOLOR);
+	label->setFrameColor(CCOLOR_NOCOLOR);
 	return label;
 }
 
-CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset) {
-	CRowColumnView* mixerRow = new CRowColumnView(CRect(CPoint(0, 0), CPoint(width, 20)), CRowColumnView::kColumnStyle);
+GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset) {
+	GuiCustomRowColumnView* mixerRow = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(width, 20)), GuiCustomRowColumnView::kColumnStyle);
 	mixerRow->setSpacing(5);
-	mixerRow->setBackgroundColor(CColor(0, 0, 0, 0));
+	mixerRow->setBackgroundColor(CCOLOR_NOCOLOR);
 
-	CTextLabel* inputTitle = new CTextLabel(CRect(CPoint(0, 0), CPoint(5, 20)), "");
-	inputTitle->setFont(CFontRef(kNormalFontSmall));
-	inputTitle->setBackColor(CColor(0, 0, 0, 0));
-	inputTitle->setFrameColor(CColor(0, 0, 0, 0));
+	GuiCustomTextLabel* inputTitle = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(5, 20)), "", kNormalFontSmall);
 
 	GuiOptionMenuInputSelector* inputSelect = new GuiOptionMenuInputSelector(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_mixer_optionMenu_inputSelectFirst + idOffset);
 	addGuiElementPointer(inputSelect, id_mixer_optionMenu_inputSelectFirst + idOffset);
+	inputSelect->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
+	inputSelect->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
 	//inputSelect->setTextInset(CPoint(90, 20));
 	inputSelect->setFont(CFontRef(kNormalFontSmall));
 	inputSelect->addEntry("<Select>");
@@ -1359,7 +1456,6 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 		temp.append(" IN");
 		inputSelect->addEntry((temp).c_str());
 	}
-	inputSelect->setFrameColor(CColor(0, 0, 0, 0));
 
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth())), 
 		this, id_mixer_knob_gainFirst + idOffset, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
@@ -1367,6 +1463,8 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 
 	GuiCustomValueEdit* valueEdit = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(30, 20)), this, id_mixer_textEdit_gainFirst + idOffset);
 	addGuiElementPointer(valueEdit, id_mixer_textEdit_gainFirst + idOffset);
+	valueEdit->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	valueEdit->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	valueEdit->setStringToValueProc(ValueConversion::textEditStringToValueConversion);
 	//valueEdit->setStringToTruncate("", true);
 	//int* precision = new int(valueEditPrecision);
@@ -1382,18 +1480,31 @@ CRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8StringPtr 
 
 	CTextButton* buttonMute = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_muteFirst + idOffset, "M", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonMute, id_mixer_button_muteFirst + idOffset);
+	buttonMute->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonMute->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonMute->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonMute->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonMute->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	//buttonMute->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonMute->setFont(CFontRef(kNormalFontSmall));
-	buttonMute->setTextColor(CColor(180, 0, 0, 255));
-	buttonMute->setGradientStartColorHighlighted(CColor(160, 0, 0, 255));
-	buttonMute->setGradientEndColorHighlighted(CColor(100, 0, 0, 255));
+	buttonMute->setTextColor(CColor(220, 0, 0, 255));
+	buttonMute->setTextColorHighlighted(CColor(255, 255, 255));
+	buttonMute->setGradientStartColorHighlighted(CColor(200, 0, 0, 255));
+	buttonMute->setGradientEndColorHighlighted(CColor(200, 0, 0, 255));
 	buttonMute->setRoundRadius(1);
 	
 	CTextButton* buttonSolo = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_soloFirst + idOffset, "S", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonSolo, id_mixer_button_soloFirst + idOffset);
+	buttonSolo->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonSolo->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonSolo->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonSolo->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonSolo->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	//buttonSolo->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonSolo->setFont(CFontRef(kNormalFontSmall));
-	buttonSolo->setTextColor(CColor(0, 180, 0, 255));
-	buttonSolo->setGradientStartColorHighlighted(CColor(0, 160, 0, 255));
-	buttonSolo->setGradientEndColorHighlighted(CColor(0, 100, 0, 255));
+	buttonSolo->setTextColor(CColor(0, 220, 0, 255));
+	buttonSolo->setGradientStartColorHighlighted(CColor(0, 200, 0, 255));
+	buttonSolo->setGradientEndColorHighlighted(CColor(0, 200, 0, 255));
 	buttonSolo->setRoundRadius(1);
 
 	mixerRow->addView(inputTitle);
@@ -1619,6 +1730,27 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			eqStabilityValues.clear();
 		}
 
+		// ToDo: Save the position of the graphics view modules when closing the view (and also the gain values / connections...)
+		/*editorUserData = {};
+		for (unsigned int i = 0; i < MAXMODULENUMBER; ++i) {
+			XmlPresetReadWrite::graphicsModule module;
+			module.isVisible = graphicsView->isModuleVisible(i);
+			module.positionX = graphicsView->getModulePosition(i).x;
+			module.positionY = graphicsView->getModulePosition(i).y;
+			editorUserData.graphicsView.modules.push_back(module);
+		}
+		for (unsigned int i = 0; i < MAXVSTINPUTS; ++i) {
+			XmlPresetReadWrite::graphicsVstInput vstInput;
+			vstInput.positionX = graphicsView->getVstInputPosition(i).x;
+			vstInput.positionY = graphicsView->getVstInputPosition(i).y;
+			editorUserData.graphicsView.vstInputs.push_back(vstInput);
+		}
+		for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
+			XmlPresetReadWrite::graphicsVstOutput vstOutput;
+			vstOutput.positionX = graphicsView->getVstOutputPosition(i).x;
+			vstOutput.positionY = graphicsView->getVstOutputPosition(i).y;
+			editorUserData.graphicsView.vstOutputs.push_back(vstOutput);
+		}*/
 	}
 	else if (sender == graphicsView) {
 		if (message == "ConnectionToModule") {
@@ -1756,6 +1888,20 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		graphicsView->setDirty();
 	}
 	
+	for (unsigned int i = 0; i < presetStruct.graphicsView.modules.size(); ++i) {
+		if (i >= MAXMODULENUMBER) break;
+		graphicsView->setModulePosition(i, CPoint(presetStruct.graphicsView.modules[i].positionX, presetStruct.graphicsView.modules[i].positionY));
+		graphicsView->makeModuleVisible(i, presetStruct.graphicsView.modules[i].isVisible);
+	}
+	for (unsigned int i = 0; i < presetStruct.graphicsView.vstInputs.size(); ++i) {
+		if (i >= MAXVSTINPUTS) break;
+		graphicsView->setVstInputPosition(i, CPoint(presetStruct.graphicsView.vstInputs[i].positionX, presetStruct.graphicsView.vstInputs[i].positionY));
+	}
+	for (unsigned int i = 0; i < presetStruct.graphicsView.vstOutputs.size(); ++i) {
+		if (i >= MAXVSTOUTPUTS) break;
+		graphicsView->setVstOutputPosition(i, CPoint(presetStruct.graphicsView.vstOutputs[i].positionX, presetStruct.graphicsView.vstOutputs[i].positionY));
+	}
+
 	for (unsigned int i = 0; i < presetStruct.generalParamters.vstOutputMenuIndexes.size(); ++i) {
 		if (i >= MAXVSTOUTPUTS) break;
 		getController()->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
@@ -1846,6 +1992,28 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 		p.modules.push_back(m);
 	}
+
+	XmlPresetReadWrite::graphicsView gV = {};
+	for (unsigned int i = 0; i < MAXMODULENUMBER; ++i) {
+		XmlPresetReadWrite::graphicsModule gM = {};
+		gM.isVisible = graphicsView->isModuleVisible(i);
+		gM.positionX = graphicsView->getModulePosition(i).x;
+		gM.positionY = graphicsView->getModulePosition(i).y;
+		gV.modules.push_back(gM);
+	}
+	for (unsigned int i = 0; i < MAXVSTINPUTS; ++i) {
+		XmlPresetReadWrite::graphicsVstInput gI = {};
+		gI.positionX = graphicsView->getVstInputPosition(i).x;
+		gI.positionY = graphicsView->getVstInputPosition(i).y;
+		gV.vstInputs.push_back(gI);
+	}
+	for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
+		XmlPresetReadWrite::graphicsVstOutput gO = {};
+		gO.positionX = graphicsView->getVstOutputPosition(i).x;
+		gO.positionY = graphicsView->getVstOutputPosition(i).y;
+		gV.vstOutputs.push_back(gO);
+	}
+	p.graphicsView = gV;
 
 	XmlPresetReadWrite::general g = {};
 	for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
@@ -1996,6 +2164,19 @@ void ReverbNetworkEditor::applyUserData() {
 		temp.append(" ");
 		temp.append(editorUserData.moduleNames[i]);
 		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
+	}
+	for (unsigned int i = 0; i < editorUserData.graphicsView.modules.size(); ++i) {
+		if (i >= MAXMODULENUMBER) break;
+		graphicsView->makeModuleVisible(i, editorUserData.graphicsView.modules[i].isVisible);
+		graphicsView->setModulePosition(i, CPoint(editorUserData.graphicsView.modules[i].positionX, editorUserData.graphicsView.modules[i].positionY));
+	}
+	for (unsigned int i = 0; i < editorUserData.graphicsView.vstInputs.size(); ++i) {
+		if (i >= MAXVSTINPUTS) break;
+		graphicsView->setVstInputPosition(i, CPoint(editorUserData.graphicsView.vstInputs[i].positionX, editorUserData.graphicsView.vstInputs[i].positionY));
+	}
+	for (unsigned int i = 0; i < editorUserData.graphicsView.vstOutputs.size(); ++i) {
+		if (i >= MAXVSTOUTPUTS) break;
+		graphicsView->setVstOutputPosition(i, CPoint(editorUserData.graphicsView.vstOutputs[i].positionX, editorUserData.graphicsView.vstOutputs[i].positionY));
 	}
 }
 

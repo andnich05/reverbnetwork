@@ -48,14 +48,24 @@ namespace VSTGUI {
 		for (auto&& m : modules) {
 			if (!m->isVisible()) {
 				m->setVisible(true);
+				if (m->getViewSize().getTopLeft() == CPoint(0, 0)) {
+					m->setViewSize(CRect(CPoint(this->getViewSize().getCenter().x, this->getViewSize().getCenter().y / 2), CPoint(m->getViewSize().getWidth(), m->getViewSize().getHeight())));
+				}
 				return true;
 			}
 		}
 		return false;
 	}
 
-	void GuiGraphicsView::makeModuleVisible(const int& moduleId) {
-		modules[moduleId]->setVisible(true);
+	void GuiGraphicsView::makeModuleVisible(const int& moduleId, const bool& visible) {
+		modules[moduleId]->setVisible(visible);
+		if (modules[moduleId]->getViewSize().getTopLeft() == CPoint(0, 0)) {
+			modules[moduleId]->setViewSize(CRect(CPoint(this->getViewSize().getCenter().x, this->getViewSize().getCenter().y / 2), CPoint(modules[moduleId]->getViewSize().getWidth(), modules[moduleId]->getViewSize().getHeight())));
+		}
+	}
+
+	bool GuiGraphicsView::isModuleVisible(const int& moduleId) {
+		return modules[moduleId]->isVisible();
 	}
 
 	void GuiGraphicsView::createVstInput() {
@@ -266,6 +276,49 @@ namespace VSTGUI {
 			}
 		}
 		this->setDirty();
+	}
+
+	void GuiGraphicsView::setModulePosition(const int& moduleId, const CPoint& position) {
+		if (moduleId < modules.size()) {
+			modules[moduleId]->setViewSize(CRect(CPoint(position), CPoint(modules[moduleId]->getWidth(), (modules[moduleId]->getHeight()))));
+		}
+	}
+	
+	CPoint GuiGraphicsView::getModulePosition(const int& moduleId) const {
+		if (moduleId < modules.size()) {
+			return modules[moduleId]->getViewSize().getTopLeft();
+		}
+		return CPoint(0, 0);
+	}
+
+	void GuiGraphicsView::setVstInputPosition(const int& vstInput, const CPoint& position) {
+		if (vstInput < vstInputs.size()) {
+			vstInputs[vstInput]->setViewSize(CRect(CPoint(position), CPoint(vstInputs[vstInput]->getWidth(), (vstInputs[vstInput]->getHeight()))));
+		}
+	}
+
+	CPoint GuiGraphicsView::getVstInputPosition(const int& vstInput) const {
+		if (vstInput < vstInputs.size()) {
+			return vstInputs[vstInput]->getViewSize().getTopLeft();
+		}
+		return CPoint(0, 0);
+	}
+
+	void GuiGraphicsView::setVstOutputPosition(const int& vstOutput, const CPoint& position) {
+		if (vstOutput < vstOutputs.size()) {
+			vstOutputs[vstOutput]->setViewSize(CRect(CPoint(position), CPoint(vstOutputs[vstOutput]->getWidth(), (vstOutputs[vstOutput]->getHeight()))));
+		}
+	}
+
+	CPoint GuiGraphicsView::getVstOutputPosition(const int& vstOutput) const {
+		if (vstOutput < vstOutputs.size()) {
+			return vstOutputs[vstOutput]->getViewSize().getTopLeft();
+		}
+		return CPoint(0, 0);
+	}
+
+	void GuiGraphicsView::setModuleTitle(const int& moduleId, const std::string& title) {
+		modules[moduleId]->setTitle(title);
 	}
 
 	CMessageResult GuiGraphicsView::notify(CBaseObject* sender, IdStringPtr message) {
