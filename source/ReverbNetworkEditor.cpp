@@ -240,7 +240,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 
 	// Create VST output selection 
-	viewVstOutputSelect = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)));
+	viewVstOutputSelect = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
 	//viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
@@ -301,6 +301,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(textEditPresetFilePath);
 	viewVstOutputSelect->addView(buttonOpenPreset);
 	viewVstOutputSelect->addView(buttonSavePreset);
+	
+	// Create signal generator
+	signalGenerator = new GuiSignalGenerator(CRect(CPoint(0, 0), CPoint(170, 140)));
+	signalGenerator->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewVstOutputSelect->addView(signalGenerator);
 
 	/*temp = "VST Inputs: ";
 	temp.append(std::to_string((int)(MAXVSTINPUTS)));
@@ -414,8 +419,6 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	initializeGraphicsView();
 	workspaceView->setViewSize(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())));
 	workspaceView->setMouseableArea(workspaceView->getViewSize());
-	
-
 
 	mainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
@@ -881,31 +884,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		if (pControl->isDirty()) {
 			controller->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
 			controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
-			// Find the module with the correct id
-			for (uint16 i = 0; i < workspaceView->getNbViews(); ++i) {
-				if (dynamic_cast<GuiBaseAPModule*>(workspaceView->getView(i))->getModuleId() == tag - id_general_checkBox_moduleVisibleFirst) {
-					workspaceView->getView(i)->setVisible(value != 0.0);
-					if (value == 1.0) {
-						dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(workspaceView->getView(i), workspaceView->getNbViews() - 1);
-						graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
-					}
-					//// Draw the module if check box is checked
-					//if (value == 1.0) {
-					//	int moduleId = tag - id_general_checkBox_moduleVisibleFirst;
-					//	std::vector<double> gainValues;
-					//	for (int j = 0; j < MAXINPUTS; ++j) {
-					//		gainValues.push_back(ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + moduleId * MAXINPUTS + j)));
-					//	}
-					//	graphicsView->addModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + moduleId])->getText(), moduleId, workspaceView->getView(i)->getViewSize().getTopLeft(), gainValues);
-					//}
-					//// Remove the module 
-					//else {
-					//	graphicsView->removeModule(tag - id_general_checkBox_moduleVisibleFirst);
-					//}
-					//// Redraw
-					//graphicsView->setDirty();
-					break;
-				}
+			apGuiModules[tag - id_general_checkBox_moduleVisibleFirst]->setVisible(value != 0.0);
+			if (value == 1.0) {
+				workspaceView->changeViewZOrder(apGuiModules[tag - id_general_checkBox_moduleVisibleFirst], workspaceView->getNbViews() - 1);
+				graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
 			}
 			workspaceView->setDirty();
 		}
@@ -1686,7 +1668,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 				// GetView() called on a scrollview returns the view of the scrollCONTAINER, so getParentView on the returned view returns the scrollcontainer
 				// There seems to be no other possibility to get Container of the ScrollView
 				// Since the Container has no function changeViewZOrder, this function has to be called on the scrollContainer!
-				dynamic_cast<CViewContainer*>(workspaceView->getView(0)->getParentView())->changeViewZOrder(dynamic_cast<GuiBaseAPModule*>(sender), workspaceView->getNbViews() - 1);
+				workspaceView->changeViewZOrder(dynamic_cast<GuiBaseAPModule*>(sender), workspaceView->getNbViews() - 1);
 			}
 		}
 	}

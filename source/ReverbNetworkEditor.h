@@ -12,6 +12,8 @@
 #include "GuiCustomSplashScreen.h"
 #include "GuiCustomRowColumnView.h"
 
+#include "GuiSignalGenerator.h"
+
 namespace Steinberg {
 namespace Vst {
 
@@ -78,6 +80,9 @@ private:
 	// Holds pointer to the module GUIs
 	std::vector<GuiBaseAPModule*> apGuiModules;
 
+	// Signal generator
+	GuiSignalGenerator* signalGenerator;
+
 	double sampleRate;
 
 	// View where the modules are placed and where they can be moved around and stuff
@@ -117,6 +122,7 @@ private:
 	GuiCustomRowColumnView* createEqualizer(const CRect& parentViewSize, const int& moduleId);
 	GuiCustomRowColumnView* createAllpass(const CRect& parentViewSize, const int& moduleId);
 	GuiCustomRowColumnView* createOutput(const CRect& parentViewSize, const int& moduleId);
+
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
 	// Returns the group view
