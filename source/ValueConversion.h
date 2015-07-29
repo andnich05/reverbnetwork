@@ -43,6 +43,15 @@ public:
 	static double normToPlainOutputGain(const double& normValue);
 	static double plainToNormOutputGain(const double& plainValue);
 
+	static double normToPlainSignalType(const double& normValue);
+	static double plainToNormSignalType(const double& plainValue);
+	static double normToPlainSignalAmplitude(const double& normValue);
+	static double plainToNormSignalAmplitude(const double& plainValue);
+	static double normToPlainSignalWidth(const double& normValue);
+	static double plainToNormSignalWidth(const double& plainValue);
+	static double normToPlainSignalTime(const double& normValue);
+	static double plainToNormSignalTime(const double& plainValue);
+
 	static double linearToLog(const double& linearValue);
 	static double logToLinear(const double& logValue);
 

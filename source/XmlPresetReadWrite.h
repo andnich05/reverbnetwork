@@ -91,6 +91,13 @@ public:
 		double positionY;
 	};
 
+	struct signalGenerator {
+		int signalType;
+		double gain;
+		int width;
+		double time;
+	};
+
 	struct graphicsView {
 		std::vector<graphicsModule> modules;
 		std::vector<graphicsVstInput> vstInputs;
@@ -106,6 +113,7 @@ public:
 		int maxVstInputs;
 		int maxVstOutputs;
 		std::vector<module> modules;
+		signalGenerator signalGenerator;
 		graphicsView graphicsView;
 		general generalParamters;
 	};

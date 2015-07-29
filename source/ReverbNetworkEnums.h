@@ -15,6 +15,12 @@ enum FilterType
 	numberOfFilterTypes
 };
 
+enum SignalGeneratorType
+{
+	dirac,
+	numberOfSignalGeneratorTypes
+};
+
 struct valueToStringUserData{
 	int precision;
 	std::string unit;

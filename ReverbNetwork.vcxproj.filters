@@ -199,6 +199,9 @@
     <ClCompile Include="source\GuiSignalGenerator.cpp">
       <Filter>Source Files\sourceVstGui</Filter>
     </ClCompile>
+    <ClCompile Include="source\SignalGenerator.cpp">
+      <Filter>Source Files\source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h">
@@ -413,6 +416,9 @@
     </ClInclude>
     <ClInclude Include="source\GuiSignalGenerator.h">
       <Filter>Source Files\sourceVstGui</Filter>
+    </ClInclude>
+    <ClInclude Include="source\SignalGenerator.h">
+      <Filter>Source Files\source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

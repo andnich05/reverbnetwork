@@ -1,6 +1,6 @@
 #include "ReverbNetworkEnums.h"
 
-// Log file output
+// Log file output in User/AppData/Roaming/ReverbNetwork.log
 //#define LOGGING
 
 #ifndef REVERBNETWORKDEFINES_H
@@ -26,7 +26,7 @@
 #define MAXMODULEINPUTS 8
 
 // Maximum number of POSSIBLE inputs
-#define MAXINPUTS (MAXMODULENUMBER + MAXVSTINPUTS)
+#define MAXINPUTS (MAXMODULENUMBER + MAXVSTINPUTS + 1) // +1 => Signal generator
 
 //---------------------
 // Minimum, Maxmimum, Default values and units
@@ -147,12 +147,40 @@
 #define MAX_OUTPUTSELECT (1 + MAXINPUTS) // Incl. <Not Connected>
 #define DEF_OUTPUTSELECT 0
 
+#define MIN_SIGNALGENERATOR_SIGNALTYPE 0.0
+#define MAX_SIGNALGENERATOR_SIGNALTYPE 0.0
+#define DEF_SIGNALGENERATOR_SIGNALTYPE 0.0
+
+#define MIN_SIGNALGENERATOR_AMPLITUDE -60.0
+#define MAX_SIGNALGENERATOR_AMPLITUDE 0.0
+#define DEF_SIGNALGENERATOR_AMPLITUDE -6.0
+#define UNIT_SIGNALGENERATOR_AMPLITUDE "dB"
+
+#define MIN_SIGNALGENERATOR_WIDTH 1.0
+#define MAX_SIGNALGENERATOR_WIDTH 48000.0
+#define DEF_SIGNALGENERATOR_WIDTH 100.0
+#define UNIT_SIGNALGENERATOR_WIDTH "samples"
+
+#define MIN_SIGNALGENERATOR_TIME 0.01
+#define MAX_SIGNALGENERATOR_TIME 10.0
+#define DEF_SIGNALGENERATOR_TIME 1.0
+#define UNIT_SIGNALGENERATOR_TIME "s"
+
+#define MIN_SIGNALGENERATOR_AUTOFIREENABLED 0.0
+#define MAX_SIGNALGENERATOR_AUTOFIREENABLED 1.0
+#define DEF_SIGNALGENERATOR_AUTOFIREENABLED 0.0
+
+#define MIN_SIGNALGENERATOR_FIRE 0.0
+#define MAX_SIGNALGENERATOR_FIRE 1.0
+#define DEF_SIGNALGENERATOR_FIRE 0.0
+
 //---------------------------
 // Mapping for VST parameters
 
 
-// New parameter? Need to change: Defines (here), Controller (create new VST paramter), Processor (process function), 
-// PresetReadWrite (initialization of vector), Editor (valueChanged), Value Conversion, BaseAPModule, XML Preset
+// New parameter? Need to add: Defines (here), Controller (create new VST paramter), Processor (process function), 
+// PresetReadWrite (initialization of vector), Editor (valueChanged...), Value Conversion, BaseAPModule (processing), 
+// XML Preset
 
 // Mixer
 #define PARAM_MIXERINPUTSELECT_FIRST 0
@@ -239,17 +267,18 @@
 #define PARAM_GENERALVSTOUTPUTSELECT_LAST (PARAM_GENERALVSTOUTPUTSELECT_FIRST + MAXVSTOUTPUTS - 1)
 
 // Signal generator parameters
-#define PARAM_SIGNALGENERATOR_SIGNALTYPE
-#define PARAM_SIGNALGENERATOR_AMPLITUDE
-#define PARAM_SIGNALGENERATOR_WIDTH
-#define PARAM_SIGNALGENERATOR_FREQUENCY
-#define PARAM_SIGNALGENERATOR_FIRE
+#define PARAM_SIGNALGENERATOR_SIGNALTYPE (PARAM_GENERALVSTOUTPUTSELECT_LAST + 1)
+#define PARAM_SIGNALGENERATOR_AMPLITUDE (PARAM_SIGNALGENERATOR_SIGNALTYPE + 1)
+#define PARAM_SIGNALGENERATOR_WIDTH (PARAM_SIGNALGENERATOR_AMPLITUDE + 1)
+#define PARAM_SIGNALGENERATOR_TIME (PARAM_SIGNALGENERATOR_WIDTH + 1)
+#define PARAM_SIGNALGENERATOR_AUTOFIREENABLED (PARAM_SIGNALGENERATOR_TIME + 1)
+#define PARAM_SIGNALGENERATOR_FIRE (PARAM_SIGNALGENERATOR_AUTOFIREENABLED + 1)
 
 // ---------------
 // Intern parameters which aren't added to the Controller (must be at the end of this list!)
 
 // PPM update parameters
-#define PARAM_PPMUPDATE_FIRST (PARAM_GENERALVSTOUTPUTSELECT_LAST + 1)
+#define PARAM_PPMUPDATE_FIRST (PARAM_SIGNALGENERATOR_FIRE + 1)
 #define PARAM_PPMUPDATE_LAST (PARAM_PPMUPDATE_FIRST + MAXMODULENUMBER - 1)
 
 // PPM update parameters

@@ -77,7 +77,12 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_GENERALVSTOUTPUTSELECT_FIRST; i <= PARAM_GENERALVSTOUTPUTSELECT_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormMixerInputSelect(DEF_OUTPUTSELECT));
 	}
-	
+	parameterValues.push_back(ValueConversion::plainToNormSignalType(DEF_SIGNALGENERATOR_SIGNALTYPE));
+	parameterValues.push_back(ValueConversion::plainToNormSignalAmplitude(DEF_SIGNALGENERATOR_AMPLITUDE));
+	parameterValues.push_back(ValueConversion::plainToNormSignalWidth(DEF_SIGNALGENERATOR_WIDTH));
+	parameterValues.push_back(ValueConversion::plainToNormSignalTime(DEF_SIGNALGENERATOR_TIME));
+	parameterValues.push_back(DEF_SIGNALGENERATOR_AUTOFIREENABLED);
+	parameterValues.push_back(DEF_SIGNALGENERATOR_FIRE);
 }
 
 PresetReadWrite::~PresetReadWrite() {

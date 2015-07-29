@@ -15,11 +15,11 @@ ValueConversion::~ValueConversion() {
 
 double ValueConversion::normToPlainMixerInputSelect(const double& normValue) {
 	// Round!
-	return std::round(normValue * ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS)); // incl. index 0
+	return std::round(normValue * ((double)MAXINPUTS)); // incl. index 0
 }
 
 double ValueConversion::plainToNormMixerInputSelect(const double& plainValue) {
-	return plainValue * (1 / ((double)MAXMODULENUMBER + (double)MAXVSTINPUTS)); // incl. index 0
+	return plainValue * (1 / ((double)MAXINPUTS)); // incl. index 0
 }
 
 double ValueConversion::normToPlainInputGain(const double& normValue) {
@@ -95,7 +95,7 @@ double ValueConversion::plainToNormDelay(const double& plainValue) {
 }
 
 double ValueConversion::delayMillisecondsToSamples(const double& delayMilliseconds) {
-	return delayMilliseconds * sampleRate / 1000;
+	return std::round(delayMilliseconds * sampleRate / 1000);
 }
 
 double ValueConversion::delaySamplesToMilliseconds(const double& delaySamples) {
@@ -143,6 +143,40 @@ double ValueConversion::normToPlainOutputGain(const double& normValue) {
 
 double ValueConversion::plainToNormOutputGain(const double& plainValue) {
 	return (plainValue - MIN_OUTPUTGAIN) / (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN);
+}
+
+double ValueConversion::normToPlainSignalType(const double& normValue) {
+	return std::round((MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE) * normValue + MIN_SIGNALGENERATOR_SIGNALTYPE);
+}
+
+double ValueConversion::plainToNormSignalType(const double& plainValue) {
+	//return (plainValue - MIN_SIGNALGENERATOR_SIGNALTYPE) / (MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE);
+	// Only one entry in the menu...
+	return 0.0;
+}
+
+double ValueConversion::normToPlainSignalAmplitude(const double& normValue) {
+	return (MAX_SIGNALGENERATOR_AMPLITUDE - MIN_SIGNALGENERATOR_AMPLITUDE) * normValue + MIN_SIGNALGENERATOR_AMPLITUDE;
+}
+
+double ValueConversion::plainToNormSignalAmplitude(const double& plainValue) {
+	return (plainValue - MIN_SIGNALGENERATOR_AMPLITUDE) / (MAX_SIGNALGENERATOR_AMPLITUDE - MIN_SIGNALGENERATOR_AMPLITUDE);
+}
+
+double ValueConversion::normToPlainSignalWidth(const double& normValue) {
+	return std::round((MAX_SIGNALGENERATOR_WIDTH - MIN_SIGNALGENERATOR_WIDTH) * normValue + MIN_SIGNALGENERATOR_WIDTH);
+}
+
+double ValueConversion::plainToNormSignalWidth(const double& plainValue) {
+	return (plainValue - MIN_SIGNALGENERATOR_WIDTH) / (MAX_SIGNALGENERATOR_WIDTH - MIN_SIGNALGENERATOR_WIDTH);
+}
+
+double ValueConversion::normToPlainSignalTime(const double& normValue) {
+	return (MAX_SIGNALGENERATOR_TIME - MIN_SIGNALGENERATOR_TIME) * normValue + MIN_SIGNALGENERATOR_TIME;
+}
+
+double ValueConversion::plainToNormSignalTime(const double& plainValue) {
+	return (plainValue - MIN_SIGNALGENERATOR_TIME) / (MAX_SIGNALGENERATOR_TIME - MIN_SIGNALGENERATOR_TIME);
 }
 
 double ValueConversion::linearToLog(const double& linearValue) {

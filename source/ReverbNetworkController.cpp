@@ -90,6 +90,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 					temp2.append(" Input");
 					parameter->appendString(USTRING(temp2.c_str()));
 				}
+				parameter->appendString(USTRING("SignalGen"));
 				EditControllerEx1::parameters.addParameter(parameter);
 				
 				++pidCounter;
@@ -321,7 +322,6 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 
 		//-----
 		// VST output select
-		pidCounter = 0;
 		for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
 			std::string temp = "VSTOUT";
 			temp.append(std::to_string(i));
@@ -343,8 +343,21 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 				temp2.append(" Input");
 				parameter->appendString(USTRING(temp2.c_str()));
 			}
+			parameter->appendString(USTRING("SignalGen"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+
+		// Signal generator
+		StringListParameter* p1 = new StringListParameter(USTRING("SIGNALGEN-Type"), PARAM_SIGNALGENERATOR_SIGNALTYPE, 0, ParameterInfo::kIsList);
+		p1->appendString(USTRING("Dirac"));
+		EditControllerEx1::parameters.addParameter(p1);
+		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Amplitude"), PARAM_SIGNALGENERATOR_AMPLITUDE, USTRING(UNIT_SIGNALGENERATOR_AMPLITUDE), MIN_SIGNALGENERATOR_AMPLITUDE, MAX_SIGNALGENERATOR_AMPLITUDE, DEF_SIGNALGENERATOR_AMPLITUDE, 0, ParameterInfo::kCanAutomate));
+		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Width"), PARAM_SIGNALGENERATOR_WIDTH, USTRING(UNIT_SIGNALGENERATOR_WIDTH), MIN_SIGNALGENERATOR_WIDTH, MAX_SIGNALGENERATOR_WIDTH, DEF_SIGNALGENERATOR_WIDTH, 0, ParameterInfo::kCanAutomate));
+		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Time"), PARAM_SIGNALGENERATOR_TIME, USTRING(UNIT_SIGNALGENERATOR_TIME), MIN_SIGNALGENERATOR_TIME, MAX_SIGNALGENERATOR_TIME, DEF_SIGNALGENERATOR_TIME, 0, ParameterInfo::kCanAutomate));
+		StringListParameter* p2 = new StringListParameter(USTRING("SIGNALGEN-AutoFireOn"), PARAM_SIGNALGENERATOR_AUTOFIREENABLED, 0, ParameterInfo::kIsList);
+		p2->appendString(USTRING("False"));
+		p2->appendString(USTRING("True"));
+		EditControllerEx1::parameters.addParameter(p2);
 
 		// Initialize Editor user data
 		editorUserData.moduleNames.resize(MAXMODULENUMBER);

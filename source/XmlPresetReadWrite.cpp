@@ -95,6 +95,14 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 		}
 		loadedPreset.generalParamters = g;
 
+		signalGenerator sG = {};
+		tool = doc.child("reverbNetwork").child("preset").child("signalGenerator");
+		sG.signalType = tool.child("signalType").text().as_int();
+		sG.gain = tool.child("gain").text().as_double();
+		sG.width = tool.child("width").text().as_int();
+		sG.time = tool.child("time").text().as_double();
+		loadedPreset.signalGenerator = sG;
+
 		graphicsView gV = {};
 		for (tool = doc.child("reverbNetwork").child("preset").child("graphicsView").child("module"); tool; tool = tool.next_sibling("module")) {
 			graphicsModule gM = {};
@@ -212,6 +220,12 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const
 	for (auto&& vstOut : p.generalParamters.vstOutputMenuIndexes) {
 		generalNode.append_child("vstOutputMenuIndex").text().set(vstOut);
 	}
+
+	pugi::xml_node signalGenNode = presetNode.append_child("signalGenerator");
+	signalGenNode.append_child("signalType").text().set(p.signalGenerator.signalType);
+	signalGenNode.append_child("gain").text().set(p.signalGenerator.gain);
+	signalGenNode.append_child("width").text().set(p.signalGenerator.width);
+	signalGenNode.append_child("time").text().set(p.signalGenerator.time);
 
 	// Graphics View
 	pugi::xml_node graphicsNode = presetNode.append_child("graphicsView");

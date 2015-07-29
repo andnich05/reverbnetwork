@@ -20,7 +20,7 @@ public:
 
 	// Process all input channels of a module, return output sample which is a mix of the input samples
 	//double processModuleSamples(std::vector<double>& channelSamples);
-	double processSamples(double* moduleInputBuffer, double* vstInputBuffer) const;
+	double processSamples(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const;
 
 	// Update functions; all passed values plain values (already de-normalized by the Processor)
 	//void updateParameter(const unsigned int& pid, const double& normalizedValue);

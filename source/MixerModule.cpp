@@ -13,7 +13,7 @@ MixerModule::MixerModule(const double& defaultGain) {
 MixerModule::~MixerModule() {
 }
 
-double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer) const {
+double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const {
 	if (moduleInputBuffer == nullptr || vstInputBuffer == nullptr) {
 		return 0.0;
 	}
@@ -28,8 +28,11 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer)
 					if (i < MAXMODULENUMBER) {
 						output += moduleInputBuffer[i] * inputGain[i];
 					}
-					else {
+					else if (i - MAXMODULENUMBER < MAXVSTINPUTS) {
 						output += vstInputBuffer[i - MAXMODULENUMBER] * inputGain[i];
+					}
+					else {
+						output += signalGeneratorSample * inputGain[i];
 					}
 				}
 				else {
@@ -37,8 +40,11 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer)
 						if (i < MAXMODULENUMBER) {
 							output += moduleInputBuffer[i] * inputGain[i];
 						}
-						else {
+						else if (i - MAXMODULENUMBER < MAXVSTINPUTS) {
 							output += vstInputBuffer[i - MAXMODULENUMBER] * inputGain[i];
+						}
+						else {
+							output += signalGeneratorSample * inputGain[i];
 						}
 					}
 				}

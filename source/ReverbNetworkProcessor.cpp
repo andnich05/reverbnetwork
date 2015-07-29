@@ -51,6 +51,8 @@
 #include "ValueConversion.h"
 #include "PresetReadWrite.h"
 
+#include "SignalGenerator.h"
+
 //#include "TimerThread.h"
 
 
@@ -79,9 +81,17 @@ ReverbNetworkProcessor::ReverbNetworkProcessor() {
 	eqStabilityOldValues.resize(MAXMODULENUMBER, true);
 
 	preset = new PresetReadWrite();
+
+	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+		BaseAPModule* module = new BaseAPModule();
+		apModules.push_back(module);
+	}
+
+	signalGenerator = new SignalGenerator(SignalGeneratorType::dirac);
 }
 
 ReverbNetworkProcessor::~ReverbNetworkProcessor() {
+	timerUpdateController->stop();
 	if (moduleInputBuffer) {
 		delete[] moduleInputBuffer;
 		moduleInputBuffer = nullptr;
@@ -90,7 +100,13 @@ ReverbNetworkProcessor::~ReverbNetworkProcessor() {
 		delete[] moduleOutputBuffer;
 		moduleOutputBuffer = nullptr;
 	}
-	timerUpdateController->stop();
+	for (auto&& module : apModules) {
+		if (module) {
+			delete module;
+			module = nullptr;
+		}
+	}
+
 	//updateControllerThreadRunning = false;
 	/*if (connectionMatrix) {
 		delete connectionMatrix;
@@ -117,10 +133,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 			allpasses.push_back(allpass);
 		}*/
 
-		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			BaseAPModule* module = new BaseAPModule();
-			apModules.push_back(module);
-		}
+		
 
 		// SampleRate is always 44100 here...
 		ValueConversion::setSampleRate(processSetup.sampleRate);
@@ -475,7 +488,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						eqStabilityValues[pid - PARAM_EQCENTERFREQ_FIRST] = apModules[pid - PARAM_EQCENTERFREQ_FIRST]->updateEqualizerCenterFrequency(ValueConversion::normToPlainProcCenterFreq(value));
 						#ifdef LOGGING
-						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCENTERFREQ_FIRST) + " - Center Frequency set to " + std::to_string(ValueConversion::normToPlainVstCenterFreq(value)));
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQCENTERFREQ_FIRST) + " - Center Frequency set to " + std::to_string(ValueConversion::normToPlainProcCenterFreq(value)));
 						#endif
 					}
 				}
@@ -591,6 +604,56 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						#endif
 					}
 				}
+				else if (pid == PARAM_SIGNALGENERATOR_SIGNALTYPE) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						if ((int)ValueConversion::normToPlainSignalType(value) < SignalGeneratorType::numberOfSignalGeneratorTypes) {
+							signalGenerator->setSignalType(static_cast<SignalGeneratorType>((int)ValueConversion::normToPlainSignalType(value)));
+							#ifdef LOGGING
+							Logging::addToLog("SIGNALGEN", "Signal Type set to " + std::to_string((int)ValueConversion::normToPlainSignalType(value)));
+							#endif
+						}
+					}
+				}
+				else if (pid == PARAM_SIGNALGENERATOR_AMPLITUDE) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						signalGenerator->setGain(ValueConversion::normToPlainSignalAmplitude(value));
+						#ifdef LOGGING
+						Logging::addToLog("SIGNALGEN", "Gain set to " + std::to_string(ValueConversion::normToPlainSignalAmplitude(value)));
+						#endif
+					}
+				}
+				else if (pid == PARAM_SIGNALGENERATOR_WIDTH) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						signalGenerator->setWidth(ValueConversion::normToPlainSignalWidth(value));
+						#ifdef LOGGING
+						Logging::addToLog("SIGNALGEN", "Width set to " + std::to_string(ValueConversion::normToPlainSignalWidth(value)));
+						#endif
+					}
+				} 
+				else if (pid == PARAM_SIGNALGENERATOR_TIME) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						signalGenerator->setAutoTime(ValueConversion::normToPlainSignalTime(value));
+						#ifdef LOGGING
+						Logging::addToLog("SIGNALGEN", "Auto Time set to " + std::to_string(ValueConversion::normToPlainSignalTime(value)));
+						#endif
+					}
+				} 
+				else if (pid == PARAM_SIGNALGENERATOR_AUTOFIREENABLED) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						signalGenerator->setAutoFireEnabled(value);
+						#ifdef LOGGING
+						Logging::addToLog("SIGNALGEN", "Auto Fire enabled set to " + std::to_string(value));
+						#endif
+					}
+				}
+				else if (pid == PARAM_SIGNALGENERATOR_FIRE) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						signalGenerator->setFire(value);
+						#ifdef LOGGING
+						Logging::addToLog("SIGNALGEN", "Fire!");
+						#endif
+					}
+				}
 				//...
 				else if (pid >= PARAM_GENERALVSTOUTPUTSELECT_FIRST && pid <= PARAM_GENERALVSTOUTPUTSELECT_LAST) {
 					// Get only the last change of the value
@@ -657,10 +720,12 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		//std::vector<double> samplesToProcess;
 		//std::vector<double> vstInputBuffer;
 		double vstInputBuffer[MAXVSTINPUTS];
-		
+		double signalGeneratorSample = 0.0;
+
 		// Sample interval
 		//t0 = std::chrono::high_resolution_clock::now();
 		for (auto sample = 0; sample < numberOfSamples; ++sample) { // P: Worst: 30,036.100 ms Best: 5,984.300 ms
+			signalGeneratorSample = signalGenerator->generateSample();
 			// Module input processing
 			for (auto module = 0; module < MAXMODULENUMBER; ++module) { // P: 0 to 1.000,700 ms
 				//vstInputBuffer.clear();
@@ -668,7 +733,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					vstInputBuffer[i] = (double)inputSamples[i][sample];
 				}
 				// Process the vector and write the output sample into the correct module output buffer
-				moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer);
+				moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer, signalGeneratorSample);
 				// Update PPM values
 				if (moduleOutputBuffer[module] > ppmValues[module]) {
 					ppmValues[module] = moduleOutputBuffer[module];

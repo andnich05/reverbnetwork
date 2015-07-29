@@ -268,6 +268,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 			temp.append(" IN");
 			menu->addEntry((temp).c_str());
 		}
+		menu->addEntry("SIGNALGEN");
 		viewOutputSelectRow->addView(menu);
 		viewOutputSelectRow->sizeToFit();
 		viewOutputSelectRow->setBackgroundColor(CCOLOR_NOCOLOR);
@@ -303,7 +304,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(buttonSavePreset);
 	
 	// Create signal generator
-	signalGenerator = new GuiSignalGenerator(CRect(CPoint(0, 0), CPoint(170, 140)));
+	signalGenerator = new GuiSignalGenerator(CRect(CPoint(0, 0), CPoint(170, 140)), this);
 	signalGenerator->setBackgroundColor(CCOLOR_NOCOLOR);
 	viewVstOutputSelect->addView(signalGenerator);
 
@@ -1438,7 +1439,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 		temp.append(" IN");
 		inputSelect->addEntry((temp).c_str());
 	}
-
+	inputSelect->addEntry("SIGNALGEN");
 	CAnimKnob* knob = new CAnimKnob(CRect(CPoint(0, 0), CPoint(knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth())), 
 		this, id_mixer_knob_gainFirst + idOffset, knobBackgroundSmall->getHeight() / knobBackgroundSmall->getWidth(), knobBackgroundSmall->getWidth(), knobBackgroundSmall);
 	addGuiElementPointer(knob, id_mixer_knob_gainFirst + idOffset);
@@ -1551,6 +1552,8 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToPlainMixerInputSelect);
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
+	
+	signalGenerator->updateFromController();
 
 	applyUserData();
 }
@@ -1582,6 +1585,7 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		// Add the change to the ToDo-queue
 		eqStabilityValues.push_back(stability);
 	}
+	// The following updates are called when the parameters are beeing automated
 	else if (tag >= PARAM_MIXERGAIN_FIRST && tag <= PARAM_MIXERGAIN_LAST) {
 		int moduleNumber = (int)((tag - PARAM_MIXERGAIN_FIRST) / MAXINPUTS);
 		for (unsigned int i = 0; i < MAXMODULEINPUTS; ++i) {
@@ -1653,6 +1657,9 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 	}
 	else if (tag >= PARAM_OUTBYPASS_FIRST && tag <= PARAM_OUTBYPASS_LAST) {
 		guiElements[id_output_switch_bypassFirst + (tag - PARAM_OUTBYPASS_FIRST)]->setValueNormalized(value);
+	}
+	else if (tag >= PARAM_SIGNALGENERATOR_SIGNALTYPE && tag <= PARAM_SIGNALGENERATOR_FIRE) {
+		signalGenerator->updateParameter(tag, value);
 	}
 }
 
@@ -1864,12 +1871,16 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->performEdit(PARAM_OUTGAIN_FIRST + i, ValueConversion::plainToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
 		getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 		getController()->performEdit(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
-
-		apGuiModules[i]->setDirty();
-		workspaceView->setDirty();
-		graphicsView->setDirty();
-	}
 	
+		apGuiModules[i]->setDirty();
+	}
+
+	// Signal generator 
+	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_SIGNALTYPE, ValueConversion::plainToNormSignalType(presetStruct.signalGenerator.signalType));
+	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE, ValueConversion::plainToNormSignalAmplitude(presetStruct.signalGenerator.gain));
+	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_WIDTH, ValueConversion::plainToNormSignalWidth(presetStruct.signalGenerator.width));
+	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_TIME, ValueConversion::plainToNormSignalTime(presetStruct.signalGenerator.time));
+
 	for (unsigned int i = 0; i < presetStruct.graphicsView.modules.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
 		graphicsView->setModulePosition(i, CPoint(presetStruct.graphicsView.modules[i].positionX, presetStruct.graphicsView.modules[i].positionY));
@@ -1889,9 +1900,12 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
 		getController()->performEdit(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i, ValueConversion::plainToNormMixerInputSelect(presetStruct.generalParamters.vstOutputMenuIndexes[i]));
 	}
-	
+
 	// Update the GUI with the new parameter values
 	updateGuiWithControllerParameters();
+
+	workspaceView->setDirty();
+	graphicsView->setDirty();
 }
 
 const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
@@ -1974,6 +1988,13 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 		p.modules.push_back(m);
 	}
+
+	XmlPresetReadWrite::signalGenerator sG = {};
+	sG.signalType = ValueConversion::normToPlainSignalType(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_SIGNALTYPE));
+	sG.gain = ValueConversion::normToPlainSignalAmplitude(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE));
+	sG.width = ValueConversion::normToPlainSignalWidth(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_WIDTH));
+	sG.time = ValueConversion::normToPlainSignalTime(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_TIME));
+	p.signalGenerator = sG;
 
 	XmlPresetReadWrite::graphicsView gV = {};
 	for (unsigned int i = 0; i < MAXMODULENUMBER; ++i) {
@@ -2170,6 +2191,7 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 	for (int i = 0; i < MAXVSTINPUTS; ++i) {
 		inputNames.push_back("VST" + std::to_string(i));
 	}
+	inputNames.push_back("SIGNALGEN");
 	for (int i = 0; i < MAXVSTINPUTS; ++i) {
 		graphicsView->createVstInput();
 	}
@@ -2194,10 +2216,13 @@ void ReverbNetworkEditor::updateGainValuesInOptionMenus(const int& moduleNumber,
 	if (input < MAXMODULENUMBER) {
 		temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + input])->getText();
 	}
-	else {
+	else if (input - MAXMODULENUMBER < MAXVSTINPUTS) {
 		temp = "VST";
 		temp.append(std::to_string(input - MAXMODULENUMBER));
 		temp.append(" IN");
+	}
+	else if (input - MAXMODULENUMBER - MAXVSTINPUTS < 1) {
+		temp = "SIGNALGEN";
 	}
 	if (gainValue != 0.0) {
 		temp.append(" [");

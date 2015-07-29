@@ -51,6 +51,7 @@
 class BaseAPModule;
 class ConnectionMatrix;
 class PresetReadWrite;
+class SignalGenerator;
 
 namespace Steinberg {
 namespace Vst {
@@ -99,6 +100,8 @@ private:
 	// From ITimerCallback (is called by the timer)
 	virtual void onTimer(Timer* timer);
 	Timer* timerUpdateController;
+
+	SignalGenerator* signalGenerator;
 };
 
 
