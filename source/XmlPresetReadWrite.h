@@ -49,7 +49,7 @@ public:
 		bool bypass;
 		double delay;
 		double decay;
-		bool diffKSignPositive;
+		bool diffKSignNegative;
 	};
 
 	struct output {

@@ -7,17 +7,17 @@
 #define REVERBNETWORKDEFINES_H
 
 // Maximum number of AP modules
-#define MAXMODULENUMBER 32
+#define MAXMODULENUMBER 40
 
 // Maximum number of AP outputs (should be 1)
 //#define MAXMODULEOUTPUTS 1
 
 
 // Maximum number of VST inputs
-#define MAXVSTINPUTS 2
+#define MAXVSTINPUTS 8
 
 // Maximum number of VST outputs
-#define MAXVSTOUTPUTS 2
+#define MAXVSTOUTPUTS 8
 
 // Limit values to 1.0, prevent clipping
 #define LIMITER
@@ -113,7 +113,7 @@
 // Allpass diffK sign
 #define MIN_ALLPASSDIFFKSIGN 0.0
 #define MAX_ALLPASSDIFFKSIGN 1.0
-#define DEF_ALLPASSDIFFKSIGN 1.0
+#define DEF_ALLPASSDIFFKSIGN 0.0
 #define UNIT_ALLPASSDIFFKSIGN ""
 
 // Allpass bypass in bool

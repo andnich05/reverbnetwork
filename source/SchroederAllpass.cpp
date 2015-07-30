@@ -8,14 +8,15 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	, readPointer(0)
 	, writePointer(0)
 	, sampleRate(192000.0) // Set the maximum possible sample rate
-	, delaySamples((long int)(sampleRate * delaySec))
+	, delaySamples(sampleRate * delaySec)
 	, delayTimeSec(delaySec)
 	, decayTimeSec(decaySec)
 {
 	/*yn = 0;
 	xnD = 0;
 	ynD = 0;*/
-	gainSignIsPositive = true;
+	fractDelaySamples = 0.0;
+	gainSignIsNegative = false;
 	nodeLeft = 0.0;
 	nodeRight = 0.0;
 	setDecayTimeSec(decaySec);
@@ -43,6 +44,12 @@ void SchroederAllpass::doProcessing(double& sample) {
 	//// Calculate the output value
 	//sample = gain * nodeLeft + nodeRight;
 	//---
+
+
+	//---Interpolation
+	
+	//---
+
 
 	// Calculate the current left node value
 	nodeLeft = sample + gain * nodeRight;
@@ -81,7 +88,8 @@ void SchroederAllpass::freeBuffers() {
 
 void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	delayTimeSec = sec; 
-	delaySamples = (long int)(delayTimeSec * sampleRate); 
+	delaySamples = delayTimeSec * sampleRate; 
+	fractDelaySamples = delaySamples - (int)delaySamples;
 	calculateGain();
 }
 
@@ -113,7 +121,7 @@ void SchroederAllpass::calculateGain() {
 	else {
 		gain = 0.0;
 	}
-	if (!gainSignIsPositive) {
+	if (gainSignIsNegative) {
 		gain = -gain;
 	}
 }

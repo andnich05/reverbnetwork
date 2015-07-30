@@ -160,7 +160,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts)
 {
 	// Minimum one input and one output
-	if (numIns >= 1 && numOuts >= 1) {
+	if (numIns == MAXVSTINPUTS && numOuts == MAXVSTOUTPUTS) {
 		if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
 			return kResultTrue;
 		}
@@ -576,7 +576,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_ALLPASSDIFFKSIGN_FIRST]->updateAllpassDiffKSign(value);
 						#ifdef LOGGING
-						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSDIFFKSIGN_FIRST) + " - DiffK sign is positive: " + std::to_string(value));
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSDIFFKSIGN_FIRST) + " - DiffK sign is negative: " + std::to_string(value));
 						#endif
 					}
 				}

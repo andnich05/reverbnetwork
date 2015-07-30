@@ -222,39 +222,41 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
-		if (buttons.isDoubleClick()) {
-			getParentView()->notify(this, "DoubleClick");
-			return kMouseEventHandled;
-		}
-
-		// Reference conversion!
-		CPoint whereLocal(where);
-		frameToLocal(whereLocal);
-
-		// Start drawing new connection line at the output rect
-		if (whereLocal.isInside(outputRect)) {
-			if (!mouseDownInOutputRect) {
-				getParentView()->notify(this, "StartMouseLine");
-				mouseDownInOutputRect = true;
+		if (this->isVisible()) {
+			if (buttons.isDoubleClick()) {
+				getParentView()->notify(this, "DoubleClick");
 				return kMouseEventHandled;
 			}
-		}
-		// Moving the modules around
-		if (whereLocal.isInside(handleRegion)) {
-			/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", "INSIDE");
-			fclose(pFile);*/
-			mouseDownInHandleRegion = true;
-			mouseDownCoordinates = whereLocal;
-			return kMouseEventHandled;
-		}
-		// Remove connection to an input
-		for (unsigned int i = 0; i < inputRects.size(); ++i) {
-			if (whereLocal.isInside(inputRects[i])) {
-				inputGainValues[i] = 0.0;
-				inputToUpdate = i;
-				getParentView()->notify(this, "UpdateGainValue");
+
+			// Reference conversion!
+			CPoint whereLocal(where);
+			frameToLocal(whereLocal);
+
+			// Start drawing new connection line at the output rect
+			if (whereLocal.isInside(outputRect)) {
+				if (!mouseDownInOutputRect) {
+					getParentView()->notify(this, "StartMouseLine");
+					mouseDownInOutputRect = true;
+					return kMouseEventHandled;
+				}
+			}
+			// Moving the modules around
+			if (whereLocal.isInside(handleRegion)) {
+				/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+				fprintf(pFile, "y(n): %s\n", "INSIDE");
+				fclose(pFile);*/
+				mouseDownInHandleRegion = true;
+				mouseDownCoordinates = whereLocal;
 				return kMouseEventHandled;
+			}
+			// Remove connection to an input
+			for (unsigned int i = 0; i < inputRects.size(); ++i) {
+				if (whereLocal.isInside(inputRects[i])) {
+					inputGainValues[i] = 0.0;
+					inputToUpdate = i;
+					getParentView()->notify(this, "UpdateGainValue");
+					return kMouseEventHandled;
+				}
 			}
 		}
 
@@ -295,32 +297,34 @@ namespace VSTGUI {
 
 	CMouseEventResult GuiGraphicsModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
 	{	
-		if (mouseDownInOutputRect) {
-			this->mouseMoveOutputRect = where;
-			getParentView()->notify(this, "MoveMouseLine");
-			return kMouseEventHandled;
-		}
-		else if (mouseDownInHandleRegion) {
-			if (where != mouseDownCoordinates) {
-				this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
-				this->setMouseableArea(this->getViewSize());
-				this->getParentView()->setDirty();
-
-				// Don't paint the modules outside the parent view
-				if (this->getViewSize().getBottomRight().y > getParentView()->getViewSize().getBottomRight().y) {
-					this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
-				}
-				if (this->getViewSize().getBottomRight().x > getParentView()->getViewSize().getBottomRight().x) {
-					this->setViewSize(CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
-				}
-				if (this->getViewSize().getTopLeft().x < 0.0) {
-					this->setViewSize(CRect(CPoint(0, getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
-				}
-				if (this->getViewSize().getTopLeft().y < 0.0) {
-					this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, 0), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
-				}
-
+		if (this->isVisible()) {
+			if (mouseDownInOutputRect) {
+				this->mouseMoveOutputRect = where;
+				getParentView()->notify(this, "MoveMouseLine");
 				return kMouseEventHandled;
+			}
+			else if (mouseDownInHandleRegion) {
+				if (where != mouseDownCoordinates) {
+					this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+					this->setMouseableArea(this->getViewSize());
+					this->getParentView()->setDirty();
+
+					// Don't paint the modules outside the parent view
+					if (this->getViewSize().getBottomRight().y > getParentView()->getViewSize().getBottomRight().y) {
+						this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+					}
+					if (this->getViewSize().getBottomRight().x > getParentView()->getViewSize().getBottomRight().x) {
+						this->setViewSize(CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+					}
+					if (this->getViewSize().getTopLeft().x < 0.0) {
+						this->setViewSize(CRect(CPoint(0, getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+					}
+					if (this->getViewSize().getTopLeft().y < 0.0) {
+						this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, 0), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+					}
+
+					return kMouseEventHandled;
+				}
 			}
 		}
 		
@@ -345,12 +349,15 @@ namespace VSTGUI {
 	CMouseEventResult GuiGraphicsModule::onMouseUp(CPoint& where, const CButtonState& buttons) {
 		mouseDownInHandleRegion = false;
 		
-		if (mouseDownInOutputRect) {
-			mouseDownInOutputRect = false;
-			mouseUpCoordinates = where;
-			getParentView()->notify(this, "EndMouseLine");
-			return kMouseEventHandled;
+		if (this->isVisible()) {
+			if (mouseDownInOutputRect) {
+				mouseDownInOutputRect = false;
+				mouseUpCoordinates = where;
+				getParentView()->notify(this, "EndMouseLine");
+				return kMouseEventHandled;
+			}
 		}
+
 
 		if (mouseDownView)
 		{

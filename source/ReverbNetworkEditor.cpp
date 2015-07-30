@@ -1297,9 +1297,9 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	addGuiElementPointer(labelDiffK, id_allpass_optionMenu_diffKSignFirst + moduleId);
 	labelDiffK->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
 	labelDiffK->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
-	labelDiffK->addEntry("-k:");
 	labelDiffK->addEntry("+k:");
-	labelDiffK->setCurrent(1);
+	labelDiffK->addEntry("-k:");
+	labelDiffK->setCurrent(0);
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
 	//labelDiffK->setBackColor(CColor(0, 0, 0, 0));
 	//labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
@@ -1861,8 +1861,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 		getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::plainToNormDelay(presetStruct.modules[i].allpassParameters.delay));
 		getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::plainToNormDecay(presetStruct.modules[i].allpassParameters.decay));
 		getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + i, ValueConversion::plainToNormDecay(presetStruct.modules[i].allpassParameters.decay));
-		getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignPositive);
-		getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignPositive);
+		getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignNegative);
+		getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignNegative);
 		getController()->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i, presetStruct.modules[i].allpassParameters.bypass);
 		getController()->performEdit(PARAM_ALLPASSBYPASS_FIRST + i, presetStruct.modules[i].allpassParameters.bypass);
 
@@ -1977,7 +1977,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		XmlPresetReadWrite::allpass a = {};
 		a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + i));
 		a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
-		a.diffKSignPositive = getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i);
+		a.diffKSignNegative = getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i);
 		a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i);
 		m.allpassParameters = a;
 
@@ -2069,7 +2069,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	XmlPresetReadWrite::allpass a = {};
 	a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + sourceModuleId));
 	a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + sourceModuleId));
-	a.diffKSignPositive = getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + sourceModuleId);
+	a.diffKSignNegative = getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + sourceModuleId);
 	a.bypass = getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + sourceModuleId);
 	m.allpassParameters = a;
 
@@ -2138,8 +2138,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	getController()->performEdit(PARAM_ALLPASSDELAY_FIRST + destModuleId, ValueConversion::plainToNormDelay(m.allpassParameters.delay));
 	getController()->setParamNormalized(PARAM_ALLPASSDECAY_FIRST + destModuleId, ValueConversion::plainToNormDecay(m.allpassParameters.decay));
 	getController()->performEdit(PARAM_ALLPASSDECAY_FIRST + destModuleId, ValueConversion::plainToNormDecay(m.allpassParameters.decay));
-	getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignPositive);
-	getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignPositive);
+	getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignNegative);
+	getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignNegative);
 	getController()->setParamNormalized(PARAM_ALLPASSBYPASS_FIRST + destModuleId, m.allpassParameters.bypass);
 	getController()->performEdit(PARAM_ALLPASSBYPASS_FIRST + destModuleId, m.allpassParameters.bypass);
 

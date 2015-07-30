@@ -274,8 +274,8 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			temp.append(std::to_string(i));
 			temp.append("-AP-DiffKSign");
 			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSDIFFKSIGN_FIRST + i, 0, ParameterInfo::kCanAutomate | ParameterInfo::kIsList);
-			parameter->appendString(USTRING("Negative"));
 			parameter->appendString(USTRING("Positive"));
+			parameter->appendString(USTRING("Negative"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Allpass Bypass
