@@ -108,7 +108,13 @@ namespace Vst {
 	const int32_t id_allpass_textEdit_diffKLast = id_allpass_textEdit_diffKFirst + MAXMODULENUMBER - 1;
 	const int32_t id_allpass_optionMenu_diffKSignFirst = id_allpass_textEdit_diffKLast + 1;
 	const int32_t id_allpass_optionMenu_diffKSignLast = id_allpass_optionMenu_diffKSignFirst + MAXMODULENUMBER - 1;
-	const int32_t id_allpass_switch_bypassFirst = id_allpass_optionMenu_diffKSignLast + 1;
+	const int32_t id_allpass_checkBox_modulationEnabledFirst = id_allpass_optionMenu_diffKSignLast + 1;
+	const int32_t id_allpass_checkBox_modulationEnabledLast = id_allpass_checkBox_modulationEnabledFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_textEdit_modulationExcursionFirst = id_allpass_checkBox_modulationEnabledLast + 1;
+	const int32_t id_allpass_textEdit_modulationExcursionLast = id_allpass_textEdit_modulationExcursionFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_textEdit_modulationRateFirst = id_allpass_textEdit_modulationExcursionLast + 1;
+	const int32_t id_allpass_textEdit_modulationRateLast = id_allpass_textEdit_modulationRateFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_switch_bypassFirst = id_allpass_textEdit_modulationRateLast + 1;
 	const int32_t id_allpass_switch_bypassLast = id_allpass_switch_bypassFirst + MAXMODULENUMBER - 1;
 
 	// Output gain GUI ids
@@ -979,7 +985,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	}
 
 	// Handle view to grab and move the module with the mouse
-	GuiCustomRowColumnView* handleView = new GuiCustomRowColumnView(CRect(0, 0, 630, 25), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0, 1.0);
+	GuiCustomRowColumnView* handleView = new GuiCustomRowColumnView(CRect(0, 0, 650, 25), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0, 1.0);
 	handleView->setFrameWidth(1);
 	handleView->setFrameColor(CCOLOR_MODULE_HANDLEFRAME);
 	handleView->setBackgroundColor(CCOLOR_MODULE_HANDLEBACKGROUND);
@@ -1062,7 +1068,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	handleView->addView(closeViewButton);
 	
 	// Control view which holds the individual processing modules
-	GuiCustomRowColumnView* controlView = new GuiCustomRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 300), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 3.0, 1.0);
+	GuiCustomRowColumnView* controlView = new GuiCustomRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 350), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 3.0, 1.0);
 	controlView->setBackgroundColor(CCOLOR_NOCOLOR);
 	controlView->setFrameWidth(1);
 	controlView->setFrameColor(CCOLOR_MODULE_MAINFRAME);
@@ -1283,7 +1289,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 
 GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the allpass controls (delay and decay)
-	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
+	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(100, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	allpassView->setBackgroundColor(CCOLOR_NOCOLOR);
 	//allpassView->setFrameWidth(1);
 	//allpassView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
@@ -1293,7 +1299,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	allpassView->addView(checkBoxAllpassBypass);
 	GuiCustomRowColumnView* diffKView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle);
 	diffKView->setBackgroundColor(CCOLOR_NOCOLOR);
-	COptionMenu* labelDiffK = new COptionMenu(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_allpass_optionMenu_diffKSignFirst + moduleId);
+	COptionMenu* labelDiffK = new COptionMenu(CRect(CPoint(0, 0), CPoint(20, 15)), this, id_allpass_optionMenu_diffKSignFirst + moduleId);
 	addGuiElementPointer(labelDiffK, id_allpass_optionMenu_diffKSignFirst + moduleId);
 	labelDiffK->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
 	labelDiffK->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
@@ -1303,7 +1309,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
 	//labelDiffK->setBackColor(CColor(0, 0, 0, 0));
 	//labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
-	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth() - 3, 20.0)), this, id_allpass_textEdit_diffKFirst + moduleId);
+	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth() - 3, 15)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
 	textEditDiffK->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	textEditDiffK->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1329,7 +1335,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	textEditDelayInSamples->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	textEditDelayInSamples->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	valueToStringUserData* userData = new valueToStringUserData;
-	userData->precision = 0;
+	userData->precision = 2;
 	userData->unit = "samples";
 	textEditDelayInSamples->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
 	textEditDelayInSamples->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData);
@@ -1338,6 +1344,49 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	textEditDelayInSamples->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	textEditDelayInSamples->setFont(CFontRef(kNormalFontSmall));
 	allpassView->addView(textEditDelayInSamples);
+	
+
+	CCheckBox* checkBoxModulationEnabled = new CCheckBox(CRect(CPoint(0, 0), CPoint(allpassView->getWidth(), 15)), this, id_allpass_checkBox_modulationEnabledFirst + moduleId, "LFO Modulation");
+	addGuiElementPointer(checkBoxModulationEnabled, id_allpass_checkBox_modulationEnabledFirst + moduleId);
+	checkBoxModulationEnabled->setFont(kNormalFontSmall);
+	GuiCustomTextLabel* labelExcursion = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), "Excursion:", kNormalFontSmall, CHoriTxtAlign::kLeftText);
+	GuiCustomValueEdit* editExcursion = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), this, id_allpass_textEdit_modulationExcursionFirst + moduleId);
+	addGuiElementPointer(editExcursion, id_allpass_textEdit_modulationExcursionFirst + moduleId);
+	editExcursion->setStringToTruncate(UNIT_ALLPASSMODEXCURSION, true);
+	valueToStringUserData* userData4 = new valueToStringUserData;
+	userData4->precision = 2;
+	userData4->unit = UNIT_ALLPASSMODEXCURSION;
+	editExcursion->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editExcursion->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData4);
+	editExcursion->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editExcursion->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
+	editExcursion->setFontColor(CCOLOR_TEXTEDIT_TEXT);
+	GuiCustomTextLabel* labelRate = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), "Rate:", kNormalFontSmall, CHoriTxtAlign::kLeftText);
+	GuiCustomValueEdit* editRate = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), this, id_allpass_textEdit_modulationRateFirst + moduleId);
+	addGuiElementPointer(editRate, id_allpass_textEdit_modulationRateFirst + moduleId);
+	editRate->setStringToTruncate(UNIT_ALLPASSMODRATE, true);
+	valueToStringUserData* userData3 = new valueToStringUserData;
+	userData3->precision = 2;
+	userData3->unit = UNIT_ALLPASSMODRATE;
+	editRate->setStringToValueProc(&ValueConversion::textEditStringToValueConversion);
+	editRate->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData3);
+	editRate->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
+	editRate->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
+	editRate->setFontColor(CCOLOR_TEXTEDIT_TEXT);
+	CRowColumnView* viewExcursion = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	viewExcursion->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewExcursion->addView(labelExcursion);
+	viewExcursion->addView(editExcursion);
+	viewExcursion->sizeToFit();
+	CRowColumnView* viewRate = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	viewRate->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewRate->addView(labelRate);
+	viewRate->addView(editRate);
+	viewRate->sizeToFit();
+	allpassView->addView(checkBoxModulationEnabled);
+	allpassView->addView(viewExcursion);
+	allpassView->addView(viewRate);
+
 	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
 		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
 	allpassView->addView(diffKView);

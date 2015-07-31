@@ -137,6 +137,22 @@ double ValueConversion::plainToNormDecay(const double& plainValue) {
 	return (plainValue - MIN_ALLPASSDECAY) / (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY);
 }
 
+double ValueConversion::normToPlainModExcursion(const double& normValue) {
+	return (MAX_ALLPASSMODEXCURSION - MIN_ALLPASSMODEXCURSION) * normValue + MIN_ALLPASSMODEXCURSION;
+}
+
+double ValueConversion::plainToNormModExcursion(const double& plainValue) {
+	return (plainValue - MIN_ALLPASSMODEXCURSION) / (MAX_ALLPASSMODEXCURSION - MIN_ALLPASSMODEXCURSION);
+}
+
+double ValueConversion::normToPlainModRate(const double& normValue) {
+	return (MAX_ALLPASSMODRATE - MIN_ALLPASSMODRATE) * normValue + MIN_ALLPASSMODRATE;
+}
+
+double ValueConversion::plainToNormModRate(const double& plainValue) {
+	return (plainValue - MIN_ALLPASSMODRATE) / (MAX_ALLPASSMODRATE - MIN_ALLPASSMODRATE);
+}
+
 double ValueConversion::normToPlainOutputGain(const double& normValue) {
 	return (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN) * normValue + MIN_OUTPUTGAIN;
 }

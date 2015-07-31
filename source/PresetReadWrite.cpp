@@ -62,6 +62,15 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_ALLPASSDIFFKSIGN_FIRST; i <= PARAM_ALLPASSDIFFKSIGN_LAST; ++i) {
 		parameterValues.push_back(DEF_ALLPASSDIFFKSIGN);
 	}
+	for (auto i = PARAM_ALLPASSMODENABLED_FIRST; i <= PARAM_ALLPASSMODENABLED_LAST; ++i) {
+		parameterValues.push_back(DEF_ALLPASSMODENABLED);
+	}
+	for (auto i = PARAM_ALLPASSMODEXCURSION_FIRST; i <= PARAM_ALLPASSMODEXCURSION_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormModExcursion(DEF_ALLPASSMODEXCURSION));
+	}
+	for (auto i = PARAM_ALLPASSMODRATE_FIRST; i <= PARAM_ALLPASSMODRATE_LAST; ++i) {
+		parameterValues.push_back(ValueConversion::plainToNormModRate(DEF_ALLPASSMODRATE));
+	}
 	for (auto i = PARAM_ALLPASSBYPASS_FIRST; i <= PARAM_ALLPASSBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_ALLPASSBYPASS);
 	}

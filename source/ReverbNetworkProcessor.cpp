@@ -580,6 +580,30 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						#endif
 					}
 				}
+				else if (pid >= PARAM_ALLPASSMODENABLED_FIRST && pid <= PARAM_ALLPASSMODENABLED_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSMODENABLED_FIRST]->updateAllpassModulationEnabled(value);
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSMODENABLED_FIRST) + " - Modulation enabled set to " + std::to_string(value));
+						#endif
+					}
+				}
+				else if (pid >= PARAM_ALLPASSMODEXCURSION_FIRST && pid <= PARAM_ALLPASSMODEXCURSION_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSMODEXCURSION_FIRST]->updateAllpassModulationExcursion(ValueConversion::normToPlainModExcursion(value));
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSMODEXCURSION_FIRST) + " - Modulation excursion set to " + std::to_string(ValueConversion::normToPlainModExcursion(value)));
+						#endif
+					}
+				}
+				else if (pid >= PARAM_ALLPASSMODRATE_FIRST && pid <= PARAM_ALLPASSMODRATE_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSMODRATE_FIRST]->updateAllpassModulationRate(ValueConversion::normToPlainModRate(value));
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSMODRATE_FIRST) + " - Modulation rate set to " + std::to_string(ValueConversion::normToPlainModRate(value)));
+						#endif
+					}
+				}
 				else if (pid >= PARAM_ALLPASSBYPASS_FIRST && pid <= PARAM_ALLPASSBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_ALLPASSBYPASS_FIRST]->switchAllpassBypass(value);

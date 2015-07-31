@@ -3,6 +3,8 @@
 #include <cmath>
 #include <string>
 
+double yaOld = 0;
+
 SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	: buffer(nullptr)
 	, readPointer(0)
@@ -15,6 +17,14 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	/*yn = 0;
 	xnD = 0;
 	ynD = 0;*/
+
+	modulationEnabled = DEF_ALLPASSMODENABLED;
+	modulationExcursion = DEF_ALLPASSMODEXCURSION;
+	modulationRate = DEF_ALLPASSMODRATE;
+
+	sampleCounter = 1;
+	bufferSize = 0;
+	gain = 0.7;
 	fractDelaySamples = 0.0;
 	gainSignIsNegative = false;
 	nodeLeft = 0.0;
@@ -34,41 +44,68 @@ void SchroederAllpass::doProcessing(double& sample) {
 	// When the next sample arrives the left node becomes the right node
 	// Source: apdiff by K. M. Indlekofer
 	
-	// Read the left node value from last time, it is now the right node value
-	nodeRight = buffer[readPointer];
-
 	//---
-	// !!!
+	// Wrong signs???
 	//// Calculate the current left node value
 	//nodeLeft = sample - gain * nodeRight;
 	//// Calculate the output value
 	//sample = gain * nodeLeft + nodeRight;
 	//---
 
+	if (modulationEnabled) {
+		//---Modulation (Source: Pirkle book p238/239 and DAFX book)
+		// MAXIMUM von delaySamplesMod im puffer allokieren!!!!!!!!!!!!!!
+		// Only a sine signal for the moment
+		double delaySamplesMod = 1 + delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter);
+		// In case the chosen excursion is greater than the allpass delay
+		if (delaySamplesMod < 0) {
+			delaySamplesMod = 0;
+		}
+		// Get the fractional part of the modulated delay
+		fractDelaySamples = delaySamplesMod - (long)delaySamplesMod;
 
-	//---Interpolation
-	
+		// Set the distance between the read and write pointer
+		readPointer = writePointer - (long)delaySamplesMod;
+		// If the read pointer is negative, loop it back
+		if (readPointer < 0) {
+			readPointer += bufferSize;
+		}
+		// Increment counter
+		++sampleCounter;
+		if (sampleCounter > sampleRate) {
+			sampleCounter = 1; // !!! Must start at 1 !!!
+		}
+		//---
+	}
+
+	// Read the left node value from last time, it is now the right node value
+	nodeRight = buffer[readPointer];
+
+	//---Interpolation (Source: Pirkle book p238/239 and DAFX book)
+	// Get the !PREVIOUS! value from the buffer
+	double nodeRightPrevious = 0.0;
+	if (readPointer - 1 < 0) {
+		nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
+	}
+	else {
+		nodeRightPrevious = buffer[readPointer - 1];
+	}
+	// Linear Interpolation
+	nodeRight = nodeRightPrevious * fractDelaySamples + nodeRight * (1.0 - fractDelaySamples);
 	//---
-
-
+	
 	// Calculate the current left node value
 	nodeLeft = sample + gain * nodeRight;
 	// Calculate the output value
 	sample = -gain * nodeLeft + nodeRight;
 
-	// Save left node value (it will become the right node value next time)
+	// Save left node value (it will be the right node value next time)
 	buffer[writePointer] = nodeLeft;
 	// Increment write pointer
 	++writePointer;
 	// Reset pointer if it exceeds the delay in samples
-	if (writePointer >= delaySamples) {
+	if (writePointer >= bufferSize) {
 		writePointer = 0;
-	}
-	// Set the distance between the read and write pointer
-	readPointer = writePointer - delaySamples;
-	// If the read pointer is negative, loop it back
-	if (readPointer < 0) {
-		readPointer += delaySamples;
 	}
 }
 
@@ -76,7 +113,8 @@ void SchroederAllpass::createBuffers() {
 	freeBuffers(); // just in case...
 
 	// Create pre-initialized arrays for maximum delay value (round up)
-	buffer = new double[(long int)(std::ceil(sampleRate * (MAX_ALLPASSDELAY / 1000.0) + 10))]();
+	buffer = new double[(long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0))]();
+	bufferSize = (long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0));
 }
 
 void SchroederAllpass::freeBuffers() {
@@ -88,8 +126,17 @@ void SchroederAllpass::freeBuffers() {
 
 void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	delayTimeSec = sec; 
-	delaySamples = delayTimeSec * sampleRate; 
-	fractDelaySamples = delaySamples - (int)delaySamples;
+	delaySamples = sec * sampleRate;
+
+	// For interpolation
+	fractDelaySamples = delaySamples - (long)delaySamples;
+	// Set the distance between the read and write pointer
+	readPointer = writePointer - (long)delaySamples;
+	// If the read pointer is negative, loop it back
+	if (readPointer < 0) {
+		readPointer += bufferSize;
+	}
+
 	calculateGain();
 }
 
@@ -116,7 +163,7 @@ void SchroederAllpass::calculateGain() {
 
 	if (decayTimeSec != 0.0) {
 		dB = -60.0 * (delayTimeSec / decayTimeSec);
-		gain = pow(10.0, dB / 20);
+		gain = pow(10.0, dB / 20.0);
 	}
 	else {
 		gain = 0.0;
@@ -126,7 +173,17 @@ void SchroederAllpass::calculateGain() {
 	}
 }
 
+void SchroederAllpass::setModulationEnabled(const bool& enabled) {
+	this->modulationEnabled = enabled;
+}
 
+void SchroederAllpass::setModulationExcursion(const double& excursion) {
+	this->modulationExcursion = excursion;
+}
+
+void SchroederAllpass::setModulationRateMs(const double& rate) {
+	this->modulationRate = rate / 1000.0;
+}
 
 
 

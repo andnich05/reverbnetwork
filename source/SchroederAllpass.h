@@ -25,20 +25,29 @@ public:
 	//inline void setGain(const double& g) { gain = g; };
 	inline void setGainSign(const bool& isNegative) { this->gainSignIsNegative = isNegative; calculateGain(); }
 
+	void setModulationEnabled(const bool& enabled);
+	void setModulationExcursion(const double& excursion);
+	void setModulationRateMs(const double& rate);
+
 private:
 	//double* inputBuffer; // Circular buffer for input samples x(n)
 	//double* outputBuffer; // Circular buffer for output samples y(n)
 	double* buffer;
+	long bufferSize;
 	//unsigned long bufferPos; // Combined read/write index for both circular buffers
 	long readPointer;
 	long writePointer;
 	double sampleRate; // Used for buffer creation
-	long delaySamples; // Delay value in samples
-	double fractDelaySamples; // 
+	double delaySamples; // Delay value in samples
+	double fractDelaySamples; // Fractional part of the delay in samples, used for interpolation
 	double delayTimeSec; // Delay time in seconds
 	double decayTimeSec; // Decay time in seconds
 	double gain; // Gain vaulue for processing
 	bool gainSignIsNegative; // Gain sign
+
+	bool modulationEnabled;
+	double modulationExcursion;
+	double modulationRate;
 
 	// Temp values for processing
 	//double xn; // = sample
@@ -47,6 +56,8 @@ private:
 	double ynD;*/
 	double nodeLeft;
 	double nodeRight;
+
+	long sampleCounter;
 
 	void calculateGain();
 };

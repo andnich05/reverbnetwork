@@ -278,6 +278,29 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("Negative"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-ALLPASS-ModEnabled");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSMODENABLED_FIRST + i, 0, 0);
+			parameter->appendString(USTRING("False"));
+			parameter->appendString(USTRING("True"));
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-ALLPASS-ModExcurs");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSMODEXCURSION_FIRST + i, USTRING(UNIT_ALLPASSMODEXCURSION), MIN_ALLPASSMODEXCURSION, MAX_ALLPASSMODEXCURSION, DEF_ALLPASSMODEXCURSION, 0, 0);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-ALLPASS-ModRate");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSMODRATE_FIRST + i, USTRING(UNIT_ALLPASSMODRATE), MIN_ALLPASSMODRATE, MAX_ALLPASSMODRATE, DEF_ALLPASSMODRATE, 0, 0);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
 		// Allpass Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";

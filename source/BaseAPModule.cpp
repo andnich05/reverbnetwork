@@ -148,6 +148,18 @@ void BaseAPModule::updateAllpassDiffKSign(const bool& isNegative) {
 	allpass->setGainSign(isNegative);
 }
 
+void BaseAPModule::updateAllpassModulationEnabled(const bool& enabled) {
+	allpass->setModulationEnabled(enabled);
+}
+
+void BaseAPModule::updateAllpassModulationExcursion(const double& excursion) {
+	allpass->setModulationExcursion(excursion);
+}
+
+void BaseAPModule::updateAllpassModulationRate(const double& rate) {
+	allpass->setModulationRateMs(rate);
+}
+
 void BaseAPModule::updateOutputGain(const double& gain) {
 	
 	gainOutput->setGain(ValueConversion::logToLinear(gain));

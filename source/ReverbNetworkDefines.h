@@ -1,5 +1,9 @@
 #include "ReverbNetworkEnums.h"
 
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
 // Log file output in User/AppData/Roaming/ReverbNetwork.log
 //#define LOGGING
 
@@ -116,6 +120,24 @@
 #define DEF_ALLPASSDIFFKSIGN 0.0
 #define UNIT_ALLPASSDIFFKSIGN ""
 
+// Allpass Modulation Enabled
+#define MIN_ALLPASSMODENABLED 0.0
+#define MAX_ALLPASSMODENABLED 1.0
+#define DEF_ALLPASSMODENABLED 0.0
+#define UNIT_ALLPASSMODENABLED ""
+
+// Allpass Modulation Delay excursion in milliseconds
+#define MIN_ALLPASSMODEXCURSION 0.01
+#define MAX_ALLPASSMODEXCURSION 1000.0
+#define DEF_ALLPASSMODEXCURSION 5.0
+#define UNIT_ALLPASSMODEXCURSION "ms"
+
+// Allpass Modulation Rate in Hertz
+#define MIN_ALLPASSMODRATE 0.01
+#define MAX_ALLPASSMODRATE 1000.0
+#define DEF_ALLPASSMODRATE 5.0
+#define UNIT_ALLPASSMODRATE "Hz"
+
 // Allpass bypass in bool
 #define MIN_ALLPASSBYPASS 0.0
 #define MAX_ALLPASSBYPASS 1.0
@@ -179,8 +201,8 @@
 
 
 // New parameter? Need to add: Defines (here), Controller (create new VST paramter), Processor (process function), 
-// PresetReadWrite (initialization of vector), Editor (valueChanged...), Value Conversion, BaseAPModule (processing), 
-// XML Preset
+// BaseAPModule + Component (processing), PresetReadWrite (initialization of vector), Editor (GUI elements incl. IDs, valueChanged, ),
+// Value Conversion, XML Preset (Read+Write)
 
 // Mixer
 #define PARAM_MIXERINPUTSELECT_FIRST 0
@@ -246,7 +268,16 @@
 #define PARAM_ALLPASSDIFFKSIGN_FIRST (PARAM_ALLPASSDECAY_LAST + 1)
 #define PARAM_ALLPASSDIFFKSIGN_LAST (PARAM_ALLPASSDIFFKSIGN_FIRST + MAXMODULENUMBER - 1)
 
-#define PARAM_ALLPASSBYPASS_FIRST (PARAM_ALLPASSDIFFKSIGN_LAST + 1)
+#define PARAM_ALLPASSMODENABLED_FIRST (PARAM_ALLPASSDIFFKSIGN_LAST + 1)
+#define PARAM_ALLPASSMODENABLED_LAST (PARAM_ALLPASSMODENABLED_FIRST + MAXMODULENUMBER - 1)
+
+#define PARAM_ALLPASSMODEXCURSION_FIRST (PARAM_ALLPASSMODENABLED_LAST + 1)
+#define PARAM_ALLPASSMODEXCURSION_LAST (PARAM_ALLPASSMODEXCURSION_FIRST + MAXMODULENUMBER - 1)
+
+#define PARAM_ALLPASSMODRATE_FIRST (PARAM_ALLPASSMODEXCURSION_LAST + 1)
+#define PARAM_ALLPASSMODRATE_LAST (PARAM_ALLPASSMODRATE_FIRST + MAXMODULENUMBER - 1)
+
+#define PARAM_ALLPASSBYPASS_FIRST (PARAM_ALLPASSMODRATE_LAST + 1)
 #define PARAM_ALLPASSBYPASS_LAST (PARAM_ALLPASSBYPASS_FIRST + MAXMODULENUMBER - 1)
 
 
