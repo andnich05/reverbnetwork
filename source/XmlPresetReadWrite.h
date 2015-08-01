@@ -48,6 +48,9 @@ public:
 	struct allpass {
 		bool bypass;
 		double delay;
+		bool modulationEnabled;
+		double modulationExcursion;
+		double modulationRate;
 		double decay;
 		bool diffKSignNegative;
 	};

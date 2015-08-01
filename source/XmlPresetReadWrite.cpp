@@ -77,6 +77,9 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 			allpass a = {};
 			a.bypass = tool.child("allpass").child("bypass").text().as_bool();
 			a.delay = tool.child("allpass").child("delay").text().as_double();
+			a.modulationEnabled = tool.child("allpass").child("modulationEnabled").text().as_bool();
+			a.modulationExcursion = tool.child("allpass").child("modulationExcursion").text().as_double();
+			a.modulationRate = tool.child("allpass").child("modulationRate").text().as_double();
 			a.decay = tool.child("allpass").child("decay").text().as_double();
 			a.diffKSignNegative = tool.child("allpass").child("diffKSignNegative").text().as_bool();
 			m.allpassParameters = a;
@@ -206,6 +209,9 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const
 		moduleNode.append_child("allpass");
 		moduleNode.child("allpass").append_child("bypass").text().set(module.allpassParameters.bypass);
 		moduleNode.child("allpass").append_child("delay").text().set(module.allpassParameters.delay);
+		moduleNode.child("allpass").append_child("modulationEnabled").text().set(module.allpassParameters.modulationEnabled);
+		moduleNode.child("allpass").append_child("modulationExcursion").text().set(module.allpassParameters.modulationExcursion);
+		moduleNode.child("allpass").append_child("modulationRate").text().set(module.allpassParameters.modulationRate);
 		moduleNode.child("allpass").append_child("decay").text().set(module.allpassParameters.decay);
 		moduleNode.child("allpass").append_child("diffKSignPositive").text().set(module.allpassParameters.diffKSignNegative);
 

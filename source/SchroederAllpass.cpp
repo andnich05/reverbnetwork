@@ -19,7 +19,7 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	ynD = 0;*/
 
 	modulationEnabled = DEF_ALLPASSMODENABLED;
-	modulationExcursion = DEF_ALLPASSMODEXCURSION;
+	modulationExcursion = DEF_ALLPASSMODEXCURSION / 1000.0;
 	modulationRate = DEF_ALLPASSMODRATE;
 
 	sampleCounter = 1;
@@ -70,6 +70,12 @@ void SchroederAllpass::doProcessing(double& sample) {
 		if (readPointer < 0) {
 			readPointer += bufferSize;
 		}
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(delaySamplesMod).c_str());
+		fprintf(pFile, "y(n): %s\n", std::to_string(modulationExcursion).c_str());
+		fprintf(pFile, "y(n): %s\n", std::to_string(modulationRate).c_str());
+		fprintf(pFile, "y(n): %s\n", "---");
+		fclose(pFile);*/
 		// Increment counter
 		++sampleCounter;
 		if (sampleCounter > sampleRate) {
@@ -84,11 +90,17 @@ void SchroederAllpass::doProcessing(double& sample) {
 	//---Interpolation (Source: Pirkle book p238/239 and DAFX book)
 	// Get the !PREVIOUS! value from the buffer
 	double nodeRightPrevious = 0.0;
-	if (readPointer - 1 < 0) {
-		nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
+	if (delaySamples >= 1.0) {
+		if (readPointer - 1 < 0) {
+			nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
+		}
+		else {
+			nodeRightPrevious = buffer[readPointer - 1];
+		}
 	}
 	else {
-		nodeRightPrevious = buffer[readPointer - 1];
+		// When delay in samples is smaller than 1.0 => read and write pointer are at the same position similar to when the delay is at maximum
+		nodeRight = sample;
 	}
 	// Linear Interpolation
 	nodeRight = nodeRightPrevious * fractDelaySamples + nodeRight * (1.0 - fractDelaySamples);
@@ -106,6 +118,12 @@ void SchroederAllpass::doProcessing(double& sample) {
 	// Reset pointer if it exceeds the delay in samples
 	if (writePointer >= bufferSize) {
 		writePointer = 0;
+	}
+	// Increment read pointer
+	++readPointer;
+	// Reset pointer if it exceeds the delay in samples
+	if (readPointer >= bufferSize) {
+		readPointer = 0;
 	}
 }
 
@@ -136,6 +154,13 @@ void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	if (readPointer < 0) {
 		readPointer += bufferSize;
 	}
+
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(delaySamples).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(readPointer).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(writePointer).c_str());
+	fprintf(pFile, "y(n): %s\n", "---");
+	fclose(pFile);*/
 
 	calculateGain();
 }
@@ -178,11 +203,11 @@ void SchroederAllpass::setModulationEnabled(const bool& enabled) {
 }
 
 void SchroederAllpass::setModulationExcursion(const double& excursion) {
-	this->modulationExcursion = excursion;
+	this->modulationExcursion = excursion / 1000.0;
 }
 
 void SchroederAllpass::setModulationRateMs(const double& rate) {
-	this->modulationRate = rate / 1000.0;
+	this->modulationRate = rate;
 }
 
 

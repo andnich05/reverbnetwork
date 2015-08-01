@@ -128,13 +128,13 @@
 
 // Allpass Modulation Delay excursion in milliseconds
 #define MIN_ALLPASSMODEXCURSION 0.01
-#define MAX_ALLPASSMODEXCURSION 1000.0
+#define MAX_ALLPASSMODEXCURSION 100.0
 #define DEF_ALLPASSMODEXCURSION 5.0
 #define UNIT_ALLPASSMODEXCURSION "ms"
 
 // Allpass Modulation Rate in Hertz
 #define MIN_ALLPASSMODRATE 0.01
-#define MAX_ALLPASSMODRATE 1000.0
+#define MAX_ALLPASSMODRATE 100.0
 #define DEF_ALLPASSMODRATE 5.0
 #define UNIT_ALLPASSMODRATE "Hz"
 
@@ -201,7 +201,7 @@
 
 
 // New parameter? Need to add: Defines (here), Controller (create new VST paramter), Processor (process function), 
-// BaseAPModule + Component (processing), PresetReadWrite (initialization of vector), Editor (GUI elements incl. IDs, valueChanged, ),
+// BaseAPModule + Component (processing), PresetReadWrite (initialization of vector), Editor (GUI elements incl. IDs, valueChanged, updateGuiWithControllerParameters, updateEditorFromController (if Parameter is automatable), setXmlPreset, getXmlPreset, copyModuleParameters, pasteModuleParameters),
 // Value Conversion, XML Preset (Read+Write)
 
 // Mixer

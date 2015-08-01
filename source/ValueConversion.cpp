@@ -95,7 +95,7 @@ double ValueConversion::plainToNormDelay(const double& plainValue) {
 }
 
 double ValueConversion::delayMillisecondsToSamples(const double& delayMilliseconds) {
-	return std::round(delayMilliseconds * sampleRate / 1000);
+	return delayMilliseconds * sampleRate / 1000;
 }
 
 double ValueConversion::delaySamplesToMilliseconds(const double& delaySamples) {

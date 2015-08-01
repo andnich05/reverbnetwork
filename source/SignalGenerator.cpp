@@ -7,7 +7,7 @@ SignalGenerator::SignalGenerator(const SignalGeneratorType& signalType)
 
 	gainFactor = ValueConversion::logToLinear(DEF_SIGNALGENERATOR_AMPLITUDE);
 	width = DEF_SIGNALGENERATOR_WIDTH;
-	autoFireEnabled = true;
+	autoFireEnabled = DEF_SIGNALGENERATOR_AUTOFIREENABLED;
 	autoTimeInSamples = DEF_SIGNALGENERATOR_TIME * ValueConversion::getSampleRate();
 	fire = DEF_SIGNALGENERATOR_FIRE;
 
