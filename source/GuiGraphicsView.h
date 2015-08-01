@@ -8,6 +8,7 @@ namespace VSTGUI {
 	class GuiGraphicsModule;
 	class GuiGraphicsConnections;
 
+	// Connection structure
 	struct Connection {
 		Connection(int source = 0, int destination = 0, double gainValue = 1.0)
 			: source(source), destination(destination), gainValue(gainValue) {}
@@ -17,7 +18,6 @@ namespace VSTGUI {
 		double gainValue;
 	};
 
-
 	class GuiGraphicsView :
 		public CViewContainer
 	{
@@ -25,62 +25,68 @@ namespace VSTGUI {
 		GuiGraphicsView(const CRect& size, const int& numberOfModules, CBaseObject* editor);
 		~GuiGraphicsView();
 
-		
+		// Create new module view
 		virtual void createModule(const std::string& title, const int& id, const int& numberOfInputs);
-		// Makes another module visible; returns false if the maximum number of modules is reached
+		// Make the next module visible which is not visible yet; returns false if the maximum number of modules is reached
 		virtual bool addModule();
+		// Make a specific module visible
 		virtual void makeModuleVisible(const int& moduleId, const bool& visible);
+		// Check if a module is visible
 		virtual bool isModuleVisible(const int& moduleId);
+		// Create new vst input view
 		virtual void createVstInput();
+		// Create new vst output view
 		virtual void createVstOutput();
+		// Set the names of the inputs of a module
 		virtual void setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames);
+		// Update a module
 		virtual void updateModule(const int& moduleId, const int& input, const double& gainValue);
+		// Create a new connection from a module or a vst input to a vst output
 		virtual void setVstOutputConnection(const int& vstOutput, const int& moduleOrVstInput);
+		// Clear all outputs of a module
 		virtual void clearModules();
-		//virtual void setModuleEnabled(const int& id, const bool& enabled);
+		// (Try to) rearrange modules...
 		virtual void rearrangeModules();
-
+		// Change module position
 		virtual void setModulePosition(const int& moduleId, const CPoint& position);
+		// Get module position
 		virtual CPoint getModulePosition(const int& moduleId) const;
+		// Change Vst input position
 		virtual void setVstInputPosition(const int& vstInput, const CPoint& position);
+		// Get Vst input position
 		virtual CPoint getVstInputPosition(const int& vstInput) const;
+		// Change Vst output position
 		virtual void setVstOutputPosition(const int& vstOutput, const CPoint& position);
+		// Get Vst input position
 		virtual CPoint getVstOutputPosition(const int& vstOutput) const;
-
+		// Get a new drawn connection in order to update the other GUI elements
 		inline const Connection& getDrawnConnection() { return drawnConnection; }
+		// Get the module the user double clicked on
 		inline const int& getModuleClicked() { return moduleClicked; }
-
+		// Set a module title
 		void setModuleTitle(const int& moduleId, const std::string& title);
 
-		// Overrides
+		// Overrides from CViewContainer
 		virtual void drawBackgroundRect(CDrawContext* pContext, const CRect& _updateRect);
-		//virtual CMouseEventResult onMouseDown(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-		//virtual CMouseEventResult onMouseUp(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-		//virtual CMouseEventResult onMouseMoved(CPoint& where, const CButtonState& buttons) VSTGUI_OVERRIDE_VMETHOD;
-		//virtual CMouseEventResult onMouseCancel() VSTGUI_OVERRIDE_VMETHOD;
 		virtual CMessageResult notify(CBaseObject* sender, IdStringPtr message) VSTGUI_OVERRIDE_VMETHOD;
 
 	private:
-		std::vector<GuiGraphicsModule*> modules;
-		std::vector<GuiGraphicsModule*> vstInputs;
-		std::vector<GuiGraphicsModule*> vstOutputs;
-		std::vector<int> vstOutputConnections;
+		std::vector<GuiGraphicsModule*> modules; // Module views
+		std::vector<GuiGraphicsModule*> vstInputs; // Vst input views
+		std::vector<GuiGraphicsModule*> vstOutputs; // Vst output views
+		std::vector<int> vstOutputConnections; // Connections to Vst outputs
 
 		GuiGraphicsConnections* connections;
 
+		// Redraw everything
 		virtual void redraw(CDrawContext* pContext);
-		//virtual void drawModuleRects(CDrawContext* pContext);
+		// Draw connections
 		virtual void drawModuleConnections(CDrawContext* pContext);
 
 		int numberOfModules;
-		int numberOfInputs;
-
-		CBaseObject* editor;
-
+		CBaseObject* editor; // Pointer to ReverbNetworkEditor
 		Connection drawnConnection;
-
 		int moduleClicked;
-
 	};
 
 }

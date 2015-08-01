@@ -1,3 +1,5 @@
+// UNUSED
+
 #include "GuiOpenGLGraphicsView.h"
 
 namespace VSTGUI {

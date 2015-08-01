@@ -2,13 +2,15 @@
 #include <bitset>
 #include <cmath>
 
+// Maximum values of a 32 bit signed integer
 const double max32bitValueSigned = pow(2, 32) / 2 - 1;
 const double min32bitValueSigned = pow(2, 32) / 2;
 
+// Quantization methods in order to correct the signal asymmetry, each has it's benefits and drawbacks
 enum BitCorrectionMethod {
-	withBitShifting,
-	withoutBitShifting,
-	withoutScaling
+	withBitShifting, // Fast, many operations, complex, scales the signal to full range
+	withoutBitShifting, // Relatively fast, only a few operations, simple, scales the signal to full range
+	withoutScaling // Very fast, few operations, simple, doesn't scale the signal to full range
 };
 
 #define BITCORRECTIONMETHOD withoutScaling

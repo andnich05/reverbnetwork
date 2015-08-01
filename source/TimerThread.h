@@ -1,3 +1,5 @@
+// UNUSED
+
 #ifndef TIMERTHREAD_H
 #define TIMERTHREAD_H
 

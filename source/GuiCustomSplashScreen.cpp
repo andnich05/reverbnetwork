@@ -8,9 +8,11 @@ namespace VSTGUI{
 
 	}
 
-
 	GuiCustomSplashScreen::~GuiCustomSplashScreen() {
-
+		if (savedUserData) {
+			delete savedUserData;
+			savedUserData = nullptr;
+		}
 	}
 
 	void GuiCustomSplashScreen::splash() {
@@ -19,9 +21,5 @@ namespace VSTGUI{
 		{
 			CControl::valueChanged();
 		}
-	}
-
-	CMouseEventResult GuiCustomSplashScreen::onMouseDown(CPoint& where, const CButtonState& buttons) {
-		return kMouseEventHandled;
 	}
 }

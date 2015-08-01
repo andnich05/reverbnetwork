@@ -4,8 +4,7 @@
 #include <string>
 
 // Possible equalizer filter types
-enum FilterType
-{
+enum FilterType {
 	lowPass,
 	highPass,
 	bandPassStop,
@@ -15,17 +14,19 @@ enum FilterType
 	numberOfFilterTypes
 };
 
-enum SignalGeneratorType
-{
+// Possible signal generator types
+enum SignalGeneratorType {
 	dirac,
 	numberOfSignalGeneratorTypes
 };
 
+// User data for the valueToStringConverion function of the text edits (GUI)
 struct valueToStringUserData{
 	int precision;
 	std::string unit;
 };
 
+// Message structure from Processor to Controller to Editor
 struct EqualizerStability {
 	int moduleNumber;
 	bool isStable;

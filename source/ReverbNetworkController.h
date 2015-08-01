@@ -39,7 +39,6 @@
 #define REVERBNETWORKCONTROLLER_H
 
 #include "public.sdk/source/vst/vsteditcontroller.h"
-#include "XmlPresetReadWrite.h"
 
 #include "ReverbNetworkEditor.h"
 
@@ -56,8 +55,9 @@ class ReverbNetworkEditor;
 class ReverbNetworkController : public EditControllerEx1, public IMidiMapping
 {
 public:
-	
+	// Initialize the plugin
 	tresult PLUGIN_API initialize (FUnknown* context);
+	// Create the editor and it's view
 	IPlugView* PLUGIN_API ReverbNetworkController::createView(const char* name);
 
 #if TARGET_OS_IPHONE
@@ -67,32 +67,39 @@ public:
 	static FUnknown* createInstance(void*) { return (IEditController*)new ReverbNetworkController; }
 
 	void editorDestroyed(EditorView* editor) {} // nothing to do here
+	// Called after a new editor is created (apply some saved data)
 	void editorAttached(EditorView* editor);
+	// Called before editor is removed, is also called when the user only CLOSES the plugin view (save some data here for when the editor is recreated)
 	void editorRemoved(EditorView* editor);
 
 	//---Internal functions-------
 	void addDependentView(ReverbNetworkEditor* view);
 	void removeDependentView(ReverbNetworkEditor* view);
 
-
+	// Load preset and first initialization
 	tresult PLUGIN_API setComponentState(IBStream* state);
-
+	// Update a parameter
 	tresult PLUGIN_API setParamNormalized(ParamID tag, ParamValue value);
+	// Get a parameter
 	ParamValue PLUGIN_API getParamNormalized(ParamID tag);
 	tresult PLUGIN_API setParamNormalizedFromPreset(ParamID tag, ParamValue value);
 
+	// Set plugin version (see version.h)
 	static void setVersion(std::string version);
+	// Get plugin version (see version.h)
 	static std::string getVersion();
 
+	// Receive a message from another component (e.g. Processor)
 	tresult PLUGIN_API notify(IMessage* message);
 
+	//...
 	DELEGATE_REFCOUNT(EditController)
 	tresult PLUGIN_API queryInterface(const char* iid, void** obj);
 	//---from IMidiMapping-----------------
 	tresult PLUGIN_API getMidiControllerAssignment(int32 busIndex, int16 channel, CtrlNumber midiControllerNumber, ParamID& tag);
 
 private:
-	TArray <ReverbNetworkEditor*> viewsArray;
+	TArray <ReverbNetworkEditor*> viewsArray; // For more than one editor
 
 	static std::string pluginVersion;
 

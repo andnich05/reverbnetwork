@@ -12,7 +12,7 @@ public:
 	GuiOptionMenuInputSelector(const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
 	~GuiOptionMenuInputSelector();
 
-	// Get the index which was selected before the current index was selected
+	// Get the index which active before the current index was selected
 	inline int32_t getLastIndex() const { return lastIndex; }
 
 private:

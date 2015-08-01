@@ -50,8 +50,8 @@
 #define RELEASE_NUMBER_STR "0"
 #define RELEASE_NUMBER_INT 0
 
-#define BUILD_NUMBER_STR "1" // Build number to be sure that each result could identified.
-#define BUILD_NUMBER_INT 1
+#define BUILD_NUMBER_STR "81" // Build number to be sure that each result could identified.
+#define BUILD_NUMBER_INT 81
 
 // Version with build number (example "1.0.3.342")
 #define FULL_VERSION_STR MAJOR_VERSION_STR "." SUB_VERSION_STR "." RELEASE_NUMBER_STR "." BUILD_NUMBER_STR
@@ -61,12 +61,12 @@
 
 #define stringOriginalFilename	"ReverbNetwork.vst3"
 #if PLATFORM_64
-#define stringFileDescription	"ReverbNetwork VST3-SDK (64Bit)"
+#define stringFileDescription	"ReverbNetwork (64Bit)"
 #else
-#define stringFileDescription	"ReverbNetwork VST3-SDK"
+#define stringFileDescription	"ReverbNetwork"
 #endif
-#define stringCompanyName		"Hochschule RheinMain\0"
-#define stringLegalCopyright	"© 2015 Hochschule RheinMain"
+#define stringCompanyName		"RheinMain University of Applied Sciences\0"
+#define stringLegalCopyright	"© 2015 Andrej Nichelmann and Klaus Michael Indlekofer"
 #define stringLegalTrademarks	"VST is a trademark of Steinberg Media Technologies GmbH"
 
 #endif //__version__

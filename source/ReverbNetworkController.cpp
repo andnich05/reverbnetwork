@@ -39,7 +39,6 @@
 #include "reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
 
-
 #include "ReverbNetworkDefines.h"
 #include "PresetReadWrite.h"
 
@@ -206,6 +205,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQGAIN_FIRST + i, USTRING(UNIT_EQGAIN), MIN_EQGAIN, MAX_EQGAIN, DEF_EQGAIN, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Equalizer coefficients
 		for (uint32 i = PARAM_EQCOEFFICIENTA0_FIRST; i <= PARAM_EQCOEFFICIENTA0_LAST; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(i - PARAM_EQCOEFFICIENTA0_FIRST));
@@ -269,6 +269,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSDECAY_FIRST + i, USTRING(UNIT_ALLPASSDECAY), MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, DEF_ALLPASSDECAY, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Allpass diffK sign
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(i));
@@ -278,6 +279,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("Negative"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Allpass modulation enabled
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(i));
@@ -287,6 +289,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Allpass modulation excursion
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(i));
@@ -294,6 +297,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_ALLPASSMODEXCURSION_FIRST + i, USTRING(UNIT_ALLPASSMODEXCURSION), MIN_ALLPASSMODEXCURSION, MAX_ALLPASSMODEXCURSION, DEF_ALLPASSMODEXCURSION, 0, 0);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Allpass modulation rate
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(i));
@@ -332,7 +336,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
-
+		// Is a module visible
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(i));
@@ -426,8 +430,8 @@ void ReverbNetworkController::editorAttached(EditorView* editor)
 	ReverbNetworkEditor* view = dynamic_cast<ReverbNetworkEditor*> (editor);
 	if (view)
 	{
+		// Apply the saved user data
 		view->setUserData(editorUserData);
-
 		addDependentView(view);
 	}
 }
@@ -438,13 +442,8 @@ void ReverbNetworkController::editorRemoved(EditorView* editor)
 	ReverbNetworkEditor* view = dynamic_cast<ReverbNetworkEditor*> (editor);
 	if (view)
 	{
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", view->getModuleNames().at(0).c_str());
-		fclose(pFile);*/
-
 		// Save the data when the Editor is closed
 		editorUserData = view->getUserData();
-
 		removeDependentView(view);
 	}
 }
@@ -475,10 +474,8 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 	return result;
 }
 
-// Nötig?
 tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID tag, ParamValue value)
 {
-
 	Parameter* parameter = getParameterObject(tag);
 	if (parameter)
 	{
@@ -490,7 +487,6 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID
 
 tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, ParamValue value)
 {
-
 	Parameter* parameter = getParameterObject(tag);
 	if (parameter)
 	{
@@ -499,27 +495,25 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	// called from host to update our parameters state
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 
-	// Update the GUI with values coming from Processor
-	//if ((tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) || (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST)) {
-		for (int32 i = 0; i < viewsArray.total(); i++)
+	// Update the GUI with values coming from Processor (e.g. EQ stability or automated parameters)
+	for (int32 i = 0; i < viewsArray.total(); i++)
+	{
+		if (viewsArray.at(i))
 		{
-			if (viewsArray.at(i))
-			{
-				viewsArray.at(i)->updateEditorFromController(tag, value);
-			}
+			viewsArray.at(i)->updateEditorFromController(tag, value);
 		}
-	//}
+	}
 
 	return result;
 }
 
-// Problems with thread safety when changing member variables of the Editor!
 tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
 	if (!message) return kMessageUnknown;
 	if (strncmp(message->getMessageID(), "EqStability", 128) == 0) {
 		const void* ptr;
 		EqualizerStability eqStability;
 		uint32 size = sizeof(eqStability);
+		// Get the message an cast it
 		message->getAttributes()->getBinary(0, ptr, size);
 		if (ptr) {
 			eqStability = *(EqualizerStability*)ptr;
@@ -532,14 +526,9 @@ tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
 				viewsArray.at(i)->updateEditorFromController(PARAM_EQSTABILITY_FIRST + eqStability.moduleNumber, eqStability.isStable);
 			}
 		}
-		//delete ptr;
 		return kMessageNotified;
 	}
 	return kMessageUnknown;
-	//FILE* pFile = fopen("E:\\logVst.txt", "a");
-	//			fprintf(pFile, "y(n): %s\n", message->getMessageID());
-	//			fclose(pFile);
-	//			return kMessageNotified;
 }
 
 ParamValue PLUGIN_API ReverbNetworkController::getParamNormalized(ParamID tag)

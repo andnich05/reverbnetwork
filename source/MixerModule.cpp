@@ -7,24 +7,26 @@ MixerModule::MixerModule(const double& defaultGain) {
 	inputGain.resize(MAXINPUTS, defaultGain);
 	inputMuted.resize(MAXINPUTS, false);
 	inputSoloed.resize(MAXINPUTS, false);
-	isAnyOtherInputSoloed = false;
+	isAnyInputSoloed = false;
 }
 
 MixerModule::~MixerModule() {
 }
 
 double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const {
+	// Return if the pointers are empy
 	if (moduleInputBuffer == nullptr || vstInputBuffer == nullptr) {
 		return 0.0;
 	}
 
-	// Most time consuming operations
+	// Most time consuming operations of the whole plugin!
 	double output = 0.0;
 	for (int i = 0; i < MAXINPUTS; ++i) {
-		// If input gain is zero then there is no sense in doing anything
+		// If input gain is zero then there is no sense in doing anything (saves a LOT of processing time)
 		if (inputGain[i] != 0.0) {
 			if (inputMuted[i] == false) { // Mute has precedence
-				if (inputSoloed[i] == true) {
+				if (inputSoloed[i] == true) { // If soloed: process regardless of the other inputs
+					// Check if the current input is a module, VST input or the signal generator
 					if (i < MAXMODULENUMBER) {
 						output += moduleInputBuffer[i] * inputGain[i];
 					}
@@ -36,7 +38,8 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer,
 					}
 				}
 				else {
-					if (isAnyOtherInputSoloed == false) {
+					// If the input is not soloed process the sample only if no other input is soloed
+					if (isAnyInputSoloed == false) {
 						if (i < MAXMODULENUMBER) {
 							output += moduleInputBuffer[i] * inputGain[i];
 						}
@@ -51,21 +54,20 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer,
 			}
 		}
 	}
-
 	return output;
 }
 
 void MixerModule::setInputSoloed(const int& input, const bool& solo) {
 	inputSoloed[input] = solo;
-	// Check if any other input is soloed if the current input has been unsoloed
+	// Check if any other input is soloed when the current input is being been unsoloed
 	if (solo) {
-		isAnyOtherInputSoloed = true;
+		isAnyInputSoloed = true;
 	}
 	else {
-		isAnyOtherInputSoloed = false;
+		isAnyInputSoloed = false;
 		for (int i = 0; i < MAXINPUTS; ++i) {
 			if (inputSoloed[i]) {
-				isAnyOtherInputSoloed = true;
+				isAnyInputSoloed = true;
 				break;
 			}
 		}

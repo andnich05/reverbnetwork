@@ -5,21 +5,20 @@
 
 namespace VSTGUI {
 
-	class GuiCustomSplashScreen :
-		public CSplashScreen
-	{
+	class GuiCustomSplashScreen : public CSplashScreen {
 	public:
 		GuiCustomSplashScreen(const CRect& size, CControlListener* listener, int32_t tag, CView* splashView);
 		~GuiCustomSplashScreen();
 
 		// Show the splash screen
 		virtual void splash();
+		// Save some user date
 		virtual inline void setUserData(void* userData) { savedUserData = userData; }
+		// Get the user data
 		virtual inline void* getUserData() const { if(savedUserData) return savedUserData; }
+		// Delete the user data
 		virtual inline void releaseUserData() { if (savedUserData) delete savedUserData; savedUserData = nullptr; }
 
-		virtual CMouseEventResult onMouseDown(CPoint& where, const CButtonState& buttons);
-	
 	protected:
 		void* savedUserData;
 	};

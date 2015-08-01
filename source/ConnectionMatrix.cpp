@@ -1,7 +1,5 @@
 #include "ConnectionMatrix.h"
 #include "ReverbNetworkDefines.h"
-#include <string>
-
 
 ConnectionMatrix::ConnectionMatrix() {
 
@@ -22,11 +20,9 @@ ConnectionMatrix::ConnectionMatrix() {
 		sourceModules.push_back(mapNumber);
 		++mapNumber;
 	}*/
+
 	for (unsigned short i = 0; i < MAXVSTINPUTS; ++i) {
 		vstInputMapToMapped[i] = MAXMODULENUMBER + i;
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(vstInputMapToMapped[i]).c_str());
-		fclose(pFile);*/
 	}
 	for (unsigned short i = 0; i < MAXVSTINPUTS; ++i) {
 		vstInputMapFromMapped[MAXMODULENUMBER + i] = i;
@@ -46,8 +42,6 @@ void ConnectionMatrix::setModuleToModuleConnection(const unsigned short& sourceM
 	fprintf(pFile, "y(n): %s\n", std::to_string(destModule).c_str());
 	fprintf(pFile, "y(n): %s\n", std::to_string(destModuleInput).c_str());
 	fclose(pFile);*/
-
-
 	moduleInputConnections[destModule][destModuleInput] = sourceModule;
 }
 

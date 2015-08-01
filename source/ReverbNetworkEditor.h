@@ -5,29 +5,31 @@
 #include "public.sdk/source/vst/vstguieditor.h"
 #include "pluginterfaces/vst/ivstcontextmenu.h"
 
-#include "GuiBaseAPModule.h"
 #include "XmlPresetReadWrite.h"
-#include "GuiGraphicsView.h"
 #include "ReverbNetworkEnums.h"
-#include "GuiCustomSplashScreen.h"
-#include "GuiCustomRowColumnView.h"
 
-#include "GuiSignalGenerator.h"
+
+namespace VSTGUI {
+	class GuiBaseAPModule;
+	class GuiGraphicsView;
+	class GuiCustomSplashScreen;
+	class GuiCustomRowColumnView;
+	class GuiSignalGenerator;
+}
 
 namespace Steinberg {
 namespace Vst {
 
 class ReverbNetworkEditor :
 	public VSTGUIEditor,
-	public CControlListener,
-	public IParameterFinder,
-	public IContextMenuTarget
+	public CControlListener
 
 {
 public:
 	ReverbNetworkEditor(void* controller);
 	~ReverbNetworkEditor();
 
+	// Data to save when the editor is closed (closed means destroyed!)
 	typedef struct EditorUserData{
 		std::string presetName;
 		std::vector<std::string> moduleNames;
@@ -57,24 +59,16 @@ public:
 	// Update GUI from Controller (and/or from Processor with e.g. sample values)
 	void updateEditorFromController(ParamID tag, ParamValue value);
 
+	// Set plugin version (see version.h)
 	inline void setPluginVersion(std::string version) { pluginVersion = version; }
+	// Get the saved user data
 	inline const EditorUserData& getUserData() const { return editorUserData; }
+	// Set the user data
 	inline void setUserData(const EditorUserData& userData) { editorUserData = userData; applyUserData(); }
+	// Apply the loaded user data
 	void applyUserData();
-	
-	DELEGATE_REFCOUNT(VSTGUIEditor)
-	tresult PLUGIN_API queryInterface(const char* iid, void** obj);
-
-	//---from IParameterFinder---------------
-	tresult PLUGIN_API findParameter(int32 xPos, int32 yPos, ParamID& resultTag);
-
-	//---from IContextMenuTarget---------------
-	tresult PLUGIN_API executeMenuItem(int32 tag);
 
 private:
-	
-	//std::vector<EqualizerStability> eqStability;
-
 	std::string pluginVersion;
 
 	// Holds pointer to the module GUIs
@@ -84,21 +78,19 @@ private:
 	GuiSignalGenerator* signalGenerator;
 
 	double sampleRate;
+	
+	CViewContainer* workspaceView; // View where the modules are placed and where they can be moved around and stuff
+	CSplitView* splitView; // Contains a view with the modules and a view with the graphics view
+	GuiCustomRowColumnView* mainView; // Sub view
+	GuiCustomRowColumnView* viewVstOutputSelect; // View with Vst output selection and other stuff
+	GuiCustomRowColumnView* viewModuleListMain; // List with modules
+	GuiCustomSplashScreen* splashOverrideParametersQuery; // Splash view which asks the user if he really wants to override module parameters
 
-	// View where the modules are placed and where they can be moved around and stuff
-	//CScrollView* workspaceView;
-	CViewContainer* workspaceView;
-	CSplitView* splitView;
-	GuiCustomRowColumnView* mainView;
-	GuiCustomRowColumnView* viewVstOutputSelect;
-	GuiCustomRowColumnView* viewModuleListMain;
-	GuiCustomSplashScreen* splashOverrideParametersQuery;
-
-	// True if the id (= the index of the vector) is already taken
 	std::vector<bool> allpassModuleIdPool;
 	// Total number of created modules = total number of times the function createModule() has been called
 	uint32 totalNumberOfCreatedModules;
 
+	// Some bitmaps
 	CBitmap* knobBackground;
 	CBitmap* knobBackgroundSmall;
 	CBitmap* ppmOff;
@@ -110,13 +102,11 @@ private:
 	// Holds pointers to all GUI elements which have their own GUI id; the index itself is the GUI id
 	// If a module is removed then the elements to which the pointers in this vector are pointing WILL NOT BE DESTROYED AUTOMATICALLY (Because of reference counter != 0)!
 	// Remove the pointers out of this vector manually => close()-function
-	//std::vector<SharedPointer<CControl>> guiElements;
 	std::vector<CControl*> guiElements;
 	
-
-	// Create the GUI for a Allpass module
+	// Create the GUI for an Allpass module
 	GuiBaseAPModule* createAPModule();
-
+	// Create the sub-components
 	GuiCustomRowColumnView* createMixer(const CRect& parentViewSize, const int& moduleId);
 	GuiCustomRowColumnView* createQuantizer(const CRect& parentViewSize, const int& moduleId);
 	GuiCustomRowColumnView* createEqualizer(const CRect& parentViewSize, const int& moduleId);
@@ -125,14 +115,13 @@ private:
 
 
 	// Create a GUI knob group which consists of a text title, a knob which directly controls the parameter and a text edit which affects the knob
-	// Returns the group view
 	CViewContainer* createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag,
 		const double& valueEditMinValue, const double& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit);
-	//CTextEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr);
 
 	// Create a text label with a title for a group
 	CTextLabel* createGroupTitle(const VSTGUI::UTF8StringPtr title, const CCoord& width) const;
 
+	// Create a mixer row in the mixer component
 	GuiCustomRowColumnView* createMixerRow(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& idOffset);
 
 	// Add a GUI element pointer to the vector with the GUI-ID as the index
@@ -145,10 +134,11 @@ private:
 	// Messages to Editor
 	CMessageResult notify(CBaseObject* sender, const char* message);
 
+	// Update values from controller/processor
 	std::vector<double> lastPpmValues;
 	std::vector<EqualizerStability> eqStabilityValues;
 
-	XmlPresetReadWrite* xmlPreset;
+	XmlPresetReadWrite* xmlPreset; // XML preset structure
 	// Apply the loaded xml preset structure to the Vst plug-in
 	void setXmlPreset(const XmlPresetReadWrite::preset& presetStruct);
 	// Build the xml preset structure with all plugin-in parameters
@@ -156,19 +146,25 @@ private:
 	// Differ between the possible file selector styles (no other possibility right now...)
 	CNewFileSelector::Style fileSelectorStyle;
 
-	XmlPresetReadWrite::module tempModuleParameters;
-	XmlPresetReadWrite::module defaultModuleParameters;
+	XmlPresetReadWrite::module tempModuleParameters; // Contains the module parameters which are saved when the user clicks on "copy" in a module view
+	XmlPresetReadWrite::module defaultModuleParameters; // Contains the default parameters of a module
 	// Copy parameters of specified module into the specified module structure
 	void copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::module& m);
 	// Paste the parameters from the specified structure into the specified module (can be the 'defaultModuleParamters' => set to default)
 	void pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::module& m);
 
+	// Initialize Graphics view with all modules, vst in- and outputs
 	void initializeGraphicsView();
+	// Update graphics view module (if gain 0.0 => input is unused)
 	void updateGraphicsViewModule(const int& moduleId, const int& input, const double& gainValue);
-
+	
+	// Update the gain values in the all option menus (Mixer)
 	void updateGainValuesInOptionMenus(const int& moduleNumber, const int& input, const double& gainValue);
 
+	// Update stability from controller/processor
 	void updateEqStability(const int& moduleNumber, const bool& stable);
+
+	// Open module detail view when user double clicks on a module in the graphics view
 	void openModuleDetailView(const int& moduleNumber, const bool& open);
 };
 

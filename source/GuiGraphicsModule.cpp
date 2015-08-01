@@ -60,12 +60,13 @@ namespace VSTGUI {
 		mouseMoveOutputRect = 0;
 
 		inputToUpdate = 0;
-
+		outputName = "";
 		updateShape();
 	}
 
 	GuiGraphicsModule::~GuiGraphicsModule() {
 		textEditsGainValues.clear();
+		inputNames.clear();
 	}
 
 	void GuiGraphicsModule::setInputNames(const std::vector<std::string>& inputNames) {
@@ -73,7 +74,6 @@ namespace VSTGUI {
 			this->inputNames[i]->setText(inputNames[i].c_str());
 			this->inputNames[i]->sizeToFit();
 		}
-		
 		updateShape();
 	}
 
@@ -186,13 +186,6 @@ namespace VSTGUI {
 						textEditsGainValues[i]->setMouseableArea(textEditsGainValues[i]->getViewSize());
 						textEditsGainValues[i]->setVisible(true);
 					}
-					/*temp.str(std::string());
-					temp.clear();
-					temp << inputNames[i];
-					if (inputGainValues[i] != 0.0) {
-						temp << " [" << std::setprecision(2) << inputGainValues[i] << "]";
-					}
-					pContext->drawString(temp.str().c_str(), CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(100, inoutRectHeight)), CHoriTxtAlign::kLeftText, false);*/
 				}
 				else {
 					inputNames[i]->setVisible(false);
@@ -212,6 +205,7 @@ namespace VSTGUI {
 	void GuiGraphicsModule::valueChanged(VSTGUI::CControl* pControl) {
 		for (unsigned int i = 0; i < textEditsGainValues.size(); ++i) {
 			if (textEditsGainValues[i] == pControl) {
+				// If the user enters a new gain value => notify the parent view
 				inputToUpdate = i;
 				inputGainValues[i] = textEditsGainValues[i]->getValue();
 				getParentView()->notify(this, "UpdateGainValue");
@@ -223,6 +217,7 @@ namespace VSTGUI {
 	CMouseEventResult GuiGraphicsModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 	{
 		if (this->isVisible()) {
+			// Double click opens the module detail view
 			if (buttons.isDoubleClick()) {
 				getParentView()->notify(this, "DoubleClick");
 				return kMouseEventHandled;
@@ -242,14 +237,11 @@ namespace VSTGUI {
 			}
 			// Moving the modules around
 			if (whereLocal.isInside(handleRegion)) {
-				/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-				fprintf(pFile, "y(n): %s\n", "INSIDE");
-				fclose(pFile);*/
 				mouseDownInHandleRegion = true;
 				mouseDownCoordinates = whereLocal;
 				return kMouseEventHandled;
 			}
-			// Remove connection to an input
+			// Remove connection to an input when user clicks inside the input
 			for (unsigned int i = 0; i < inputRects.size(); ++i) {
 				if (whereLocal.isInside(inputRects[i])) {
 					inputGainValues[i] = 0.0;
@@ -260,6 +252,7 @@ namespace VSTGUI {
 			}
 		}
 
+		// Do the Vst stuff
 		// convert to relativ pos
 		CPoint where2(where);
 		where2.offset(-getViewSize().left, -getViewSize().top);
@@ -298,11 +291,13 @@ namespace VSTGUI {
 	CMouseEventResult GuiGraphicsModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
 	{	
 		if (this->isVisible()) {
+			// Draw a new line when the user moves the mouse and has pressed it inside an output
 			if (mouseDownInOutputRect) {
 				this->mouseMoveOutputRect = where;
 				getParentView()->notify(this, "MoveMouseLine");
 				return kMouseEventHandled;
 			}
+			// Move the view around
 			else if (mouseDownInHandleRegion) {
 				if (where != mouseDownCoordinates) {
 					this->setViewSize(CRect(CPoint(where - mouseDownCoordinates), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
@@ -328,6 +323,7 @@ namespace VSTGUI {
 			}
 		}
 		
+		// Vst stuff
 		if (mouseDownView)
 		{
 			CBaseObjectGuard crg(mouseDownView);
@@ -349,6 +345,7 @@ namespace VSTGUI {
 	CMouseEventResult GuiGraphicsModule::onMouseUp(CPoint& where, const CButtonState& buttons) {
 		mouseDownInHandleRegion = false;
 		
+		// Finish the mouse line
 		if (this->isVisible()) {
 			if (mouseDownInOutputRect) {
 				mouseDownInOutputRect = false;
@@ -358,7 +355,7 @@ namespace VSTGUI {
 			}
 		}
 
-
+		// Vst stuff
 		if (mouseDownView)
 		{
 			CBaseObjectGuard crg(mouseDownView);

@@ -45,9 +45,9 @@
 #define stringPluginName "ReverbNetwork"
 
 
-BEGIN_FACTORY_DEF("Hochschule RheinMain",
-	"http://www.hs-rm.de",
-	"mailto:a@b.de")
+BEGIN_FACTORY_DEF("RheinMain University of Applied Sciences",
+	"http://www.hs-rm.de/en/hochschule/startseite/",
+	"mailto:a@b.com")
 
 	//---
 	// Set plugin version 
@@ -73,17 +73,6 @@ BEGIN_FACTORY_DEF("Hochschule RheinMain",
 				FULL_VERSION_STR,		// Plug-in version (to be changed)
 				kVstVersionString,
 				Steinberg::Vst::ReverbNetworkController::createInstance)
-
-	// add Test Factory
-	/*DEF_CLASS2 (INLINE_UID_FROM_FUID(Steinberg::Vst::ADelayTestFactory::cid),
-				PClassInfo::kManyInstances,
-				kTestClass,
-				stringPluginName "Test Factory",
-				0,
-				"",
-				"",
-				"",
-				Steinberg::Vst::ADelayTestFactory::createInstance)*/
 
 END_FACTORY
 

@@ -5,6 +5,8 @@
 #include "../vstgui4/vstgui/lib/controls/cbuttons.h"
 #include "ReverbNetworkDefines.h"
 #include "ValueConversion.h"
+#include "GuiCustomTextLabel.h"
+#include "GuiCustomValueEdit.h"
 
 
 namespace VSTGUI {

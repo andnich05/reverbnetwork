@@ -19,11 +19,11 @@ public:
 	void setInputSoloed(const int& input, const bool& solo);
 
 private:
-	std::vector<double> inputGain;
-	std::vector<bool> inputMuted;
-	std::vector<bool> inputSoloed;
+	std::vector<double> inputGain; // Gain values for each input
+	std::vector<bool> inputMuted; // Is an input muted?
+	std::vector<bool> inputSoloed; // Is an input soloed?
 
-	bool isAnyOtherInputSoloed;
+	bool isAnyInputSoloed; // Is any of the inputs soloed?
 };
 
 #endif // MIXERMODULE_H

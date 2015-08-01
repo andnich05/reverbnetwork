@@ -9,16 +9,16 @@ public:
 
 	// Process sample by reference
 	void processSample(double& sample) const;
-	// Set the quantization from 1 bit to 32 bit
+	// Set the quantization in bits
 	void setQuantization(const double& q);
 
 private:
 	// Calculate the appropriate factor depending on the quantization method
 	void calculateFactor();
 
-	unsigned int bitsToReset; // 32 - quantization
+	unsigned int bitsToReset; // MAXQUANTIZATION - quantization
 	long int mask; // (min.)32 bit mask
-	double factor;
+	double factor; // Right factor for the right quantization method
 
 };
 

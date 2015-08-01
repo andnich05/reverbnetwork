@@ -18,12 +18,11 @@ public:
 	// Set the sample rate of the host (important for the equalizer and the allpass)
 	void setSampleRate(const double& sampleRate);
 
-	// Process all input channels of a module, return output sample which is a mix of the input samples
-	//double processModuleSamples(std::vector<double>& channelSamples);
+	// Process all input channels of a module, all vst inputs and the signal generator, returns output sample which is a mix of the input samples
 	double processSamples(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const;
 
+	//---
 	// Update functions; all passed values plain values (already de-normalized by the Processor)
-	//void updateParameter(const unsigned int& pid, const double& normalizedValue);
 	// Mixer update functions
 	void updateMixerGain(const int& inputNumber, const double& gain);
 	void updateMixerMute(const int& inputNumber, const double& mute);
@@ -55,6 +54,8 @@ public:
 	void updateOutputGain(const double& gain);
 	inline void switchOutputBypass(const double& bypass) { bypassGain = (bypass != 0.0); }
 
+	//---
+
 private:
 
 	// Component objects
@@ -63,9 +64,6 @@ private:
 	EqualizerModule* equalizer;
 	SchroederAllpass* allpass;
 	GainModule* gainOutput;
-
-	// Host sample rate
-	double sampleRate;
 
 	// Bypass variables
 	bool bypassMixer;

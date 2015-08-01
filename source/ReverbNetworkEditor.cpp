@@ -1,32 +1,29 @@
 #include "ReverbNetworkEditor.h"
-#include "ReverbNetworkDefines.h"
+
+#include "GuiCustomRowColumnView.h"
+#include "GuiCustomTextLabel.h"
+#include "GuiOptionMenuInputSelector.h"
 #include "GuiBaseAPModule.h"
+#include "GuiCustomSplashScreen.h"
+#include "GuiGraphicsView.h"
+#include "GuiSignalGenerator.h"
 #include "GuiCustomValueEdit.h"
 #include "GuiCustomTextEdit.h"
-#include "GuiOptionMenuInputSelector.h"
-#include "GuiGraphicsView.h"
 
-
-#include "GuiCustomTextLabel.h"
-
-#include <mutex>
-
-#include <iostream>
-
-//#include "XmlPresetReadWrite.h"
-
-//#include "GuiHandleView.h"
 #include "ValueConversion.h"
-#include "ReverbNetworkEnums.h"
+#include "ReverbNetworkDefines.h"
+
 
 namespace Steinberg {
 namespace Vst {
 
+	// Structure for overriding module parameters (when user clicks on "paste")
 	struct overrideParametersQuery {
 		int moduleId;
 		XmlPresetReadWrite::module *moduleStruct;
 	};
 
+	//--- GUI IDs
 	// Gui elements in the titlebar of the modules
 	const int32_t id_module_textEdit_titleFirst = 0;
 	const int32_t id_module_textEdit_titleLast = id_module_textEdit_titleFirst + MAXMODULENUMBER - 1;
@@ -125,28 +122,29 @@ namespace Vst {
 	const int32_t id_output_switch_bypassFirst = id_output_textEdit_gainLast + 1;
 	const int32_t id_output_switch_bypassLast = id_output_switch_bypassFirst + MAXMODULENUMBER - 1;
 
+	// PPM GUI ids
 	const int32_t id_output_ppmFirst = id_output_switch_bypassLast + 1;
 	const int32_t id_output_ppmLast = id_output_ppmFirst + MAXMODULENUMBER - 1;
 
-
+	// Module visibility
 	const int32_t id_general_checkBox_moduleVisibleFirst = id_output_ppmLast + 1;
 	const int32_t id_general_checkBox_moduleVisibleLast = id_general_checkBox_moduleVisibleFirst + MAXMODULENUMBER - 1;
-
-	//------
 
 	// VST output select
 	const int32_t id_general_optionMenu_vstOutputFirst = id_general_checkBox_moduleVisibleLast + 1;
 	const int32_t id_general_optionMenu_vstOutputLast = id_general_optionMenu_vstOutputFirst + MAXVSTOUTPUTS - 1;
 
-	// 
+	// XML Preset
 	const int32_t id_general_button_openPreset = id_general_optionMenu_vstOutputLast + 1;
 	const int32_t id_general_button_savePreset = id_general_button_openPreset + 1;
 	const int32_t id_general_textEdit_presetFilePath = id_general_button_savePreset + 1;
 
+	// Splash screen
 	const int32_t id_general_splashScreen_overrideParametersQuery = id_general_textEdit_presetFilePath + 1;
 	const int32_t id_general_button_splashViewOk = id_general_splashScreen_overrideParametersQuery + 1;
 	const int32_t id_general_button_splashViewCancel = id_general_button_splashViewOk + 1;
 
+	// Graphics view
 	const int32_t id_graphicsView_rearrangeModules = id_general_button_splashViewCancel + 1;
 	const int32_t id_graphicsView_addModule = id_graphicsView_rearrangeModules + 1;
 
@@ -157,9 +155,6 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 , fileSelectorStyle(CNewFileSelector::kSelectFile)
 {
 	pluginVersion = "0";
-	/*updateEqStability = false;
-	eqStability.moduleNumber = 0;
-	eqStability.isStable = true;*/
 	tempModuleParameters = {};
 	defaultModuleParameters = {};
 	lastPpmValues.resize(MAXMODULENUMBER, 0.0);
@@ -197,7 +192,7 @@ void ReverbNetworkEditor::addGuiElementPointer(CControl* guiElement, const int32
 }
 
 tresult PLUGIN_API ReverbNetworkEditor::canResize() {
-	// Make Editor resizeable
+	// Make Editor resizeable (seems only to work in VST3PluginTestHost so disabled for now)
 	return kResultFalse;
 }
 
@@ -236,18 +231,12 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(1000, frame->getHeight())), CSplitView::kVertical, 8);
 
-	//workspaceView = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
 	workspaceView = new CViewContainer(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight() / 2)));
 	workspaceView->setBackgroundColor(CCOLOR_WORKSPACE_BACKGROUND);
 	workspaceView->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
-	/*workspaceView->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
-	workspaceView->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));*/
-
-
 
 	// Create VST output selection 
 	viewVstOutputSelect = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
-	//viewVstOutputSelect->addView(createGroupTitle("VST Outputs:", 170));
 	std::string temp = "";
 	for (uint32 i = 0; i < MAXVSTOUTPUTS; ++i) {
 		GuiCustomRowColumnView* viewOutputSelectRow = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 0.0);
@@ -282,6 +271,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	}
 	viewVstOutputSelect->setBackgroundColor(CCOLOR_NOCOLOR);
 
+	// Create preset GUI elements
 	CTextEdit* textEditPresetFilePath = new CTextEdit(CRect(CPoint(0, 0), CPoint(170, 20)), this, id_general_textEdit_presetFilePath, "Preset 1");
 	addGuiElementPointer(textEditPresetFilePath, id_general_textEdit_presetFilePath);
 	textEditPresetFilePath->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
@@ -314,48 +304,12 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	signalGenerator->setBackgroundColor(CCOLOR_NOCOLOR);
 	viewVstOutputSelect->addView(signalGenerator);
 
-	/*temp = "VST Inputs: ";
-	temp.append(std::to_string((int)(MAXVSTINPUTS)));
-	CTextLabel* labelNumberOfVstInputs = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
-	labelNumberOfVstInputs->setFont(kNormalFontSmall);
-	labelNumberOfVstInputs->setBackColor(CColor(0, 0, 0, 0));
-	labelNumberOfVstInputs->setFrameColor(CColor(0, 0, 0, 0));
-	labelNumberOfVstInputs->setHoriAlign(CHoriTxtAlign::kLeftText);
-	temp = "VST Outputs: ";
-	temp.append(std::to_string((int)(MAXVSTOUTPUTS)));
-	CTextLabel* labelNumberOfVstOutputs = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
-	labelNumberOfVstOutputs->setFont(kNormalFontSmall);
-	labelNumberOfVstOutputs->setBackColor(CColor(0, 0, 0, 0));
-	labelNumberOfVstOutputs->setFrameColor(CColor(0, 0, 0, 0));
-	labelNumberOfVstOutputs->setHoriAlign(CHoriTxtAlign::kLeftText);
-	temp = "Modules: ";
-	temp.append(std::to_string((int)(MAXMODULENUMBER)));
-	CTextLabel* labelNumberOfModules = new CTextLabel(CRect(CPoint(0, 0), CPoint(100, 20)), temp.c_str());
-	labelNumberOfModules->setFont(kNormalFontSmall);
-	labelNumberOfModules->setBackColor(CColor(0, 0, 0, 0));
-	labelNumberOfModules->setFrameColor(CColor(0, 0, 0, 0));
-	labelNumberOfModules->setHoriAlign(CHoriTxtAlign::kLeftText);
-	viewVstOutputSelect->addView(labelNumberOfVstInputs);
-	viewVstOutputSelect->addView(labelNumberOfVstOutputs);
-	viewVstOutputSelect->addView(labelNumberOfModules);*/
-
-
 	viewVstOutputSelect->sizeToFit();
 
-	
-
+	// Create graphics view
 	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())), MAXMODULENUMBER, this);
 	graphicsView->setBackgroundColor(CCOLOR_GRAPHICSVIEW_BACKGROUND);
-	//graphicsView->setViewSize(CRect(CPoint(0, 0), CPoint(graphicsView->getViewSize().getWidth(), graphicsView->getViewSize().getHeight() / 2)));
-	//splitView->addView(graphicsView);
-	/*CScrollView* scrollViewGraphics = new CScrollView(CRect(CPoint(0, 0), CPoint(800, 290)), CRect(0, 0, 1000, 1000), CScrollView::kHorizontalScrollbar | CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars, 14.0);
-	scrollViewGraphics->addView(graphicsView);
-	scrollViewGraphics->setBackgroundColor(CColor(80, 80, 80, 255));
-	scrollViewGraphics->setBackgroundColorDrawStyle(CDrawStyle::kDrawFilledAndStroked);
-	scrollViewGraphics->getVerticalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));
-	scrollViewGraphics->getHorizontalScrollbar()->setScrollerColor(CColor(50, 50, 50, 255));*/
-
-	// ToDo: Move those buttons into the graphics view (like a tool box or something...)
+	// Create toolbox for graphics view
 	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_addModule, "Add");
 	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
 	buttonAddModule->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
@@ -383,9 +337,6 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	GuiCustomRowColumnView* graphicsMainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight() / 2)), GuiCustomRowColumnView::kColumnStyle);
 	graphicsMainView->addView(graphicsView);
 	graphicsMainView->addView(viewGraphicsViewToolBox);
-	//graphicsMainView->sizeToFit();
-
-
 
 	// Create Module List
 	viewModuleListMain = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
@@ -405,7 +356,6 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewModuleScrollList->addView(viewModuleList);
 	viewModuleScrollList->setContainerSize(viewModuleList->getViewSize());
 	viewModuleList->sizeToFit();
-	//viewModuleListMain->addView(createGroupTitle("Module List:", viewModuleScrollList->getWidth()));
 	viewModuleListMain->addView(viewModuleScrollList);
 	viewModuleListMain->sizeToFit();
 	viewModuleListMain->setBackgroundColor(CCOLOR_MODULELIST_BACKGROUND);
@@ -414,19 +364,16 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewModuleListMain->setFrameColor(CCOLOR_FRAME);
 	viewModuleList->setBackgroundColor(CCOLOR_NOCOLOR);
 
-
-
+	// Create main views
 	GuiCustomRowColumnView* workspaceMainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth(), splitView->getViewSize().getHeight())), GuiCustomRowColumnView::kColumnStyle);
 	workspaceMainView->addView(workspaceView);
 	workspaceMainView->addView(viewModuleListMain);
 	workspaceMainView->setBackgroundColor(CCOLOR_NOCOLOR);
-
 	splitView->addView(graphicsMainView);
 	splitView->addView(workspaceMainView);
 	initializeGraphicsView();
 	workspaceView->setViewSize(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())));
 	workspaceView->setMouseableArea(workspaceView->getViewSize());
-
 	mainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 15.0);
 	mainView->addView(splitView);
 	//mainView->addView(viewModuleListMain);
@@ -435,6 +382,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	mainView->setBackgroundColor(CCOLOR_SIDEBAR_BACKGROUND);
 	frame->addView(mainView);
 
+	// Create splash view
 	GuiCustomTextLabel* labelQueryMessage = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(200, 20)), "Override the current parameters?", kNormalFont, CHoriTxtAlign::kLeftText);
 	CTextButton* buttonOk = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewOk, "Yes");
 	addGuiElementPointer(buttonOk, id_general_button_splashViewOk);
@@ -472,25 +420,28 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	splashOverrideParametersQuery = new GuiCustomSplashScreen(CRect(CPoint(0, 0), CPoint(0, 0)), this, id_general_splashScreen_overrideParametersQuery, queryView);
 	splashOverrideParametersQuery->sizeToFit();
 	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
-	
 	mainView->addView(splashOverrideParametersQuery);
-	//frame->sizeToFit();
 	
+	// Delete the bitmap obejcts
 	knobBackground->forget();
 	knobBackgroundSmall->forget();
 	ppmOff->forget();
 	ppmOn->forget();
 
-	// Save the default module parameters for later
+	// Save the default module parameters for later (when the user clicks on "Default")
 	if (apGuiModules.size() > 0) {
 		copyModuleParameters(0, defaultModuleParameters);
 	}
 
+	// Initialize EQ stability buttons
 	updateGuiWithControllerParameters();
 	for (int i = 0; i < MAXMODULENUMBER; ++i) {
 		updateEditorFromController(PARAM_EQSTABILITY_FIRST + i, 1.0);
 	}
+
+	// Sort the graphics view
 	graphicsView->rearrangeModules();
+
 	return true;
 }
 
@@ -498,7 +449,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 void PLUGIN_API ReverbNetworkEditor::close() {
 	if (frame)
 	{
-		guiElements.clear(); // Clear the GUI pointer so that VST can delete the objects (=> refCounter is 0)
+		guiElements.clear();
 		apGuiModules.clear();
 		if (xmlPreset) {
 			delete xmlPreset;
@@ -511,22 +462,21 @@ void PLUGIN_API ReverbNetworkEditor::close() {
 }
 
 void ReverbNetworkEditor::valueChanged(CControl* pControl) {
-	// Get the GUI id
-	int32_t tag = pControl->getTag();
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(tag).c_str());
-	fclose(pFile);*/
-	double value = (double)pControl->getValue();
+	// This function is called when the user changes a GU element, pControl is a pointer to the object which has been changed
+	int32_t tag = pControl->getTag(); // Get the GUI ID
+	double value = (double)pControl->getValue(); // Get the value
 	
 	if (tag >= id_module_textEdit_titleFirst && tag <= id_module_textEdit_titleLast) {
 		for (int i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
+			// Build up the name ("APMXXX" should always be there at the beginning of the title)
 			std::string temp = "APM";
 			temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
 			temp.append(" ");
 			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 			fprintf(pFile, "y(n): %s\n", std::to_string(PARAM_MIXERGAIN_FIRST + tag - id_module_textEdit_titleFirst + ((i - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS) * MAXINPUTS).c_str());
 			fclose(pFile);*/
-			temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
+			temp.append(dynamic_cast<CTextEdit*>(pControl)->getText()); // Get the text the user has entered
+			// Update all option menus
 			double gainValue = ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + tag - id_module_textEdit_titleFirst + ((i - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS) * MAXINPUTS));
 			if (gainValue != 0.0) {
 				temp.append(" [");
@@ -541,6 +491,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(tag - id_module_textEdit_titleFirst + 1)->setTitle(temp.c_str());
 			guiElements[i]->setDirty();
 		}
+		// Update all VST outputs
 		for (int i = id_general_optionMenu_vstOutputFirst; i <= id_general_optionMenu_vstOutputLast; ++i) {
 			std::string temp = "APM";
 			temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
@@ -549,12 +500,12 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(tag - id_module_textEdit_titleFirst + 1)->setTitle(temp.c_str());
 			guiElements[i]->setDirty();
 		} 
-		editorUserData.moduleNames[tag - id_module_textEdit_titleFirst] = dynamic_cast<CTextEdit*>(pControl)->getText();
+		editorUserData.moduleNames[tag - id_module_textEdit_titleFirst] = dynamic_cast<CTextEdit*>(pControl)->getText(); // Save the names for later
 		std::string temp = "APM";
 		temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
 		temp.append(" ");
 		temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
-		graphicsView->setModuleTitle(tag - id_module_textEdit_titleFirst, temp);
+		graphicsView->setModuleTitle(tag - id_module_textEdit_titleFirst, temp); // Update the titles in the graphics view
 		graphicsView->setDirty();
 	}
 	else if (tag >= id_module_button_collapseFirst && tag <= id_module_button_collapseLast) {
@@ -574,36 +525,37 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_module_button_pasteParametersFirst && tag <= id_module_button_pasteParametersLast) {
 		overrideParametersQuery* userData = new overrideParametersQuery;
 		userData->moduleId = tag - id_module_button_pasteParametersFirst;
-		userData->moduleStruct = &tempModuleParameters;
+		userData->moduleStruct = &tempModuleParameters; // Get the copied parameters
 		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash();
-		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize());
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash(); // Show the splash view
+		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize()); // Disable the mouse for everything else
 	}
 	else if (tag >= id_module_button_defaultParametersFirst && tag <= id_module_button_defaultParametersLast) {
 		overrideParametersQuery* userData = new overrideParametersQuery;
 		userData->moduleId = tag - id_module_button_defaultParametersFirst;
-		userData->moduleStruct = &defaultModuleParameters;
+		userData->moduleStruct = &defaultModuleParameters; // Get the default parameters
 		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
 		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash();
 		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize());
 	}
 	else if (tag == id_general_button_splashViewOk) {
+		// Get the userData
 		overrideParametersQuery* userData = (overrideParametersQuery*)(dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->getUserData());
+		// Apply the copied parameters
 		pasteModuleParameters(userData->moduleId, XmlPresetReadWrite::module(*userData->moduleStruct));
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash();
+		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash(); // Hide the splash view
 		frame->setMouseableArea(frame->getViewSize());
 	}
 	else if (tag == id_general_button_splashViewCancel) {
 		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash();
 		frame->setMouseableArea(frame->getViewSize());
 	}
-	// CAnimKnob accepts only normalized values (BUG?)
 	// Mixer
 	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
 		uint16 moduleNumber = (tag - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS;	// Calculate the module number
 		// Update the VST parameter variable
 		controller->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::plainToNormMixerInputSelect(value));
-		// Update the module member variable (is called in process() in processor), BUT!!!: it also influences the VST parameter so it MUST be normalized!
+		// Update the module member variable (is called in process() in processor)
 		controller->performEdit(PARAM_MIXERINPUTSELECT_FIRST + (tag - id_mixer_optionMenu_inputSelectFirst), ValueConversion::plainToNormMixerInputSelect(value));
 
 		// Get the menu entry that was selected before the current one and enable it in all OptionMenus
@@ -645,7 +597,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	else if (tag >= id_mixer_knob_gainFirst && tag <= id_mixer_knob_gainLast)  {
 		uint16 moduleNumber = (tag - id_mixer_knob_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
-		int inputIndex = (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue());
+		int inputIndex = (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_knob_gainFirst)]->getValue()); // Calculate the input number
 		if (inputIndex != 0.0) {
 			// 0.0 means <Select> is selected so no update needed
 			// Knob value already normalized => no conversion needed
@@ -653,8 +605,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
 			// Update the textEdit
 			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->setValue(ValueConversion::normToPlainInputGain(value));
-			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid();
+			guiElements[id_mixer_textEdit_gainFirst + (tag - id_mixer_knob_gainFirst)]->invalid(); // setDirty() doesn't work here (why?)
+			// Update the gain values in the option menus
 			updateGainValuesInOptionMenus(moduleNumber, inputIndex - 1, ValueConversion::normToPlainInputGain(value));
+			// Update the graphics view
 			updateGraphicsViewModule(moduleNumber, inputIndex - 1, ValueConversion::normToPlainInputGain(value));
 			splitView->invalid();
 		}
@@ -668,6 +622,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			uint16 moduleNumber = (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
 			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::plainToNormInputGain(value));
 			controller->performEdit(PARAM_MIXERGAIN_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, ValueConversion::plainToNormInputGain(value));
+			// Update the knob
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormInputGain(value));
 			guiElements[id_mixer_knob_gainFirst + (tag - id_mixer_textEdit_gainFirst)]->setDirty();
 			updateGainValuesInOptionMenus(moduleNumber, inputIndex - 1, value);
@@ -681,7 +636,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_button_muteFirst)]->getValue() != 0.0) {
 			controller->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
 			controller->performEdit(PARAM_MIXERINPUTMUTED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
-			//savedMuteValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value != 0.0;
 		}
 	}
 	else if (tag >= id_mixer_button_soloFirst && tag <= id_mixer_button_soloLast)  {
@@ -690,7 +644,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		if (guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_button_soloFirst)]->getValue() != 0.0) {
 			controller->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
 			controller->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + moduleNumber * MAXINPUTS + inputIndex - 1, value);
-			//savedSoloValues[moduleNumber * MAXINPUTS + inputIndex - 1] = value != 0.0;
 		}
 	}
 	// Quantizer
@@ -714,27 +667,33 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	else if (tag >= id_equalizer_optionMenu_filterTypeFirst && tag <= id_equalizer_optionMenu_filterTypeLast)  {
 		controller->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
 		controller->performEdit(PARAM_EQFILTERTYPE_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), ValueConversion::plainToNormFilterTypeSelect(value));
+		// Get the equalizer view (could be buggy...)
 		CViewContainer* equalizerView = dynamic_cast<CViewContainer*>(pControl->getParentView()->getParentView());
 		if (equalizerView) {
+			// Get the view with the knobs and stuff
 			CViewContainer* layeredView = dynamic_cast<CViewContainer*>(equalizerView->getView(equalizerView->getNbViews() - 1));
 			if (layeredView) {
 				if (layeredView->getNbViews() >= 2) {
+					// Set the right view visible (either the normal one with the knobs or the other one with the coefficients)
 					layeredView->getView(0)->setVisible((int)value != FilterType::rawBiquad);
 					layeredView->getView(1)->setVisible((int)value == FilterType::rawBiquad);
 				}
 			}
 		}
 		if ((int)value == FilterType::rawBiquad) {
+			// Update the coefficients when Raw Biquad
 			controller->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
+			// And the stability indicator
 			updateEqStability(tag - id_equalizer_optionMenu_filterTypeFirst, 
 				ValueConversion::checkEqStability(guiElements[id_equalizer_textEdit_b1First + (tag - id_equalizer_optionMenu_filterTypeFirst)]->getValue(), 
 				guiElements[id_equalizer_textEdit_b2First + (tag - id_equalizer_optionMenu_filterTypeFirst)]->getValue()));
 		}
 		else {
+			// Update the other parameters when everything else
 			updateEqStability(tag - id_equalizer_optionMenu_filterTypeFirst, true);
 			controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
@@ -810,30 +769,21 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_knob_delayFirst), value);
 		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::normToPlainDelay(value));
 		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_knob_delayFirst)]->setValue(ValueConversion::delayMillisecondsToSamples(ValueConversion::normToPlainDelay(value)));
-		//guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_knob_delayFirst)]->invalid();
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_knob_delayFirst)]
 			->setValue(ValueConversion::calculateDiffK(ValueConversion::normToPlainDelay(value), guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue()));
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(value) / 1000).c_str());
-		fprintf(pFile, "y(n): %s\n", std::to_string(ValueConversion::normToPlainDelay(guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
-		fprintf(pFile, "y(n): %s\n", std::to_string(-60.0 * ((ValueConversion::normToPlainDelay(value) / 1000) / guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_knob_delayFirst)]->getValue())).c_str());
-		fclose(pFile);*/
 	}
 	else if (tag >= id_allpass_textEdit_delayFirst && tag <= id_allpass_textEdit_delayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::plainToNormDelay(value));
 		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_delayFirst), ValueConversion::plainToNormDelay(value));
 		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(ValueConversion::plainToNormDelay(value));
-		//guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_delayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_samplesDelayFirst + (tag - id_allpass_textEdit_delayFirst)]->setValue(value * sampleRate / 1000);
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_delayFirst)]
 			->setValue(ValueConversion::calculateDiffK(value, guiElements[id_allpass_textEdit_decayFirst + (tag - id_allpass_textEdit_delayFirst)]->getValue()));
-
 	}
 	else if (tag >= id_allpass_textEdit_samplesDelayFirst && tag <= id_allpass_textEdit_samplesDelayLast)  {
 		controller->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::plainToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
 		controller->performEdit(PARAM_ALLPASSDELAY_FIRST + (tag - id_allpass_textEdit_samplesDelayFirst), ValueConversion::plainToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
 		guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::plainToNormDelay(ValueConversion::delaySamplesToMilliseconds(value)));
-		//guiElements[id_allpass_knob_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setDirty();
 		guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->setValue(ValueConversion::delaySamplesToMilliseconds(value));
 		guiElements[id_allpass_textEdit_diffKFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]
 			->setValue(ValueConversion::calculateDiffK(guiElements[id_allpass_textEdit_delayFirst + (tag - id_allpass_textEdit_samplesDelayFirst)]->getValue(), 
@@ -905,7 +855,9 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
 			apGuiModules[tag - id_general_checkBox_moduleVisibleFirst]->setVisible(value != 0.0);
 			if (value == 1.0) {
+				// Bring the current visible view to the top
 				workspaceView->changeViewZOrder(apGuiModules[tag - id_general_checkBox_moduleVisibleFirst], workspaceView->getNbViews() - 1);
+				// Update the graphics view
 				graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
 			}
 			workspaceView->setDirty();
@@ -964,7 +916,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			graphicsView->addModule();
 		}
 	}
-	//graphicsView->setDirty();
 }
 
 void ReverbNetworkEditor::controlBeginEdit(CControl* pControl)
@@ -1095,7 +1046,6 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	baseModuleView->addView(handleView);
 	baseModuleView->addView(controlView);
 	baseModuleView->sizeToFit();
-	//baseModuleView->setViewSize(CRect(CPoint(baseModuleView->getViewSize().getTopLeft()), CPoint(baseModuleView->getWidth(), baseModuleView->getHeight() + 5)));
 
 	workspaceView->addView(baseModuleView);
 
@@ -1121,14 +1071,10 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixer(const CRect& parentView
 	mixerScrollView->setBackgroundColor(CCOLOR_NOCOLOR);
 	mixerScrollView->sizeToFit();
 	mixerScrollView->getVerticalScrollbar()->setScrollerColor(CCOLOR_NOCOLOR);
-
-
 	if (mixerView->getHeight() < mixerScrollView->getHeight()) {
 		mixerScrollView->getVerticalScrollbar()->setVisible(false);
 	}
 	mixerMainView->setBackgroundColor(CCOLOR_NOCOLOR);
-	//mixerMainView->setFrameWidth(1);
-	//mixerMainView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	mixerMainView->addView(createGroupTitle("INPUT MIXER", mixerMainView->getWidth()));
 	mixerMainView->addView(mixerScrollView);
 	return mixerMainView;
@@ -1138,8 +1084,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createQuantizer(const CRect& parent
 	// Holds the quantizer controls
 	GuiCustomRowColumnView* quantizerView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(90, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	quantizerView->setBackgroundColor(CCOLOR_NOCOLOR);
-	//quantizerView->setFrameWidth(1);
-	//quantizerView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	quantizerView->addView(createGroupTitle("QUANTIZER", quantizerView->getWidth()));
 	CCheckBox* checkBoxQuantizerBypass = new CCheckBox(CRect(CPoint(0, 0), CPoint(60, 20)), this, id_quantizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxQuantizerBypass, id_quantizer_switch_bypassFirst + moduleId);
@@ -1153,8 +1097,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	// Holds the equalizer controls
 	GuiCustomRowColumnView* equalizerView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(150, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	equalizerView->setBackgroundColor(CCOLOR_NOCOLOR);
-	//equalizerView->setFrameWidth(1);
-	//equalizerView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	GuiCustomRowColumnView* filterTypeView = new GuiCustomRowColumnView(CRect(0, 0, 0, 0), GuiCustomRowColumnView::kColumnStyle);
 	filterTypeView->setBackgroundColor(CCOLOR_NOCOLOR);
 	GuiCustomTextLabel* filterTypeTextLabel = new GuiCustomTextLabel(CRect(0, 0, 64, 20), "Filter Type:", kNormalFontSmall);
@@ -1303,8 +1245,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	// Holds the allpass controls (delay and decay)
 	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(110, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	allpassView->setBackgroundColor(CCOLOR_NOCOLOR);
-	//allpassView->setFrameWidth(1);
-	//allpassView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	CCheckBox *checkBoxAllpassBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_allpass_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxAllpassBypass, id_allpass_switch_bypassFirst + moduleId);
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
@@ -1319,8 +1259,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	labelDiffK->addEntry("-k:");
 	labelDiffK->setCurrent(0);
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
-	//labelDiffK->setBackColor(CColor(0, 0, 0, 0));
-	//labelDiffK->setFrameColor(CColor(0, 0, 0, 0));
 	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth() - 3, 15)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
 	textEditDiffK->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
@@ -1332,10 +1270,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	textEditDiffK->setValueToStringProc(&ValueConversion::textEditValueToStringConversion, userData2);
 	textEditDiffK->setMin(-1.0);
 	textEditDiffK->setMax(1.0);
-	//textEditDiffK->setStringToTruncate("", true);
-	//textEditDiffK->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	textEditDiffK->setFont(CFontRef(kNormalFontSmall));
-	//textEditDiffK->setBackColor(CColor(0, 0, 0, 0));
 	diffKView->addView(labelDiffK);
 	diffKView->addView(textEditDiffK);
 	diffKView->setSpacing(3);
@@ -1357,7 +1292,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	textEditDelayInSamples->setFont(CFontRef(kNormalFontSmall));
 	allpassView->addView(textEditDelayInSamples);
 	
-
 	CCheckBox* checkBoxModulationEnabled = new CCheckBox(CRect(CPoint(0, 0), CPoint(allpassView->getWidth(), 15)), this, id_allpass_checkBox_modulationEnabledFirst + moduleId, "Delay Modulation");
 	addGuiElementPointer(checkBoxModulationEnabled, id_allpass_checkBox_modulationEnabledFirst + moduleId);
 	checkBoxModulationEnabled->setFont(kNormalFontSmall);
@@ -1431,13 +1365,10 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createOutput(const CRect& parentVie
 	knobPpmView->sizeToFit();
 	gainView->addView(knobPpmView);
 	gainView->setBackgroundColor(CCOLOR_NOCOLOR);
-	//gainView->setFrameWidth(1);
-	//gainView->setFrameColor(CCOLOR_MODULE_COMPONENTFRAME);
 	return gainView;
 }
 
 CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr title, const CCoord& width, const int32_t& knobTag, const int32_t& valueEditTag, 
-	//const float& valueEditMinValue, const float& valueEditMaxValue, GuiCustomValueEditStringToValueProc textEditStringToValueFunctionPtr, CParamDisplayValueToStringProc textEditValueToStringFunctionPtr) {
 	const double& valueEditMinValue, const double& valueEditMaxValue, const int& valueEditPrecision, const std::string& unit) {
 
 	CViewContainer* groupView = new CViewContainer(CRect(0, 0, width, 0));
@@ -1451,19 +1382,14 @@ CViewContainer* ReverbNetworkEditor::createKnobGroup(const VSTGUI::UTF8StringPtr
 	groupTextEdit->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	groupTextEdit->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	groupTextEdit->setStringToValueProc(ValueConversion::textEditStringToValueConversion);
-	//int* precision = new int(valueEditPrecision);
 	valueToStringUserData* userData = new valueToStringUserData;
 	userData->precision = valueEditPrecision;
 	userData->unit = unit;
 	groupTextEdit->setValueToStringProc(ValueConversion::textEditValueToStringConversion, userData);
-	//groupTextEdit->setHoriAlign(CHoriTxtAlign::kRightText);
 	groupTextEdit->setMin(valueEditMinValue);
 	groupTextEdit->setMax(valueEditMaxValue);
 	groupTextEdit->setFont(CFontRef(kNormalFontSmall));
-	//groupTextEdit->setBackColor(CColor(0, 0, 0, 0));
-	//groupTextEdit->setFrameColor(CColor(0, 0, 0, 0));
 	groupTextEdit->setStringToTruncate(unit, true);
-	//CTextLabel* labelUnit = new CTextLabel()
 	groupView->addView(groupNameLabel);
 	groupView->addView(knob);
 	groupView->addView(groupTextEdit);
@@ -1491,7 +1417,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	addGuiElementPointer(inputSelect, id_mixer_optionMenu_inputSelectFirst + idOffset);
 	inputSelect->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
 	inputSelect->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
-	//inputSelect->setTextInset(CPoint(90, 20));
 	inputSelect->setFont(CFontRef(kNormalFontSmall));
 	inputSelect->addEntry("<Select>");
 	inputSelect->setCurrent(0);
@@ -1499,7 +1424,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 		temp = "APM";
 		temp.append(std::to_string(i));
-		//temp.append(" OUT");
 		inputSelect->addEntry((temp).c_str());
 	}
 	for (uint32 i = 0; i < MAXVSTINPUTS; ++i) {
@@ -1518,8 +1442,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	valueEdit->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	valueEdit->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	valueEdit->setStringToValueProc(ValueConversion::textEditStringToValueConversion);
-	//valueEdit->setStringToTruncate("", true);
-	//int* precision = new int(valueEditPrecision);
 	valueToStringUserData* userData = new valueToStringUserData;
 	userData->precision = 2;
 	userData->unit = "";
@@ -1527,17 +1449,11 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	valueEdit->setMin(MIN_MIXERGAIN);
 	valueEdit->setMax(MAX_MIXERGAIN);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
-	//valueEdit->setBackColor(CColor(0, 0, 0, 0));
-	//valueEdit->setFrameColor(CColor(0, 0, 0, 0));
 
 	CTextButton* buttonMute = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_muteFirst + idOffset, "M", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonMute, id_mixer_button_muteFirst + idOffset);
 	buttonMute->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonMute->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	//buttonMute->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	//buttonMute->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
-	//buttonMute->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
-	//buttonMute->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonMute->setFont(CFontRef(kNormalFontSmall));
 	buttonMute->setTextColor(CColor(220, 0, 0, 255));
 	buttonMute->setTextColorHighlighted(CColor(255, 255, 255));
@@ -1549,10 +1465,6 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	addGuiElementPointer(buttonSolo, id_mixer_button_soloFirst + idOffset);
 	buttonSolo->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonSolo->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	//buttonSolo->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	//buttonSolo->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
-	//buttonSolo->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
-	//buttonSolo->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonSolo->setFont(CFontRef(kNormalFontSmall));
 	buttonSolo->setTextColor(CColor(0, 220, 0, 255));
 	buttonSolo->setGradientStartColorHighlighted(CColor(0, 200, 0, 255));
@@ -1569,37 +1481,24 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	return mixerRow;
 }
 
-//void ReverbNetworkEditor::removeAPModule(uint16 moduleNumber) {
-//	// Remove the view and delete it (=> true)
-//	// the view container fills gaps out by moving the views' index e.g.  workspaceView[0][1][2] => removeView(1) => workspaceView[0][1] (2 is now 1) => like a std::vector
-//	workspaceView->removeView(workspaceView->getView(moduleNumber), true);
-//	workspaceView->setDirty();
-//}
-
-//bool textEditStringToValueConversion(UTF8StringPtr txt, float& result, void* userData);
-
 void ReverbNetworkEditor::updateGuiWithControllerParameters() {
-	sampleRate = ValueConversion::getSampleRate();
+	sampleRate = ValueConversion::getSampleRate(); // Update the sample rate (difficult to say when exactly this function returns the right value
+	// Update the maximum value of all delay sample textEdits with the new sample rate
 	for (int i = id_allpass_textEdit_samplesDelayFirst; i <= id_allpass_textEdit_samplesDelayLast; ++i) {
 		guiElements[i]->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	}
+	// Update the optionMenus of the mixer
 	for (uint32 i = id_mixer_optionMenu_inputSelectFirst; i <= id_mixer_optionMenu_inputSelectLast; ++i) {
 		int menuIndex = ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + (i - id_mixer_optionMenu_inputSelectFirst)));
 		guiElements[i]->setValue(menuIndex);
 		valueChanged(guiElements[i]);
 	}
-
+	// Update the gain knobs of the mixer
 	for (int i = id_mixer_knob_gainFirst; i <= id_mixer_knob_gainLast; ++i) {
 		valueChanged(guiElements[i]);
 	}
 
-	//for (uint32 i = PARAM_EQCENTERFREQ_FIRST; i < PARAM_EQCENTERFREQ_LAST + 1; ++i) { // Iterate over all parameters
-	//	if (guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]) { // Check if the GUI element is valid
-	//		guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]->setValue(ValueConversion::plainToNormProcCenterFreq(getController()->getParamNormalized(i))); // Set GUI element value
-	//		valueChanged(guiElements[id_equalizer_knob_centerFreqFirst + (i - PARAM_EQCENTERFREQ_FIRST)]); // Update the corresponding textEdit (if there exists one)
-	//	}
-	//}
-
+	// Update all other parameters
 	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBITDEPTH_FIRST, PARAM_QUANTIZERBITDEPTH_LAST, id_quantizer_knob_quantizationFirst, nullptr);
 	updateGuiParameter(PARAM_QUANTIZERBYPASS_FIRST, PARAM_QUANTIZERBYPASS_LAST, id_quantizer_switch_bypassFirst, nullptr);
@@ -1625,8 +1524,10 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToPlainMixerInputSelect);
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
 	
+	// Update the signal generator
 	signalGenerator->updateFromController();
 
+	// Apply the saved user data (module names...)
 	applyUserData();
 }
 
@@ -1645,19 +1546,19 @@ void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastPar
 }
 
 void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue value) {
-	// Update the PPM with values from Processor
 	if (tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) {
-		// Update PPM value
+		// Update the PPM with values from Processor
 		lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = value;	
 	}
 	else if (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST) {
+		// Update EQ stability
 		EqualizerStability stability;
 		stability.moduleNumber = tag - PARAM_EQSTABILITY_FIRST;
 		stability.isStable = value;
-		// Add the change to the ToDo-queue
+		// Add the change to the ToDo-queue (see notify)
 		eqStabilityValues.push_back(stability);
 	}
-	// The following updates are called when the parameters are beeing automated
+	// The following updates are called when the parameters are beeing automated so that the GUI elements move accordingly
 	else if (tag >= PARAM_MIXERGAIN_FIRST && tag <= PARAM_MIXERGAIN_LAST) {
 		int moduleNumber = (int)((tag - PARAM_MIXERGAIN_FIRST) / MAXINPUTS);
 		for (unsigned int i = 0; i < MAXMODULEINPUTS; ++i) {
@@ -1735,25 +1636,24 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 	}
 }
 
-CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message)
-{
+CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message) {
 	if (!message) return kMessageUnknown;
 	if (message == GuiBaseAPModule::kModuleWantsFocus) {
+		// User has clicked on a module => bring the module to the top of the view
 		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", message);
 		fclose(pFile);*/
 		for (auto&& module : apGuiModules) {
 			if (module == dynamic_cast<GuiBaseAPModule*>(sender)) {
-				// GetView() called on a scrollview returns the view of the scrollCONTAINER, so getParentView on the returned view returns the scrollcontainer
-				// There seems to be no other possibility to get Container of the ScrollView
-				// Since the Container has no function changeViewZOrder, this function has to be called on the scrollContainer!
 				workspaceView->changeViewZOrder(dynamic_cast<GuiBaseAPModule*>(sender), workspaceView->getNbViews() - 1);
 			}
 		}
 	}
 	if (message == CNewFileSelector::kSelectEndMessage) {
+		// User has selected a file in the file selector
 		CNewFileSelector* selector = dynamic_cast<CNewFileSelector*>(sender);
 		if (selector) {
+			// Open or save?
 			if (fileSelectorStyle == CNewFileSelector::kSelectFile) {
 				setXmlPreset(xmlPreset->loadPreset(selector->getSelectedFile(0)));
 				workspaceView->setDirty();
@@ -1771,10 +1671,8 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 	{	
 		// Update PPMs of the modules
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
-			if (guiElements[id_output_ppmFirst + i])
-			{
+			if (guiElements[id_output_ppmFirst + i]) {
 				guiElements[id_output_ppmFirst + i]->setValue(1.0 - ((lastPpmValues[i] - 1.0) * (lastPpmValues[i] - 1.0)));
-				//lastPpmValues[i] = 0.0;
 			}
 		}
 		// If there is something in the ToDo-queue
@@ -1815,6 +1713,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 	}
 	else if (sender == graphicsView) {
 		if (message == "ConnectionToModule") {
+			// User has drawn a new connection
 			Connection connection = graphicsView->getDrawnConnection();
 			controller->setParamNormalized(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain(connection.gainValue));
 			controller->performEdit(PARAM_MIXERGAIN_FIRST + connection.destination * MAXINPUTS + connection.source, ValueConversion::plainToNormInputGain(connection.gainValue));
@@ -1832,6 +1731,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			splitView->invalid();
 		}
 		else if (message == "ConnectionToVst") {
+			// User has drawn a new connection
 			Connection connection = graphicsView->getDrawnConnection();
 			if (connection.gainValue == 1.0) {
 				guiElements[id_general_optionMenu_vstOutputFirst + connection.destination]->setValue(connection.source + 1);
@@ -1843,6 +1743,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			splitView->invalid();
 		}
 		else if (message == "OpenModuleDetailView") {
+			// User has double-clicked on a module
 			openModuleDetailView(graphicsView->getModuleClicked(), true);
 		}
 	}
@@ -1852,24 +1753,20 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetStruct) {
 	if (presetStruct.maxModuleNumber != MAXMODULENUMBER || presetStruct.maxVstInputs != MAXVSTINPUTS || presetStruct.maxVstOutputs != MAXVSTOUTPUTS) {
 		// If those defines in the XML differ from the defines in the actual build then the preset will be probably incompatible
+		// To make it work anyway change the values in the XML file to match the current build
 		return;
 	}
 	graphicsView->clearModules();
-	//dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(presetStruct.name.c_str());
-	editorUserData.presetName = presetStruct.name;
+	editorUserData.presetName = presetStruct.name; // save the preset name for later
 	
+	// Read an apply all loaded parameter values
 	for (unsigned int i = 0; i < presetStruct.modules.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
 		editorUserData.moduleNames[i] = presetStruct.modules[i].name;
 		apGuiModules[i]->setViewSize(CRect(CPoint(presetStruct.modules[i].positionX, presetStruct.modules[i].positionY), CPoint(apGuiModules[i]->getWidth(), apGuiModules[i]->getHeight())));
 		apGuiModules[i]->setMouseableArea(apGuiModules[i]->getViewSize());
-		// Set Visible
-		//apGuiModules[i]->setVisible(presetStruct.modules[i].isVisible);
 		getController()->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + i, presetStruct.modules[i].isVisible);
 		getController()->performEdit(PARAM_MODULEVISIBLE_FIRST + i, presetStruct.modules[i].isVisible);
-		// Set collapsed
-		//guiElements[id_collapseModule]->setValue(presetStruct.modules[i].isCollapsed);
-		//guiElements[id_collapseModule]->valueChanged();
 		apGuiModules[i]->collapseView(presetStruct.modules[i].isCollapsed);
 
 		// Set mixer parameters	
@@ -1959,6 +1856,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_WIDTH, ValueConversion::plainToNormSignalWidth(presetStruct.signalGenerator.width));
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_TIME, ValueConversion::plainToNormSignalTime(presetStruct.signalGenerator.time));
 
+	// Graphics view
 	for (unsigned int i = 0; i < presetStruct.graphicsView.modules.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
 		graphicsView->setModulePosition(i, CPoint(presetStruct.graphicsView.modules[i].positionX, presetStruct.graphicsView.modules[i].positionY));
@@ -1997,6 +1895,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 	p.maxVstInputs = MAXVSTINPUTS;
 	p.maxVstOutputs = MAXVSTOUTPUTS;
 
+	// Build up the preset structure
 	for (unsigned int i = 0; i < apGuiModules.size(); ++i) {
 		XmlPresetReadWrite::module m = {};
 		std::string temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText();
@@ -2353,103 +2252,6 @@ void ReverbNetworkEditor::openModuleDetailView(const int& moduleNumber, const bo
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {
 	return 0;
-}
-
-tresult PLUGIN_API ReverbNetworkEditor::queryInterface(const char* iid, void** obj)
-{
-	QUERY_INTERFACE(iid, obj, IParameterFinder::iid, IParameterFinder)
-	QUERY_INTERFACE(iid, obj, IContextMenuTarget::iid, IContextMenuTarget)
-	return VSTGUIEditor::queryInterface(iid, obj);
-}
-
-tresult PLUGIN_API ReverbNetworkEditor::findParameter(int32 xPos, int32 yPos, ParamID& resultTag)
-{
-	//// look up the parameter (view) which is located at xPos/yPos.
-
-	//CPoint where(xPos, yPos);
-
-	//// Implementation 1:
-	//// The parameter xPos/yPos are relative coordinates to the AGainEditorView coordinates.
-	//// If the window of the VST 3 plugin is moved, xPos is always >= 0 and <= AGainEditorView width.
-	//// yPos is always >= 0 and <= AGainEditorView height.
-	//// 
-	//// gainSlider->hitTest() is a short cut for:
-	//// CRect sliderRect = gainSlider->getMouseableArea ();
-	//// if (where.isInside (sliderRect))
-	//// {
-	////      resultTag = kGainId;
-	////      return kResultOk;
-	//// }
-
-	//// test wether xPos/yPos is inside the gainSlider.
-	//if (gainSlider->hitTest(where, 0))
-	//{
-	//	// return the VST 3 parameter ID, which is also used for IParamValueQueue::getParameterId(),
-	//	// IComponentHandler::performEdit() or IEditController::getParamStringByValue() etc.
-	//	resultTag = kGainId;
-	//	return kResultOk;
-	//}
-
-	//// test wether xPos/yPos is inside the gain text view.
-	//if (gainTextEdit->hitTest(where, 0))
-	//{
-	//	resultTag = kGainId;
-	//	return kResultOk;
-	//}
-
-	//// Implementation 2:
-	//// An alternative solution with VSTGui can look like this. (This requires C++ RTTI)
-	//// 
-	//// if (frame)
-	//// {
-	////  CControl* controlAtPos = dynamic_cast<CControl*>(frame->getViewAt (where, true);
-	////  if (controlAtPos)
-	////  {
-	////      switch (controlAtPos->getTag ())
-	////      {
-	////          case 'Gain':
-	////          case 'GaiT':
-	////              resultTag = resultTag;
-	////              return kResultOk;
-	////      }
-	////  }
-	//// 
-
-	//// Implementation 3:
-	//// The another "dirty" way is to hard code the coordinates for the views (see also AGainEditorView::open):
-	//// CRect gainSliderSize (0, 0, 130, 18);
-	//// gainSliderSize.offset (45, 40);
-	//// if (where.isInside (gainSliderSize))
-	////  {
-	////      resultTag = kGainId;
-	////      return kResultOk;
-	////  }
-	//// CRect gainTextSize (0, 0, 40, 18);
-	//// gainTextSize.offset (50 + gainSliderSize.getWidth (), 40);
-	//// if (where.isInside (gainTextSize))
-	////  {
-	////      resultTag = kGainId;
-	////      return kResultOk;
-	////  }
-	return kResultFalse;
-}
-
-tresult ReverbNetworkEditor::executeMenuItem(int32 tag)
-{
-	//// our menu item was choosen by the user
-	//if (tag == 1234)
-	//{
-	//	ParameterInfo paramInfo;
-	//	controller->getParameterInfo(kGainId, paramInfo);
-
-	//	controller->beginEdit(kGainId);
-	//	controller->setParamNormalized(kGainId, paramInfo.defaultNormalizedValue);
-	//	controller->performEdit(kGainId, paramInfo.defaultNormalizedValue);
-	//	controller->endEdit(kGainId);
-
-	//	return kResultTrue;
-	//}
-	return kResultFalse;
 }
 
 }} // namespaces

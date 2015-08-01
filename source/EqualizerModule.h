@@ -3,7 +3,6 @@
 
 #include "ReverbNetworkEnums.h"
 
-
 enum FilterCoefficients {
 	a0,
 	a1,
@@ -13,10 +12,8 @@ enum FilterCoefficients {
 	numberOfCofficients
 };
 
-class EqualizerModule
-{
+class EqualizerModule {
 public:
-
 	EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain);
 	~EqualizerModule();
 
@@ -35,7 +32,7 @@ public:
 	const bool& setFilterCoefficient(const FilterCoefficients coefficient, const double& value);
 	// Process the sample by reference
 	void processSample(double& sample);
-	// Check whether the filter is stable or not at the moment
+	// Check whether the current filter is stable or not
 	inline const bool& isStable() { return stable; }
 
 private:

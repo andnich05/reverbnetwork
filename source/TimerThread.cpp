@@ -1,3 +1,5 @@
+// UNUSED
+
 #include "TimerThread.h"
 #include <chrono>
 

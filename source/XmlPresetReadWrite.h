@@ -9,6 +9,9 @@ public:
 	XmlPresetReadWrite();
 	~XmlPresetReadWrite();
 
+
+	//---Structures for all plugin components
+
 	struct moduleOutput {
 		double gainFactor;
 		bool muted;
@@ -107,6 +110,7 @@ public:
 		std::vector<graphicsVstOutput> vstOutputs;
 	};
 
+	// Main structure
 	struct preset {
 		std::string name;
 		std::string buildVersion;
@@ -121,7 +125,9 @@ public:
 		general generalParamters;
 	};
 
+	// Load a XML preset from disc, returns a structure with all preset parameters
 	const preset loadPreset(const char* filePath) const;
+	// Save a XML preset to disc
 	void savePreset(const char* filePath, const preset& p) const;
 
 private:

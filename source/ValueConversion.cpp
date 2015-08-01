@@ -46,14 +46,6 @@ double ValueConversion::plainToNormQuantization(const double& plainValue) {
 	return ((double)plainValue - (double)MIN_QUANTIZERBITDEPTH) / ((double)MAX_QUANTIZERBITDEPTH - (double)MIN_QUANTIZERBITDEPTH);
 }
 
-//double ValueConversion::normToPlainVstCenterFreq(const double& normValue) {
-//	return (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
-//}
-//
-//double ValueConversion::plainToNormVstCenterFreq(const double& plainValue) {
-//	return (plainValue - MIN_EQCENTERFREQ) / (MAX_EQCENTERFREQ - MIN_EQCENTERFREQ);
-//}
-
 double ValueConversion::normToPlainProcCenterFreq(const double& normValue) {
 	return (getMaxEqFrequency() - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
 }
@@ -167,7 +159,7 @@ double ValueConversion::normToPlainSignalType(const double& normValue) {
 
 double ValueConversion::plainToNormSignalType(const double& plainValue) {
 	//return (plainValue - MIN_SIGNALGENERATOR_SIGNALTYPE) / (MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE);
-	// Only one entry in the menu...
+	// Only one entry in the menu so always return 0.0
 	return 0.0;
 }
 
@@ -217,7 +209,6 @@ bool ValueConversion::textEditStringToValueConversion(const char* txt, float& re
 }
 
 bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
-
 	if (userData == nullptr) {
 		sprintf(utf8String, "%1.2f", value);
 		return true;

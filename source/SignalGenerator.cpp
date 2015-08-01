@@ -18,9 +18,6 @@ SignalGenerator::SignalGenerator(const SignalGeneratorType& signalType)
 
 void SignalGenerator::setGain(const double& gainInDB) {
 	this->gainFactor = ValueConversion::logToLinear(gainInDB);
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(gainFactor).c_str());
-	fclose(pFile);*/
 }
 
 void SignalGenerator::setAutoTime(const double& autoTimeInSec) {
@@ -29,8 +26,10 @@ void SignalGenerator::setAutoTime(const double& autoTimeInSec) {
 
 double& SignalGenerator::generateSample() {
 	sample = 0.0;
+
+	// Auto fire generation
 	if (autoFireEnabled) {
-		// Output samples until the width has been reached
+		// Output samples until the pulse width has been reached
 		if (autoFireCounter < width) {
 			sample = gainFactor * 1.0;
 		}
@@ -43,10 +42,13 @@ double& SignalGenerator::generateSample() {
 		fprintf(pFile, "y(n): %s\n", std::to_string(sample).c_str());
 		fclose(pFile);*/
 	}
+
+	// Manual fire generation
 	if (fire) {
 		fireCounter = width;
 		fire = false;
 	}
+	// Decrement the counter until the pulse width is reached
 	if (fireCounter > 0) {
 		sample = gainFactor * 1.0;
 		--fireCounter;

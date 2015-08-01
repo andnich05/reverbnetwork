@@ -9,7 +9,7 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	: buffer(nullptr)
 	, readPointer(0)
 	, writePointer(0)
-	, sampleRate(192000.0) // Set the maximum possible sample rate
+	, sampleRate(192000.0) // Set the maximum possible sample rate (is being changed as soon as the plugin gets the right sample rate from the host)
 	, delaySamples(sampleRate * delaySec)
 	, delayTimeSec(delaySec)
 	, decayTimeSec(decaySec)
@@ -53,35 +53,36 @@ void SchroederAllpass::doProcessing(double& sample) {
 	//---
 
 	if (modulationEnabled) {
-		//---Modulation (Source: Pirkle book p238/239 and DAFX book)
-		// MAXIMUM von delaySamplesMod im puffer allokieren!!!!!!!!!!!!!!
-		// Only a sine signal for the moment
-		double delaySamplesMod = 1 + delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter);
-		// In case the chosen excursion is greater than the allpass delay
-		if (delaySamplesMod < 0) {
-			delaySamplesMod = 0;
-		}
-		// Get the fractional part of the modulated delay
-		fractDelaySamples = delaySamplesMod - (long)delaySamplesMod;
+		if (delaySamples > 0.0) {
+			//---Modulation (Source: Pirkle book p238/239 and DAFX book)
+			// Only a sine signal for the moment
+			double delaySamplesMod = delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter);
+			// In case the chosen excursion is greater than the allpass delay
 
-		// Set the distance between the read and write pointer
-		readPointer = writePointer - (long)delaySamplesMod;
-		// If the read pointer is negative, loop it back
-		if (readPointer < 0) {
-			readPointer += bufferSize;
+			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+			fprintf(pFile, "y(n): %s\n", std::to_string((sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter)).c_str());
+			fclose(pFile);*/
+
+			if (delaySamplesMod < 0) {
+				delaySamplesMod = 0;
+			}
+			// Get the fractional part of the modulated delay
+			fractDelaySamples = delaySamplesMod - (long)delaySamplesMod;
+
+			// Set the distance between the read and write pointer
+			readPointer = writePointer - (long)delaySamplesMod;
+			// If the read pointer is negative, loop it back
+			if (readPointer < 0) {
+				readPointer += bufferSize;
+			}
+
+			// Increment counter
+			++sampleCounter;
+			if (sampleCounter > sampleRate / modulationRate) {
+				sampleCounter = 1; // !!! Must start at 1 !!!
+			}
+			//---
 		}
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(delaySamplesMod).c_str());
-		fprintf(pFile, "y(n): %s\n", std::to_string(modulationExcursion).c_str());
-		fprintf(pFile, "y(n): %s\n", std::to_string(modulationRate).c_str());
-		fprintf(pFile, "y(n): %s\n", "---");
-		fclose(pFile);*/
-		// Increment counter
-		++sampleCounter;
-		if (sampleCounter > sampleRate) {
-			sampleCounter = 1; // !!! Must start at 1 !!!
-		}
-		//---
 	}
 
 	// Read the left node value from last time, it is now the right node value
@@ -130,7 +131,7 @@ void SchroederAllpass::doProcessing(double& sample) {
 void SchroederAllpass::createBuffers() {
 	freeBuffers(); // just in case...
 
-	// Create pre-initialized arrays for maximum delay value (round up)
+	// Create pre-initialized arrays for maximum delay value
 	buffer = new double[(long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0))]();
 	bufferSize = (long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0));
 }
@@ -144,7 +145,7 @@ void SchroederAllpass::freeBuffers() {
 
 void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	delayTimeSec = sec; 
-	delaySamples = sec * sampleRate;
+	delaySamples = sec * sampleRate; // DelaySamples is a floating point number!
 
 	// For interpolation
 	fractDelaySamples = delaySamples - (long)delaySamples;
@@ -154,13 +155,6 @@ void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	if (readPointer < 0) {
 		readPointer += bufferSize;
 	}
-
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(delaySamples).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(readPointer).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(writePointer).c_str());
-	fprintf(pFile, "y(n): %s\n", "---");
-	fclose(pFile);*/
 
 	calculateGain();
 }
@@ -172,28 +166,17 @@ void SchroederAllpass::setDecayTimeSec(const double& sec) {
 
 void SchroederAllpass::calculateGain() {
 	double dB = 0.0;
-	
-	//if (decayTimeSec > 0.0) { // gain has to be positive
-	//	dB = -60.0 * (delayTimeSec / decayTimeSec);
-	//	gain = pow(10.0, dB / 20);
-	//}
-	//else if (decayTimeSec < 0.0) { // gain has to be negative => same result but 180° phase shift
-	//	dB = -60.0 * (delayTimeSec / -decayTimeSec);
-	//	gain = -pow(10.0, dB / 20);
-	//}
-	//else { // Prevent division by zero
-	//	// If decay time is zero gain should be zero also => samples are simply delayed by the specified delay time
-	//	gain = 0.0;
-	//}
-
 	if (decayTimeSec != 0.0) {
+		// The normal calculation (see Schroeder paper for details)
 		dB = -60.0 * (delayTimeSec / decayTimeSec);
 		gain = pow(10.0, dB / 20.0);
 	}
 	else {
+		// If decay is zero gain should also be zero => Allpass becomes a simple delay module (Low pass)
 		gain = 0.0;
 	}
 	if (gainSignIsNegative) {
+		// Switch the sign
 		gain = -gain;
 	}
 }

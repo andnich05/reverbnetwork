@@ -39,21 +39,16 @@
 #include "reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
-#include <algorithm>
-#include <string>
-#include <mutex>
 
 #include "ReverbNetworkDefines.h"
 #include "ReverbNetworkEnums.h"
-#include "BaseAPModule.h"
 
+#include "BaseAPModule.h"
 #include "ConnectionMatrix.h"
 #include "ValueConversion.h"
 #include "PresetReadWrite.h"
-
 #include "SignalGenerator.h"
 
-//#include "TimerThread.h"
 
 
 #ifdef LOGGING
@@ -106,12 +101,6 @@ ReverbNetworkProcessor::~ReverbNetworkProcessor() {
 			module = nullptr;
 		}
 	}
-
-	//updateControllerThreadRunning = false;
-	/*if (connectionMatrix) {
-		delete connectionMatrix;
-		connectionMatrix = nullptr;
-	}*/
 }
 
 //-----------------------------------------------------------------------------
@@ -120,20 +109,13 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 	tresult result = AudioEffect::initialize (context);
 	if (result == kResultTrue)
 	{
+		// Create I/O
 		for (uint16 i = 0; i < MAXVSTINPUTS; ++i) {
 			addAudioInput(STR16("Audio In Mono"), SpeakerArr::kMono);
 		}
 		for (uint16 i = 0; i < MAXVSTOUTPUTS; ++i) {
 			addAudioOutput(STR16("Audio Out Mono"), SpeakerArr::kMono);
 		}
-		
-		
-		/*for (uint32 i = 0; i < 1; ++i) {
-			std::shared_ptr<SchroederAllpass> allpass(new SchroederAllpass(44100, 44100, 0.4));
-			allpasses.push_back(allpass);
-		}*/
-
-		
 
 		// SampleRate is always 44100 here...
 		ValueConversion::setSampleRate(processSetup.sampleRate);
@@ -159,7 +141,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts)
 {
-	// Minimum one input and one output
+	// Minimum one input and one output (ToDo!)
 	if (numIns == MAXVSTINPUTS && numOuts == MAXVSTOUTPUTS) {
 		if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
 			return kResultTrue;
@@ -168,7 +150,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 	return kResultFalse;
 }
 
-// User enables or disables the plugin
 tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 {
 	// Not all Hosts call this function (e.g. Audition doesn't (VST3))
@@ -176,9 +157,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);
 	}
-#ifdef LOGGING
+	#ifdef LOGGING
 	Logging::addToLog("PROCESSOR", "Sample rate set to " + std::to_string(processSetup.sampleRate) + " in setActive()");
-#endif
+	#endif
 
 	// Check number of Channels
 	SpeakerArrangement arr;
@@ -190,111 +171,20 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 
 	if (state) // Plugin enabled
 	{
-#ifdef LOGGING
+	#ifdef LOGGING
 		Logging::addToLog("PROCESSOR", "Plug-in enabled");
-#endif
-		/*for (uint32 i = 0; i < allpasses.size(); ++i) {
-			allpasses[i]->createBuffers();
-		}*/
+	#endif
 
-		// Has already been done when plugin was marked as disabled, but just in case...
-		/*if (allpasses.size() > 0) {
-			allpasses.clear();
-		}
-
-		for (uint32 i = 0; i < 200; ++i) {
-			std::shared_ptr<SchroederAllpass> allpass(new SchroederAllpass(44100, 44100, 0.4));
-			allpasses.push_back(allpass);
-		}*/
-
-		/*
-		// Initialize buffer (don't use 'malloc', it's C-Style, use 'new')
-		// buffer = (float**)malloc (numChannels * sizeof (float*));
-		
-		if (inputBuffer) {
-			delete[] inputBuffer;
-			inputBuffer = nullptr;
-		}
-		if (outputBuffer) {
-			delete[] outputBuffer;
-			outputBuffer = nullptr;
-		}
-
-		inputBuffer = new double[(size_t)(processSetup.sampleRate)]();
-		outputBuffer = new double[(size_t)(processSetup.sampleRate)]();
-
-		// 44100*32bit+0.5 => 1 second of delay (why +0.5?)
-		// size_t size = (size_t)(processSetup.sampleRate * sizeof (float) + 0.5);
-		for (int32 channel = 0; channel < numChannels; channel++)
-		{
-			// buffer[channel] = (float*)malloc (size);	// 1 second delay max
-			// memset (buffer[channel], 0, size);
-		}
-		//bufferPos = 0;
-		*/
 	}
 	else // Plugin disabled => Free buffer
 	{
-#ifdef LOGGING
+	#ifdef LOGGING
 		Logging::addToLog("PROCCESSOR", "Plug-in disabled");
-#endif
-		/*for (uint32 i = 0; i < allpasses.size(); ++i) {
-			allpasses[i]->freeBuffers();
-		}*/
-		//if (allpasses.size() > 0) {
-		//	allpasses.clear(); // Smart-Pointers => 'delete' isn't necessary
-		//}
-
-		/*
-		if (inputBuffer) {
-			delete[] inputBuffer;
-			inputBuffer = nullptr;
-		}
-		if (outputBuffer) {
-			delete[] outputBuffer;
-			outputBuffer = nullptr;
-		}
-
-		//if (buffer)
-		{
-			for (int32 channel = 0; channel < numChannels; channel++)
-			{
-				//free (buffer[channel]);
-			}
-			//free (buffer);
-			//buffer = 0;
-		}
-		*/
+	#endif
 	}
-
-	//if (!updateControllerThreadRunning) {
-	//	updateControllerThreadRunning = true;
-	//	updateControllerThread = std::thread([this]() { // []( is C++11 Lamdba => Passing object to the thread
-	//		updateController();
-	//	});
-	//	// Detach the thread => It runs completely independent from this thread
-	//	updateControllerThread.detach();
-	//}
-	////timer = TimerThread;
-	//TimerThread timer
-	////std::function<void(void)> f = std::bind(&ReverbNetworkProcessor::updateController, this);
-	//timer.start(1000, []() {
-	//	FILE* pFile = fopen("E:\\logVst.txt", "a");
-	//	fprintf(pFile, "%s\n", std::to_string(111111).c_str());
-	//	fclose(pFile);
-	//});
-	///*std::thread updateControllerThread([&]() {
-	//	std::this_thread::sleep_for(std::chrono::seconds(2));
-	//	timer2.stop();
-	//});*/
-
-	
 	
 	return AudioEffect::setActive (state);
 }
-
-// Log output for debugging
-//#define LOG
 
 tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 {
@@ -303,9 +193,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);
 	}
-#ifdef LOGGING
+	#ifdef LOGGING
 	Logging::addToLog("PROCESSOR", "Sample rate set to " + std::to_string(processSetup.sampleRate) + " in setState()");
-#endif
+	#endif
 	return preset->setParamterState(state);
 }
 
@@ -317,46 +207,13 @@ tresult PLUGIN_API ReverbNetworkProcessor::getState(IBStream* state)
 
 void ReverbNetworkProcessor::onTimer(Timer* timer) {
 	if (ValueConversion::getSampleRate() != (processSetup.sampleRate)) {
+		// Make sure that the right sample rate is used!
 		ValueConversion::setSampleRate(processSetup.sampleRate);
 		for (auto&& module : apModules) {
 			module->setSampleRate(processSetup.sampleRate);
 		}
 	}
-	/*bool finishThread = false;
-	while (true) {
-		if (this) {
-			FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "%s\n", std::to_string(111111).c_str());
-			fclose(pFile);
-			std::mutex mutex;
-			mutex.lock();
-			if (!updateControllerThreadRunning) finishThread = true;
-			for (unsigned int i = 0; i < eqStabilityValues.size(); ++i) {
-				if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
-					EqualizerStability* eqStability = new EqualizerStability();
-					eqStability->moduleNumber = i;
-					eqStability->isStable = eqStabilityValues[i];
-					IMessage* message = allocateMessage();
-					message->setMessageID("EqStability");
-					message->getAttributes()->setBinary(0, eqStability, sizeof(*eqStability));
-					tresult result = sendMessage(message);
-					message->release();
-				}
-			}
-			mutex.unlock();
-			if (finishThread) return;
-			std::this_thread::sleep_for(std::chrono::milliseconds(10000));
-		}
-		else {
-			FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "%s\n", std::to_string(2222).c_str());
-			fclose(pFile);
-			return;
-		}
-	}*/
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "%s\n", std::to_string(111111).c_str());
-	fclose(pFile);*/
+
 	for (unsigned int i = 0; i < eqStabilityValues.size(); ++i) {
 		// Check if stability has changed in the modules
 		if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
@@ -386,31 +243,26 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 #ifdef LOG
 	FILE* pFile = fopen("E:\\logVst.txt", "a");
 #endif
-
-	
 	// If the user changed a control in the plugin (e.g. Delay Time) => update values
 	if (data.inputParameterChanges)
 	{	
-		// Number of changed parameters in the parameter list
-		//int32 paramChangeCount = data.inputParameterChanges->getParameterCount ();
 		// For each parameter change
-		// !!! Get paramter count seems to be host dependent: e.g. VST3PluginTestHost caps the maximum number at 256 (WHY???), Adobe Audition and Reaper and probably all other VST Hosts on this planet do not 
 		// Adobe Audition does not call the process() Function until for example 'Play' is pressed => until then the paramters are not updated
-		for (int32 index = 0; index < data.inputParameterChanges->getParameterCount(); index++)
-		{
-			IParamValueQueue* queue = data.inputParameterChanges->getParameterData (index);
+		for (int32 index = 0; index < data.inputParameterChanges->getParameterCount(); index++) {
+			IParamValueQueue* queue = data.inputParameterChanges->getParameterData (index); // Get all changes in queue for the parameter (seems to be always 1)
 			if (queue) {
 				int32 pid = 0;
-				int32 valueChangeCount = queue->getPointCount();
+				int32 valueChangeCount = queue->getPointCount(); // seems to be always 1
 				ParamValue value = 0.0;
 				int32 sampleOffset = 0.0;
-				pid = queue->getParameterId();
+				pid = queue->getParameterId(); // Parameter IDs see ReverbNetworkDefines.h
 
-				// Update preset values...
+				// Update preset values (important when the user closes the Editor and reopens it => the preset is used for initialization)
 				if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 					preset->setNormValueByParamId(value, pid);
 				}
 
+				// Old version with connection matrix
 				/*if (pid >= PARAM_MIXERINPUTSELECT_FIRST && pid <= PARAM_MIXERINPUTSELECT_LAST) {
 					// Get only the last change of the value
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
@@ -710,27 +562,21 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			}
 		}
 	}
-
-	//std::chrono::high_resolution_clock::time_point t0, t1;
-
-	// Peformance: 16 modules, 44100 Hz, 882 samples per block, 26.6.15
 	// Process the audio samples
-	
-	if (data.numSamples > 0) // P: Worst: 22,031.000 ms Best: 5,987.600 ms
-	{
+	if (data.numSamples > 0) {
 		// Reset PPM values
 		std::fill(ppmValues.begin(), ppmValues.end(), 0.0);
 
 		uint32 numberOfSamples = data.numSamples;
 
-		// Get the input buffers for all inputs
+		// Get the buffers
 		// Sample format is -1.0 to +1.0
 		float* inputSamples[MAXVSTINPUTS];
 		float* outputSamples[MAXVSTOUTPUTS];
 
+		// Get the buffers for every single input and output
 		for (uint32 input = 0; input < MAXVSTINPUTS; ++input) {
 			inputSamples[input] = data.inputs[input].channelBuffers32[0];
-			
 		}
 		for (uint32 output = 0; output < MAXVSTOUTPUTS; ++output) {
 			outputSamples[output] = data.outputs[output].channelBuffers32[0];
@@ -741,17 +587,15 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		const std::vector<short>& vstOutputConnections = connectionMatrix->getVstOutputConnections();
 
 		// Vector with all samples for all inputs which are connected to a module input
-		//std::vector<double> samplesToProcess;
-		//std::vector<double> vstInputBuffer;
 		double vstInputBuffer[MAXVSTINPUTS];
 		double signalGeneratorSample = 0.0;
 
 		// Sample interval
 		//t0 = std::chrono::high_resolution_clock::now();
-		for (auto sample = 0; sample < numberOfSamples; ++sample) { // P: Worst: 30,036.100 ms Best: 5,984.300 ms
+		for (auto sample = 0; sample < numberOfSamples; ++sample) {
 			signalGeneratorSample = signalGenerator->generateSample();
 			// Module input processing
-			for (auto module = 0; module < MAXMODULENUMBER; ++module) { // P: 0 to 1.000,700 ms
+			for (auto module = 0; module < MAXMODULENUMBER; ++module) {
 				//vstInputBuffer.clear();
 				for (auto i = 0; i < MAXVSTINPUTS; ++i) {
 					vstInputBuffer[i] = (double)inputSamples[i][sample];
@@ -764,9 +608,8 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 			}
 			
-			
 			// VST output processing
-			for (auto vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) { // P: 0 ms
+			for (auto vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) {
 				if (vstOutputConnections[vstOutput] != -1) {
 					if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
 						// VST output is connected to a module's output => take sample from the module output buffer
@@ -785,8 +628,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			}
 			
 			// Swap input and output buffers
-			
-			// P: 0 ms
 			double* temp = moduleInputBuffer;
 			moduleInputBuffer = moduleOutputBuffer;
 			moduleOutputBuffer = temp;
@@ -812,21 +653,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						ppmOldValues[i] = ppmValues[i];
 					}
 				}
-				/*if (eqStabilityValues[i] != eqStabilityOldValues[i]) {
-					int32 index = 0;
-					IParamValueQueue* paramQueue = paramChanges->addParameterData(PARAM_EQSTABILITY_FIRST + i, index);
-					if (paramQueue) {
-						int32 index2 = 0;
-						paramQueue->addPoint(0, eqStabilityValues[i], index2);
-						eqStabilityOldValues[i] = eqStabilityValues[i];
-					}
-				}*/
 			}
 		}
 	}
 	
-	
-
 	//auto t00 = std::chrono::duration_cast<std::chrono::nanoseconds>(t0.time_since_epoch()).count();
 	//auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1.time_since_epoch()).count();
 	//FILE* pFile = fopen("E:\\logVst.txt", "a");
@@ -836,17 +666,5 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 
 	return kResultTrue;
 }
-
-//tresult ReverbNetworkProcessor::sendEqUpdateMessage(const int& moduleNumber, const bool& isStable) {
-//	EqualizerStability* eqStability = new EqualizerStability();
-//	eqStability->moduleNumber = moduleNumber;
-//	eqStability->isStable = isStable;
-//	IMessage* message = allocateMessage();
-//	message->setMessageID("EqStability");
-//	message->getAttributes()->setBinary(0, eqStability, sizeof(*eqStability));
-//	tresult result = sendMessage(message);
-//	message->release();
-//	return result;
-//}
 
 }} // namespaces

@@ -1,10 +1,9 @@
 #include "PresetReadWrite.h"
 #include "ReverbNetworkDefines.h"
 #include "ValueConversion.h"
-#include <string>
 
 PresetReadWrite::PresetReadWrite() {
-	// Initialize the values with the default values (Must be in the same order as in ReverbNetworkDefines.h)
+	// Initialize the values with the default values (Must be in the same order as in ReverbNetworkDefines.h!)
 	for (auto i = PARAM_MIXERINPUTSELECT_FIRST; i <= PARAM_MIXERINPUTSELECT_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormMixerInputSelect(DEF_MIXERINPUT));
 	}
@@ -112,7 +111,7 @@ Steinberg::tresult PresetReadWrite::setParamterState(Steinberg::IBStream* state)
 	if (!streamer.readInt32u(maxModuleNumber)) return Steinberg::kResultFalse;
 
 	// Check if those three parameters (which influence the number of all other parameters) match the #defines in the current Build
-	// If one of them doesn't match it means that the preset is incompatible with the actaul Build
+	// If one of them doesn't match it means that the preset is propably incompatible with the actual Build
 	// ToDo: show message box for the user...
 	if (maxVstInputs != MAXVSTINPUTS) return Steinberg::kResultFalse;
 	if (maxVstOutputs != MAXVSTOUTPUTS) return Steinberg::kResultFalse;
@@ -122,9 +121,6 @@ Steinberg::tresult PresetReadWrite::setParamterState(Steinberg::IBStream* state)
 		// Read and save the values
 		if (!streamer.readDouble(parameterValues[i])) return Steinberg::kResultFalse;
 	}
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(parameterValues[PARAM_GENERALVSTOUTPUTSELECT_FIRST]).c_str());
-	fclose(pFile);*/
 
 	return Steinberg::kResultTrue;
 }
@@ -138,7 +134,7 @@ Steinberg::tresult PresetReadWrite::getParamterState(Steinberg::IBStream* state)
 	if (!streamer.writeInt32u(MAXMODULENUMBER)) return Steinberg::kResultFalse;
 
 	for (Steinberg::uint32 i = 0; i < parameterValues.size(); ++i) {
-		// Read and save the values
+		// Read and save every parameter value
 		if (!streamer.writeDouble(parameterValues[i])) return Steinberg::kResultFalse;
 	}
 

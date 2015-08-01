@@ -43,7 +43,7 @@ namespace Vst {
 
 // parameter tags
 enum {
-	//kDelayTag = 100,
+
 };
 
 // unique class ids

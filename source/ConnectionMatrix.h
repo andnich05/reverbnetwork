@@ -4,6 +4,9 @@
 #include <vector>
 #include <unordered_map>
 
+// !!! The connection matrix is used only for connecting modules/VST inputs to VST outputs at the moment
+// Everything else is always connected and is controlable through the gain factor (0.0 => no connection)
+
 class ConnectionMatrix
 {
 public:

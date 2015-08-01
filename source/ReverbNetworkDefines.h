@@ -16,15 +16,14 @@
 // Maximum number of AP outputs (should be 1)
 //#define MAXMODULEOUTPUTS 1
 
-
 // Maximum number of VST inputs
 #define MAXVSTINPUTS 8
 
 // Maximum number of VST outputs
 #define MAXVSTOUTPUTS 8
 
-// Limit values to 1.0, prevent clipping
-#define LIMITER
+// Limit values to 1.0 and -1.0 at the output of a module
+#define OUTPUTLIMITER
 
 // Maximum number of AP inputs
 #define MAXMODULEINPUTS 8
@@ -323,15 +322,9 @@
 // Preset name
 #define PARAM_PRESETNAME PARAM_MODULENAME_LAST + 1
 
+//---------------
 
-// ------
-
-
-
-// ...
-
-
-// Color scheme
+// Color scheme values
 #define CCOLOR_SPLITVIEW_SPLITTER CColor(0, 0, 0)
 #define CCOLOR_WORKSPACE_BACKGROUND CColor(100, 100, 100)
 #define CCOLOR_MODULELIST_BACKGROUND CColor(80, 80, 80)
@@ -377,7 +370,5 @@
 #define CCOLOR_FRAME CColor(20, 20, 20)
 
 #define CCOLOR_SPLASHVIEW_BACKGROUND CColor(0, 0, 0, 150)
-
-
 
 #endif // REVERBNETWORKDEFINES_H

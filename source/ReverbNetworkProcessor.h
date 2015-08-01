@@ -40,13 +40,8 @@
 
 #include "public.sdk/source/vst/vstaudioeffect.h"
 #include <vector>
-#include <memory>
-#include <thread>
 
-
-#include "TimerThread.h"
-
-#include "base/source/timer.h"
+#include "base/source/timer.h" // ITimerCallback
 
 class BaseAPModule;
 class ConnectionMatrix;
@@ -64,44 +59,42 @@ public:
 	~ReverbNetworkProcessor();
 	
 	tresult PLUGIN_API initialize (FUnknown* context);
+	// Set input arrangement
 	tresult PLUGIN_API setBusArrangements (SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts);
 	//tresult PLUGIN_API getBusArrangement(BusDirection dir, int32 index, SpeakerArrangement& arr);
 
+	// Enable or disable the plugin
 	tresult PLUGIN_API setActive (TBool state);
+	// Set Vst preset
 	tresult PLUGIN_API setState(IBStream* state);
+	// Get Vst preset
 	tresult PLUGIN_API getState(IBStream* state);
+	// Contains parameter changes and the whole procssing part incl. in an out buffers
 	tresult PLUGIN_API process (ProcessData& data);
 	
 	static FUnknown* createInstance(void*) { return (IAudioProcessor*)new ReverbNetworkProcessor(); }
 
-protected:
-	ParamValue delay;
-	float** buffer;
-	//int32 bufferPos;
-
 private:
-	//std::vector<std::shared_ptr<SchroederAllpass>> allpasses;
+	double* moduleInputBuffer; // Input buffer for all modules
+	double* moduleOutputBuffer; // Ouput buffer for all modules
+	std::vector<BaseAPModule*> apModules; // Contains the modules
 
-	//tresult sendEqUpdateMessage(const int& moduleNumber, const bool& isStable);
+	ConnectionMatrix* connectionMatrix; // Connection matrix only used for Vst output connections (for now)
 
-	double* moduleInputBuffer;
-	double* moduleOutputBuffer;
-	std::vector<BaseAPModule*> apModules;
-
-	ConnectionMatrix* connectionMatrix;
-
+	// Values to send to the controller/editor
 	std::vector<double> ppmValues;
 	std::vector<double> ppmOldValues;
 	std::vector<bool> eqStabilityValues;
 	std::vector<bool> eqStabilityOldValues;
 
-	PresetReadWrite* preset;
+	PresetReadWrite* preset; // Vst preset object
 
 	// From ITimerCallback (is called by the timer)
+	// What to do when timer fires
 	virtual void onTimer(Timer* timer);
-	Timer* timerUpdateController;
+	Timer* timerUpdateController; // Timer object
 
-	SignalGenerator* signalGenerator;
+	SignalGenerator* signalGenerator; // Signal generator object
 };
 
 

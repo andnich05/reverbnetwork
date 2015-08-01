@@ -4,8 +4,6 @@
 #include "GuiGraphicsConnections.h"
 #include "../vstgui4/vstgui/lib/cdrawcontext.h"
 #include "../vstgui4/vstgui/lib/cbitmap.h"
-#include <iomanip>
-#include <sstream>
 
 namespace VSTGUI {
 
@@ -21,17 +19,9 @@ namespace VSTGUI {
 
 
 	GuiGraphicsView::~GuiGraphicsView() {
-		// Vstgui takes care of that
-		/*for (auto&& m : modules) {
-			if (m != nullptr) {
-				delete m;
-				m = nullptr;
-			}
-		}
-		if (connections) {
-			delete connections;
-			connections = nullptr;
-		}*/
+		modules.clear();
+		vstInputs.clear();
+		vstOutputs.clear();
 	}
 
 	void GuiGraphicsView::createModule(const std::string& title, const int& id, const int& numberOfInputs) {
@@ -48,6 +38,7 @@ namespace VSTGUI {
 		for (auto&& m : modules) {
 			if (!m->isVisible()) {
 				m->setVisible(true);
+				// Move to center if it's at 0,0
 				if (m->getViewSize().getTopLeft() == CPoint(0, 0)) {
 					m->setViewSize(CRect(CPoint(this->getViewSize().getCenter().x, this->getViewSize().getCenter().y / 2), CPoint(m->getViewSize().getWidth(), m->getViewSize().getHeight())));
 				}
@@ -165,32 +156,22 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::redraw(CDrawContext* pContext) {
-		//drawModuleRects(pContext);
 		drawModuleConnections(pContext);
 	}
-
-	//void GuiGraphicsView::drawModuleRects(CDrawContext* pContext) {
-	//	for (auto&& m : modules) {
-	//		if (m) {
-	//			if (m->isEnabled()) {
-	//				m->setDirty();
-	//			}
-	//		}
-	//	}
-	//}
 
 	void GuiGraphicsView::drawModuleConnections(CDrawContext* pContext) {
 		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
 		fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
 		fclose(pFile);*/
 		connections->clearConnections();
+		// Draw connections from modules/Vst inputs to modules
 		for (auto&& m : modules) {
 			if (m) {
 				if (m->isVisible()) {
 					for (unsigned int j = 0; j < numberOfModules; ++j) {
 						if (m->getGainValue(j) != 0.0) {
 							modules[j]->setVisible(true);
-							connections->addConnection(m->getInputRectCenter(j), modules[j]->getOutputRectCenter(), std::abs(m->getGainValue(j)));
+							connections->addConnection(m->getInputRectCenter(j), modules[j]->getOutputRectCenter(), std::abs(m->getGainValue(j))); // Gain value determines the transperacy
 						}
 					}
 					for (unsigned int j = 0; j < vstInputs.size(); ++j) {
@@ -201,6 +182,7 @@ namespace VSTGUI {
 				}
 			}
 		}
+		// Draw connections from modules/Vst inputs to Vst outputs
 		for (unsigned int o = 0; o < vstOutputs.size(); ++o) {
 			if (vstOutputs[o]->isVisible()) {
 				if (vstOutputConnections[o] != -1) {
@@ -209,10 +191,6 @@ namespace VSTGUI {
 						modules[vstOutputConnections[o]]->setVisible(true);
 					}
 					else if (vstOutputConnections[o] < numberOfModules + vstInputs.size()) {
-						/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-						fprintf(pFile, "y(n): %s\n", std::to_string(vstOutputConnections[o]).c_str());
-						fprintf(pFile, "y(n): %s\n", std::to_string(vstOutputConnections[o]).c_str());
-						fclose(pFile);*/
 						connections->addConnection(vstOutputs[o]->getInputRectCenter(0), vstInputs[vstOutputConnections[o] - numberOfModules]->getOutputRectCenter(), 1.0);
 					}
 				}
@@ -221,6 +199,7 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::rearrangeModules() {
+		// Needs still some tuning...
 		int counter = 0;
 		for (unsigned int i = 0; i < vstInputs.size(); ++i) {
 			vstInputs[i]->setViewSize(CRect(CPoint(0, (vstInputs[i]->getHeight() + 5) * counter), CPoint(vstInputs[i]->getWidth(), vstInputs[i]->getHeight())));
@@ -242,14 +221,6 @@ namespace VSTGUI {
 		for (unsigned int m = 0; m < modules.size(); ++m) {
 			if (modules[m]) {
 				if (modules[m]->getNumberOfUsedInputs() == 0) {
-					/*if (((modules[m]->getHeight()) + 5) * (moduleCounter + 1) + modules[m]->getHeight() > this->getVisibleViewSize().getHeight()) {
-						++columnCounter;
-						moduleCounter = 0;
-					}B
-					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 5) * columnCounter, ((modules[m]->getHeight()) + 5) * moduleCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
-					modules[m]->setMouseableArea(modules[m]->getViewSize());
-					++moduleCounter;
-					lastUnusedModule = m;*/
 					modules[m]->setVisible(false);
 				}	
 			}
@@ -324,16 +295,21 @@ namespace VSTGUI {
 	CMessageResult GuiGraphicsView::notify(CBaseObject* sender, IdStringPtr message) {
 		for (unsigned int i = 0; i < modules.size(); ++i) {
 			if (sender == modules[i]) {
+				// User has started a new line
 				if (message == "StartMouseLine") {
 					connections->updateMouseConnectionLine(modules[i]->getOutputRectCenter(), modules[i]->getOutputRectCenter());
 					return kMessageNotified;
 				}
+				// User has moved the line
 				else if (message == "MoveMouseLine") {
 					connections->updateMouseConnectionLine(modules[i]->getOutputRectCenter(), modules[i]->getMouseMoveOutputRect());
 					return kMessageNotified;
 				}
+				// User has finished the line
 				else if (message == "EndMouseLine") {
+					// Find the module or Vst output to which the connection should go
 					for (unsigned int j = 0; j < modules.size(); ++j) {
+						if (!modules[i]->isVisible()) continue; // Invisible modules don't count
 						if (modules[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i) == 0.0) {
 								drawnConnection = Connection(i, j, 1.0);
@@ -352,16 +328,13 @@ namespace VSTGUI {
 						}
 					}
 				}
-				/*else if (message == "RemoveConnection") {
-					drawnConnection = Connection(modules[i]->getInputToUpdate(), i, 0.0);
-					editor->notify(this, "ConnectionToModule");
-					return kMessageNotified;
-				}*/
+				// User has changed a gain value
 				else if (message == "UpdateGainValue") {
 					drawnConnection = Connection(modules[i]->getInputToUpdate(), i, modules[i]->getGainValue(modules[i]->getInputToUpdate()));
 					editor->notify(this, "ConnectionToModule");
 					return kMessageNotified;
 				}
+				// User wants to see the detail view of a module
 				else if (message == "DoubleClick") {
 					moduleClicked = i;
 					editor->notify(this, "OpenModuleDetailView");
@@ -370,6 +343,7 @@ namespace VSTGUI {
 			}
 		}
 
+		// Do the same for every Vst input
 		for (unsigned int i = 0; i < vstInputs.size(); ++i) {
 			if (sender == vstInputs[i]) {
 				if (message == "StartMouseLine") {
@@ -382,6 +356,7 @@ namespace VSTGUI {
 				}
 				else if (message == "EndMouseLine") {
 					for (unsigned int j = 0; j < modules.size(); ++j) {
+						if (!modules[i]->isVisible()) continue;
 						if (vstInputs[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i + numberOfModules) == 0.0) {
 								drawnConnection = Connection(i + numberOfModules, j, 1.0);
@@ -403,13 +378,10 @@ namespace VSTGUI {
 			}
 		}
 
+		// And the Vst outputs
 		for (unsigned int i = 0; i < vstOutputs.size(); ++i) {
 			if (sender == vstOutputs[i]) {
-				/*if (message == "RemoveConnection") {
-					drawnConnection = Connection(vstOutputs[i]->getInputToUpdate(), i, 0.0);
-					editor->notify(this, "ConnectionToVst");
-					return kMessageNotified;
-				}*/
+				// Remove a connection to a Vst output
 				if (message == "UpdateGainValue") {
 					drawnConnection = Connection(vstOutputs[i]->getInputToUpdate(), i, 0.0);
 					editor->notify(this, "ConnectionToVst");
@@ -421,35 +393,4 @@ namespace VSTGUI {
 		connections->updateMouseConnectionLine(0, 0);
 		return kMessageNotified;
 	}
-
-	//CMouseEventResult GuiGraphicsView::onMouseDown(CPoint &where, const CButtonState& buttons)
-	//{
-
-	//	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	//	fprintf(pFile, "y(n): %s\n", std::to_string(this->getWidth()).c_str());
-	//	fclose(pFile);*/
-
-	//	for (auto&& m : modules) {
-	//		m->onMouseDown(where, buttons);
-	//	}
-
-	//	return kMouseEventHandled;
-	//}
-
-	//CMouseEventResult GuiGraphicsView::onMouseMoved(CPoint &where, const CButtonState& buttons)
-	//{
-	//	for (auto&& m : modules) {
-	//		m->onMouseMoved(where, buttons);
-	//	}
-
-	//	return kMouseEventHandled;
-	//}
-
-	//CMouseEventResult GuiGraphicsView::onMouseUp(CPoint& where, const CButtonState& buttons) {
-	//	for (auto&& m : modules) {
-	//		m->onMouseUp(where, buttons);
-	//	}
-
-	//	return kMouseEventHandled;
-	//}
 }

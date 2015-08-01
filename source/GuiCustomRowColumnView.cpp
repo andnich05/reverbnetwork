@@ -41,6 +41,7 @@ namespace VSTGUI {
 			pContext->drawRect(r, backgroundColorDrawStyle);
 		}
 
+		// Custom stuff
 		pContext->setFillColor(CColor(0, 0, 0, 0));
 		pContext->setLineWidth(frameWidth);
 		pContext->setFrameColor(frameColor);

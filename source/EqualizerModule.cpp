@@ -2,9 +2,8 @@
 #include "ValueConversion.h"
 #include "ReverbNetworkDefines.h"
 #include <cmath>
-#include <string>
 
-
+// Limit output values when the filter becomes unstable
 #define LIMITER
 
 #ifdef LIMITER
@@ -45,16 +44,19 @@ EqualizerModule::~EqualizerModule()
 }
 
 // Source: Zölzer book p.136+137
-// Alle WURZEL(2)-Terme werden durch 1/qFactor ersetzt!
+// All sqrt(2) terms are being replaced by 1/qFactor!
 const bool& EqualizerModule::calculateCoefficients() {
 	// tan() has a discontinuity at 0.5*PI
+	// Should not happen because the maximum center frequncy depends on the sampling frequency, but just in case...
 	if ((centerFreq / samplingFreq) < 0.5) {
+		// Calculate K
 		K = tan((centerFreq / samplingFreq) * M_PI);
 	}
 	else {
 		K = tan(0.4999 * M_PI);
 	}
 
+	// Calculate the filter coefficients
 	switch (filterType) {
 	case FilterType::lowPass: {
 		double denominator = 1 + oneDividedByQ * K + pow(K, 2);
@@ -75,6 +77,7 @@ const bool& EqualizerModule::calculateCoefficients() {
 		break;
 	}
 	case FilterType::bandPassStop: {
+		// The sign of the gain parameter determines if it's a band pass or a band stop
 		if (gain >= 1.0) {
 			// Band pass
 			double denominator = 1 + oneDividedByQ * K + pow(K, 2);
@@ -146,6 +149,7 @@ const bool& EqualizerModule::calculateCoefficients() {
 		break;
 	}
 	case FilterType::rawBiquad: {
+		// Nothing to do here, the user has to enter the coefficients by himself
 		break;
 	}
 	default: {
@@ -161,6 +165,7 @@ const bool& EqualizerModule::calculateCoefficients() {
 }
 
 const bool& EqualizerModule::setCenterFreq(const double& f0) {
+	// Once again check if f0 is not to big
 	if (f0 <= ValueConversion::getMaxEqFrequency()) {
 		centerFreq = f0;
 	}
@@ -171,6 +176,7 @@ const bool& EqualizerModule::setCenterFreq(const double& f0) {
 }
 
 const bool& EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient, const double& value) {
+	// Only change the coefficients if the raw filter is selected in the GUI
 	if (filterType == FilterType::rawBiquad) {
 		switch (coefficient) {
 		case FilterCoefficients::a0:
@@ -196,7 +202,8 @@ const bool& EqualizerModule::setFilterCoefficient(const FilterCoefficients coeff
 }
 
 const bool& EqualizerModule::checkStability() {
-	// Source: Kammeyer p.77 / 78
+	// Check if the current coefficients lead to a stable filter
+	// Source: Kammeyer book p.77 / 78
 	stable = false;
 	if (b2 > (pow(b1, 2.0) / 4.0)) {
 		if (b2 < 1.0) {
@@ -213,14 +220,6 @@ const bool& EqualizerModule::checkStability() {
 			stable = true;
 		}
 	}
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", "------------");
-	fprintf(pFile, "y(n): %s\n", std::to_string(a0).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(a1).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(a2).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(b1).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(b2).c_str());
-	fclose(pFile);*/
 	return stable;
 }
 

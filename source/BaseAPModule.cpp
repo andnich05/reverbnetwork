@@ -27,6 +27,7 @@ BaseAPModule::BaseAPModule()
 }
 
 BaseAPModule::~BaseAPModule() {
+	// Delete all components
 	if (mixer) {
 		delete mixer;
 		mixer = nullptr;
@@ -50,29 +51,26 @@ BaseAPModule::~BaseAPModule() {
 }
 
 void BaseAPModule::setSampleRate(const double& sampleRate) {
-	this->sampleRate = sampleRate;
 	equalizer->setSamplingFreq(sampleRate);
 	allpass->setSampleRate(sampleRate);
 }
 
-//double BaseAPModule::processModuleSamples(std::vector<double>& channelSamples) {
 double BaseAPModule::processSamples(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const {
-	// Mix channels
+	// Mix channels (no bypass available)
 	double outputSample = mixer->mixInputs(moduleInputBuffer, vstInputBuffer, signalGeneratorSample);
 
+	// Quantize samples
 	if (!bypassQuantizer) {
-		if (outputSample != 0.0) {
+		if (outputSample != 0.0) {	
 			quantizer->processSample(outputSample);
 		}
 	}
 
-	// Do equalizing
+	// Equalize samples
 	if (!bypassEqualizer) {
 		equalizer->processSample(outputSample);
 	}
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(outputSample).c_str());
-	fclose(pFile);*/
+
 	// Send through the allpass
 	if (!bypassAllpass) {
 		allpass->doProcessing(outputSample);
@@ -161,6 +159,5 @@ void BaseAPModule::updateAllpassModulationRate(const double& rate) {
 }
 
 void BaseAPModule::updateOutputGain(const double& gain) {
-	
 	gainOutput->setGain(ValueConversion::logToLinear(gain));
 }

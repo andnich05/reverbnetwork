@@ -23,10 +23,7 @@ GuiBaseAPModule::GuiBaseAPModule(const CRect &rect, const CRect& handleRegion, c
 , moduleId(moduleId)
 , editor(editor)
 {
-	//this->handleRegion.offset(-1, -1);
-	backgroundOffset (0, 0);
-	backgroundColor = kBlackCColor;
-	setAutosizingEnabled (true);
+	//setAutosizingEnabled (true);
 	mousePressed = false;
 	mousePressedX = 0;
 	mousePressedY = 0;
@@ -43,46 +40,41 @@ void GuiBaseAPModule::collapseView(const bool& collapse) {
 		return;
 	}
 	if (collapse) {
+		// Change the view's size
 		viewSize = CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight()); // Save for uncollapse
 		CRect newSize = this->getViewSize();
 		newSize.setBottomRight(CPoint(this->getViewSize().getTopRight().x, this->getViewSize().getTopRight().y + handleSize.y));
 		this->setViewSize(newSize);
 	}
 	else {
+		// Expand the view
 		CRect newSize = this->getViewSize();
 		newSize.setBottomRight(CPoint(this->getViewSize().getTopLeft().x + viewSize.x, this->getViewSize().getTopLeft().y + viewSize.y));
 		this->setViewSize(newSize);
 	}
 	collapsed = collapse;
-	this->setMouseableArea(this->getViewSize());
-	this->getParentView()->setDirty();
+	this->setMouseableArea(this->getViewSize()); // !!! Important: Update the mouseable area!
+	this->getParentView()->setDirty(); // Repaint
 }
 
 CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState& buttons)
 {
-	this->setDirty();
+	// Notify the editor that the user has clicked on this module view so that the editor can bring the view in the foreground by changing the Z order of his views
 	editor->notify(this, kModuleWantsFocus);
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", "mouse down");
-	fclose(pFile);*/
 
-	// where are global coordinates of the parent (?) view
-
-	// frameToLocal changes the global coordinates (e.g. 1200) to local coordinates of this frame (e.g. 50)
+	// FrameToLocal changes the global coordinates (e.g. 1200) to local coordinates of this frame (e.g. 50) => !Parameter is a reference!
 	CRect handleRegion(CRect(CPoint(0, 0), CPoint(handleSize)));
 	CPoint whereCopy = where;
+	// convert to relativ pos
 	whereCopy.offset(-getViewSize().left, -getViewSize().top);
 	// Check if the mouse click is inside the handle region
-	//if (coordinates.x <= handleRegion.right && coordinates.y <= handleRegion.bottom && coordinates.x >= handleRegion.left && coordinates.y >= handleRegion.top && buttons.isLeftButton()) 
-
 	if (whereCopy.isInside(handleRegion) && buttons.isLeftButton()) {
-		//&& (mousePressedX != whereCopy.x || mousePressedY != whereCopy.y)
 		mousePressed = true;
 		mousePressedX = whereCopy.x;
 		mousePressedY = whereCopy.y;
 	}
+	// If not: do the regular Vst stuff...
 	else {
-
 		// convert to relativ pos
 		CPoint where2(where);
 		where2.offset(-getViewSize().left, -getViewSize().top);
@@ -119,21 +111,21 @@ CMouseEventResult GuiBaseAPModule::onMouseDown(CPoint &where, const CButtonState
 }
 
 CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonState& buttons)
-{	
-
+{
 	if (mousePressed) {
-		//this->size.moveTo(where.x - mousePressedX, where.y - mousePressedY);
+		// Move the view to the new position
 		this->setViewSize(CRect(CPoint(where.x - mousePressedX, where.y - mousePressedY), CPoint(this->getWidth(), this->getHeight())));
-		// invalid() updates the GUI; setDirty() is similar but does not force an immediate redraw, although setDirty() is thread safe
 
-		//CRect size = dynamic_cast<CScrollView*>(getParentView())->getContainerSize();
+		// invalid() updates the GUI; setDirty() is similar but does not force an immediate redraw, although setDirty() is thread safe(?)
 
 		// Don't paint the modules outside the parent view
 		if (this->getViewSize().getBottomRight().y > getParentView()->getViewSize().getBottomRight().y) {
-			this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+			this->setViewSize(CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()), 
+				CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		if (this->getViewSize().getBottomRight().x > getParentView()->getViewSize().getBottomRight().x) {
-			this->setViewSize(CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+			this->setViewSize(CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y), 
+				CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		if (this->getViewSize().getTopLeft().x < 0.0) {
 			this->setViewSize(CRect(CPoint(0, getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
@@ -150,8 +142,8 @@ CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonStat
 		this->setMouseableArea(this->getViewSize());
 		this->getParentView()->setDirty();
 	}
+	// Do the regular Vst stuff
 	else {
-
 		if (mouseDownView)
 		{
 			CBaseObjectGuard crg(mouseDownView);
@@ -174,9 +166,10 @@ CMouseEventResult GuiBaseAPModule::onMouseMoved(CPoint &where, const CButtonStat
 
 CMouseEventResult GuiBaseAPModule::onMouseUp(CPoint &where, const CButtonState& buttons)
 {
-
+	// Reset
 	mousePressed = false;
 
+	// Regular Vst stuff
 	if (mouseDownView)
 	{
 		CBaseObjectGuard crg(mouseDownView);
@@ -190,82 +183,6 @@ CMouseEventResult GuiBaseAPModule::onMouseUp(CPoint &where, const CButtonState& 
 	}
 	return kMouseEventNotHandled;
 }
-
-void GuiBaseAPModule::setViewSize(const CRect &rect, bool invalid)
-{
-	if (rect == getViewSize())
-		return;
-
-	CRect oldSize(getViewSize());
-	CView::setViewSize(rect, invalid);
-
-	if (getAutosizingEnabled())
-	{
-		CCoord widthDelta = rect.getWidth() - oldSize.getWidth();
-		CCoord heightDelta = rect.getHeight() - oldSize.getHeight();
-
-		if (widthDelta != 0 || heightDelta != 0)
-		{
-			int32_t numSubviews = getNbViews();
-			int32_t counter = 0;
-			bool treatAsColumn = (getAutosizeFlags() & kAutosizeColumn) != 0;
-			bool treatAsRow = (getAutosizeFlags() & kAutosizeRow) != 0;
-			FOREACHSUBVIEW
-				int32_t autosize = pV->getAutosizeFlags();
-			CRect viewSize(pV->getViewSize());
-			CRect mouseSize(pV->getMouseableArea());
-			if (treatAsColumn)
-			{
-				if (counter)
-				{
-					viewSize.offset(counter * (widthDelta / (numSubviews)), 0);
-					mouseSize.offset(counter * (widthDelta / (numSubviews)), 0);
-				}
-				viewSize.setWidth(viewSize.getWidth() + (widthDelta / (numSubviews)));
-				mouseSize.setWidth(mouseSize.getWidth() + (widthDelta / (numSubviews)));
-			}
-			else if (widthDelta != 0 && autosize & kAutosizeRight)
-			{
-				viewSize.right += widthDelta;
-				mouseSize.right += widthDelta;
-				if (!(autosize & kAutosizeLeft))
-				{
-					viewSize.left += widthDelta;
-					mouseSize.left += widthDelta;
-				}
-			}
-			if (treatAsRow)
-			{
-				if (counter)
-				{
-					viewSize.offset(0, counter * (heightDelta / (numSubviews)));
-					mouseSize.offset(0, counter * (heightDelta / (numSubviews)));
-				}
-				viewSize.setHeight(viewSize.getHeight() + (heightDelta / (numSubviews)));
-				mouseSize.setHeight(mouseSize.getHeight() + (heightDelta / (numSubviews)));
-			}
-			else if (heightDelta != 0 && autosize & kAutosizeBottom)
-			{
-				viewSize.bottom += heightDelta;
-				mouseSize.bottom += heightDelta;
-				if (!(autosize & kAutosizeTop))
-				{
-					viewSize.top += heightDelta;
-					mouseSize.top += heightDelta;
-				}
-			}
-			if (viewSize != pV->getViewSize())
-			{
-				pV->setViewSize(viewSize);
-				pV->setMouseableArea(mouseSize);
-			}
-			counter++;
-			ENDFOREACHSUBVIEW
-		}
-	}
-	parentSizeChanged();
-}
-
 
 //-----------------------------------------------------------------------------
 /**
@@ -306,12 +223,10 @@ void GuiBaseAPModule::drawBackgroundRect(CDrawContext* pContext, const CRect& _u
 			r = getViewSize();
 			r.offset(-r.left, -r.top);
 		}
-		//r.inset(1, 1);
 		pContext->drawRect(r, backgroundColorDrawStyle);
-
-
 	}
 
+	// Custom stuff: Draw frame
 	pContext->setFillColor(CColor(0, 0, 0, 0));
 	pContext->setFrameColor(CCOLOR_MODULE_MAINFRAME);
 	CRect rect = getViewSize();

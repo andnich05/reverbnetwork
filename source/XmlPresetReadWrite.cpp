@@ -13,9 +13,11 @@ XmlPresetReadWrite::~XmlPresetReadWrite() {
 
 
 const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* filePath) const {
-	preset loadedPreset = {};
+	preset loadedPreset = {}; // Initialize
 	pugi::xml_document doc;
 	pugi::xml_parse_result result = doc.load_file(filePath);
+
+	// Read values from XML tree
 	if (result) {
 		pugi::xml_node tool = doc.child("reverbNetwork").child("preset").child("buildInformation");
 		loadedPreset.buildVersion = tool.child("version").text().as_string();
@@ -26,7 +28,6 @@ const XmlPresetReadWrite::preset XmlPresetReadWrite::loadPreset(const char* file
 		loadedPreset.maxVstInputs = tool.child("maxVstInputs").text().as_int();
 		loadedPreset.maxVstOutputs = tool.child("maxVstOutputs").text().as_int();
 
-		//tool = doc.child("reverbNetwork").child("preset").child("parameters");
 		for (tool = doc.child("reverbNetwork").child("preset").child("parameters").child("module"); tool; tool = tool.next_sibling("module")) {
 			module m = {};
 			m.name = tool.child("name").text().as_string();
@@ -146,6 +147,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const
 	decl.append_attribute("version") = "1.0";
 	decl.append_attribute("encoding") = "UTF-8";
 
+	// Create XML tree
 	pugi::xml_node presetNode = doc.append_child("reverbNetwork").append_child("preset");
 
 	pugi::xml_node infoNode = presetNode.append_child("buildInformation");
@@ -251,8 +253,6 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const preset& p) const
 		moduleNode.append_child("position").append_child("x").text().set(vstOutput.positionX);
 		moduleNode.child("position").append_child("y").text().set(vstOutput.positionY);
 	}
-
-
 
 	// Save XML file
 	bool result = false;
