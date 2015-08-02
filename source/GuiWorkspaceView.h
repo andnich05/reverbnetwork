@@ -1,5 +1,5 @@
 /*
-* ComponentMessage:
+* GuiWorkspaceView: Detail view with all modules
 *
 * Copyright (C) 2015  Andrej Nichelmann
 *                     Klaus Michael Indlekofer
@@ -17,36 +17,24 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// UNUSED
 
-#include "ComponentMessage.h"
+#ifndef GUIWORKSPACEVIEW_H
+#define GUIWORKSPACEVIEW_H
 
+#include "../vstgui4/vstgui/lib/cviewcontainer.h"
+#include "public.sdk/source/vst/vstguieditor.h"
 
-namespace Steinberg {
-namespace Vst {
-	ComponentMessage::ComponentMessage()
-		: message(nullptr)
-	{
-	}
+namespace VSTGUI {
 
-	ComponentMessage::~ComponentMessage()
-	{
-	}
+	class GuiWorkspaceView : public CViewContainer {
+	public:
+		GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor);
 
-	FIDString PLUGIN_API ComponentMessage::getMessageID() {
-		FIDString bla = "bla";
-		return bla;
-	}
+		virtual void parentSizeChanged() VSTGUI_OVERRIDE_VMETHOD;
 
-	void PLUGIN_API ComponentMessage::setMessageID(FIDString id) {
-
-	}
-
-	IAttributeList* PLUGIN_API ComponentMessage::getAttributes() {
-		if (!attributeList)
-			attributeList = new HostAttributeList;
-		return attributeList;
-	}
-
+	private:
+		Steinberg::Vst::VSTGUIEditor* editor;
+	}; 
 }
-}
+
+#endif // GUIWORKSPACEVIEW_H

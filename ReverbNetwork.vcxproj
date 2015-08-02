@@ -230,6 +230,7 @@
     <ClCompile Include="pugixml-1.6\src\pugixml.cpp" />
     <ClCompile Include="source\GuiOptionMenuInputSelector.cpp" />
     <ClCompile Include="source\GuiSignalGenerator.cpp" />
+    <ClCompile Include="source\GuiWorkspaceView.cpp" />
     <ClCompile Include="source\Logging.cpp" />
     <ClCompile Include="source\QuantizerModule.cpp" />
     <ClCompile Include="source\PresetReadWrite.cpp" />
@@ -285,6 +286,7 @@
     <ClInclude Include="source\GuiCustomTextEdit.h" />
     <ClInclude Include="source\GuiOptionMenuInputSelector.h" />
     <ClInclude Include="source\GuiSignalGenerator.h" />
+    <ClInclude Include="source\GuiWorkspaceView.h" />
     <ClInclude Include="source\Logging.h" />
     <ClInclude Include="source\QuantizerModule.h" />
     <ClInclude Include="source\PresetReadWrite.h" />

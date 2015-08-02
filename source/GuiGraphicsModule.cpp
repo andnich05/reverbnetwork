@@ -1,3 +1,23 @@
+/*
+* GuiGraphicsModule: Paint a module or Vst input and output
+*
+* Copyright (C) 2015  Andrej Nichelmann
+*                     Klaus Michael Indlekofer
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "GuiGraphicsModule.h"
 #include "ReverbNetworkDefines.h"
 #include "../vstgui4/vstgui/lib/cdrawcontext.h"
@@ -125,7 +145,7 @@ namespace VSTGUI {
 				inputsEnabled[input] = true;
 			}
 			if (textEditsGainValues.size() > 0) {
-				textEditsGainValues[input]->setValue(gainValue);
+				textEditsGainValues[input]->setValue((float)gainValue);
 			}
 			updateShape();
 		}
@@ -175,7 +195,7 @@ namespace VSTGUI {
 			pContext->setFillColor(CColor(0, 0, 0, 0));
 			pContext->drawRect(completeRegion); // Frame
 			std::stringstream temp;
-			for (int i = 0; i < inputRects.size(); ++i) {
+			for (unsigned int i = 0; i < inputRects.size(); ++i) {
 				if (inputsEnabled[i]) {
 					pContext->setFillColor(CColor(50, 200, 50));
 					pContext->drawRect(inputRects[i], CDrawStyle::kDrawFilledAndStroked); // module inputs

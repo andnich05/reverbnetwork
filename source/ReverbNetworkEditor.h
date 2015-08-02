@@ -1,3 +1,23 @@
+/*
+* ReverbNetworkEditor: Vst Plug-in editor (GUI)
+*
+* Copyright (C) 2015  Andrej Nichelmann
+*                     Klaus Michael Indlekofer
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef REVERBNETWORKEDITOR_H
 #define REVERBNETWORKEDITOR_H
 
@@ -15,6 +35,7 @@ namespace VSTGUI {
 	class GuiCustomSplashScreen;
 	class GuiCustomRowColumnView;
 	class GuiSignalGenerator;
+	class GuiWorkspaceView;
 }
 
 namespace Steinberg {
@@ -79,12 +100,13 @@ private:
 
 	double sampleRate;
 	
-	CViewContainer* workspaceView; // View where the modules are placed and where they can be moved around and stuff
+	GuiWorkspaceView* workspaceView; // View where the modules are placed and where they can be moved around and stuff
 	CSplitView* splitView; // Contains a view with the modules and a view with the graphics view
 	GuiCustomRowColumnView* mainView; // Sub view
 	GuiCustomRowColumnView* viewVstOutputSelect; // View with Vst output selection and other stuff
 	GuiCustomRowColumnView* viewModuleListMain; // List with modules
 	GuiCustomSplashScreen* splashOverrideParametersQuery; // Splash view which asks the user if he really wants to override module parameters
+	CScrollView* viewModuleScrollList;
 
 	std::vector<bool> allpassModuleIdPool;
 	// Total number of created modules = total number of times the function createModule() has been called

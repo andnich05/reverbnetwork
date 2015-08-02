@@ -1,5 +1,5 @@
 /*
-* ComponentMessage:
+* GuiWorkspaceView: Detail view with all modules
 *
 * Copyright (C) 2015  Andrej Nichelmann
 *                     Klaus Michael Indlekofer
@@ -17,36 +17,22 @@
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-// UNUSED
 
-#include "ComponentMessage.h"
+#include "GuiWorkspaceView.h"
+#include <string>
 
 
-namespace Steinberg {
-namespace Vst {
-	ComponentMessage::ComponentMessage()
-		: message(nullptr)
-	{
-	}
+namespace VSTGUI {
 
-	ComponentMessage::~ComponentMessage()
-	{
-	}
-
-	FIDString PLUGIN_API ComponentMessage::getMessageID() {
-		FIDString bla = "bla";
-		return bla;
-	}
-
-	void PLUGIN_API ComponentMessage::setMessageID(FIDString id) {
+	GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor)
+		: CViewContainer(size), editor(editor) {
 
 	}
 
-	IAttributeList* PLUGIN_API ComponentMessage::getAttributes() {
-		if (!attributeList)
-			attributeList = new HostAttributeList;
-		return attributeList;
+	void GuiWorkspaceView::parentSizeChanged() {
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(283574).c_str());
+		fclose(pFile);*/
+		editor->notify(this, "ViewSizeChanged");
 	}
-
-}
 }

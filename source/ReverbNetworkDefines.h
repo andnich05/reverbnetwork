@@ -1,4 +1,22 @@
-#include "ReverbNetworkEnums.h"
+/*
+* ReverbNetworkDefines: Macros for the ReverbNetwork plug-in
+*
+* Copyright (C) 2015  Andrej Nichelmann
+*                     Klaus Michael Indlekofer
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
@@ -9,6 +27,8 @@
 
 #ifndef REVERBNETWORKDEFINES_H
 #define REVERBNETWORKDEFINES_H
+
+#include "ReverbNetworkEnums.h"
 
 // Maximum number of AP modules
 #define MAXMODULENUMBER 40
@@ -325,37 +345,37 @@
 //---------------
 
 // Color scheme values
-#define CCOLOR_SPLITVIEW_SPLITTER CColor(0, 0, 0)
-#define CCOLOR_WORKSPACE_BACKGROUND CColor(100, 100, 100)
-#define CCOLOR_MODULELIST_BACKGROUND CColor(80, 80, 80)
-#define CCOLOR_MODULE_MAINBACKGROUND CColor(70, 70, 70)
-#define CCOLOR_MODULE_MAINFRAME CColor(20, 20, 20)
-#define CCOLOR_MODULE_HANDLEBACKGROUND CColor(70, 70, 70)
-#define CCOLOR_MODULE_HANDLEFRAME CColor(20, 20, 20)
-#define CCOLOR_MODULE_COMPONENTBACKGROUND CColor(70, 70, 70)
-#define CCOLOR_MODULE_COMPONENTFRAME CColor(20, 20, 20)
+//#define CCOLOR_SPLITVIEW_SPLITTER CColor(0, 0, 0)
+#define CCOLOR_WORKSPACE_BACKGROUND CColor(45, 45, 45)
+#define CCOLOR_MODULELIST_BACKGROUND CColor(30, 30, 30)
+#define CCOLOR_MODULE_MAINBACKGROUND CColor(60, 60, 60)
+#define CCOLOR_MODULE_MAINFRAME CColor(85, 85, 85)
+#define CCOLOR_MODULE_HANDLEBACKGROUND CColor(45, 45, 45)
+#define CCOLOR_MODULE_HANDLEFRAME CColor(70, 70, 70)
+//#define CCOLOR_MODULE_COMPONENTBACKGROUND CColor(70, 70, 70)
+//#define CCOLOR_MODULE_COMPONENTFRAME CColor(20, 20, 20)
 #define CCOLOR_MODULE_TEXT CColor(255, 255, 255)
 // PPM is a .png
 //#define CCOLOR_MODULE_PPMOFF CColor(20, 20, 20)
 //#define CCOLOR_MODULE_PPMON CColor(229, 83, 0)
 
-#define CCOLOR_GRAPHICSVIEW_BACKGROUND CColor(100, 100, 100)
-#define CCOLOR_GRAPHICSVIEW_TOOLBOXBACKGROUND CColor(80, 80, 80)
-#define CCOLOR_GRAPHICSVIEW_MODULEBACKGROUND CColor(70, 70, 70)
-#define CCOLOR_GRAPHICSVIEW_MODULEHANDLE CColor(70, 70, 70)
+#define CCOLOR_GRAPHICSVIEW_BACKGROUND CColor(45, 45, 45)
+#define CCOLOR_GRAPHICSVIEW_TOOLBOXBACKGROUND CColor(30, 30, 30)
+#define CCOLOR_GRAPHICSVIEW_MODULEBACKGROUND CColor(60, 60, 60)
+#define CCOLOR_GRAPHICSVIEW_MODULEHANDLE CColor(45, 45, 45)
 #define CCOLOR_GRAPHICSVIEW_VSTINPUTBACKGROUND CColor(150, 150, 150)
 #define CCOLOR_GRAPHICSVIEW_VSTINPUTHANDLE CColor(120, 120, 120)
 #define CCOLOR_GRAPHICSVIEW_VSTOUTPUTBACKGROUND CColor(150, 150, 150)
 #define CCOLOR_GRAPHICSVIEW_VSTOUTPUTHANDLE CColor(120, 120, 120)
 #define CCOLOR_GRAPHICSVIEW_CONNECTION CColor(255, 255, 255)
 
-#define CCOLOR_SIDEBAR_BACKGROUND CColor(150, 150, 150)
+#define CCOLOR_SIDEBAR_BACKGROUND CColor(70, 70, 70)
 
-#define CCOLOR_BUTTON_STARTNORMALBACKGROUND CColor(150, 150, 150)
-#define CCOLOR_BUTTON_ENDNORMALBACKGROUND CColor(120, 120, 120)
-#define CCOLOR_BUTTON_STARTPRESSEDBACKGROUND CColor(200, 200, 200)
-#define CCOLOR_BUTTON_ENDPRESSEDBACKGROUND CColor(180, 180, 180)
-#define CCOLOR_BUTTON_TEXTNORMAL CColor(255, 255, 255)
+#define CCOLOR_BUTTON_STARTNORMALBACKGROUND CColor(220, 220, 220)
+#define CCOLOR_BUTTON_ENDNORMALBACKGROUND CColor(220, 220, 220)
+#define CCOLOR_BUTTON_STARTPRESSEDBACKGROUND CColor(255, 197, 137)
+#define CCOLOR_BUTTON_ENDPRESSEDBACKGROUND CColor(255, 197, 137)
+#define CCOLOR_BUTTON_TEXTNORMAL CColor(0, 0, 0)
 #define CCOLOR_BUTTON_TEXTPRESSED CColor(0, 0, 0)
 #define CCOLOR_SCROLLVIEW_SCROLLBAR CColor(140, 140, 140)
 #define CCOLOR_OPTIONMENU_BACKGROUND CColor(30, 30, 30)
@@ -367,7 +387,7 @@
 #define CCOLOR_TEXTLABEL_BACKGROUND CColor(0, 0, 0, 0)
 #define CCOLOR_TEXTLABEL_FRAME CColor(0, 0, 0, 0)
 #define CCOLOR_NOCOLOR CColor(0, 0, 0, 0)
-#define CCOLOR_FRAME CColor(20, 20, 20)
+#define CCOLOR_FRAME CColor(85, 85, 85)
 
 #define CCOLOR_SPLASHVIEW_BACKGROUND CColor(0, 0, 0, 150)
 

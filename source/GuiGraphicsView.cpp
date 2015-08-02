@@ -1,3 +1,23 @@
+/*
+* GuiGraphicsView: Parent view for modules and connections
+*
+* Copyright (C) 2015  Andrej Nichelmann
+*                     Klaus Michael Indlekofer
+*
+* This program is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "GuiGraphicsView.h"
 #include "ValueConversion.h"
 #include "GuiGraphicsModule.h"
@@ -25,7 +45,7 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::createModule(const std::string& title, const int& id, const int& numberOfInputs) {
-		if (id < modules.size()) {
+		if (id < (int)(modules.size())) {
 			GuiGraphicsModule* module = new GuiGraphicsModule(title, numberOfInputs, true, true);
 			this->addView(module);
 			modules[id] = module;
@@ -86,14 +106,14 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::setModuleInputNames(const int& moduleId, const std::vector<std::string> inputNames) {
-		if (moduleId < modules.size()) {
+		if (moduleId < (int)(modules.size())) {
 			modules[moduleId]->setInputNames(inputNames);
 		}
 		this->setDirty();
 	}
 
 	void GuiGraphicsView::updateModule(const int& moduleId, const int& input, const double& gainValue) {
-		if (moduleId < modules.size()) {
+		if (moduleId < (int)(modules.size())) {
 			if (gainValue != 0.0) {
 				modules[moduleId]->setVisible(true);
 			}
@@ -112,7 +132,7 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::setVstOutputConnection(const int& vstOutput, const int& moduleOrVstInput) {
-		if (vstOutput < vstOutputConnections.size()) {
+		if (vstOutput < (int)(vstOutputConnections.size())) {
 			vstOutputConnections[vstOutput] = moduleOrVstInput;
 			this->setDirty();
 		}
@@ -168,7 +188,7 @@ namespace VSTGUI {
 		for (auto&& m : modules) {
 			if (m) {
 				if (m->isVisible()) {
-					for (unsigned int j = 0; j < numberOfModules; ++j) {
+					for (int j = 0; j < numberOfModules; ++j) {
 						if (m->getGainValue(j) != 0.0) {
 							modules[j]->setVisible(true);
 							connections->addConnection(m->getInputRectCenter(j), modules[j]->getOutputRectCenter(), std::abs(m->getGainValue(j))); // Gain value determines the transperacy
@@ -190,7 +210,7 @@ namespace VSTGUI {
 						connections->addConnection(vstOutputs[o]->getInputRectCenter(0), modules[vstOutputConnections[o]]->getOutputRectCenter(), 1.0);
 						modules[vstOutputConnections[o]]->setVisible(true);
 					}
-					else if (vstOutputConnections[o] < numberOfModules + vstInputs.size()) {
+					else if (vstOutputConnections[o] < numberOfModules + (int)(vstInputs.size())) {
 						connections->addConnection(vstOutputs[o]->getInputRectCenter(0), vstInputs[vstOutputConnections[o] - numberOfModules]->getOutputRectCenter(), 1.0);
 					}
 				}
@@ -231,7 +251,7 @@ namespace VSTGUI {
 		columnCounter = 0;
 		int offset = 0;
 		if (lastUnusedModule != -1) {
-			offset = modules[lastUnusedModule]->getViewSize().getTopRight().x + 10;
+			offset = (int)(modules[lastUnusedModule]->getViewSize().getTopRight().x + 10.0);
 		}
 		for (unsigned int m = 0; m < modules.size(); ++m) {
 			if (modules[m]) {
@@ -250,39 +270,39 @@ namespace VSTGUI {
 	}
 
 	void GuiGraphicsView::setModulePosition(const int& moduleId, const CPoint& position) {
-		if (moduleId < modules.size()) {
+		if (moduleId < (int)(modules.size())) {
 			modules[moduleId]->setViewSize(CRect(CPoint(position), CPoint(modules[moduleId]->getWidth(), (modules[moduleId]->getHeight()))));
 		}
 	}
 	
 	CPoint GuiGraphicsView::getModulePosition(const int& moduleId) const {
-		if (moduleId < modules.size()) {
+		if (moduleId < (int)(modules.size())) {
 			return modules[moduleId]->getViewSize().getTopLeft();
 		}
 		return CPoint(0, 0);
 	}
 
 	void GuiGraphicsView::setVstInputPosition(const int& vstInput, const CPoint& position) {
-		if (vstInput < vstInputs.size()) {
+		if (vstInput < (int)(vstInputs.size())) {
 			vstInputs[vstInput]->setViewSize(CRect(CPoint(position), CPoint(vstInputs[vstInput]->getWidth(), (vstInputs[vstInput]->getHeight()))));
 		}
 	}
 
 	CPoint GuiGraphicsView::getVstInputPosition(const int& vstInput) const {
-		if (vstInput < vstInputs.size()) {
+		if (vstInput < (int)(vstInputs.size())) {
 			return vstInputs[vstInput]->getViewSize().getTopLeft();
 		}
 		return CPoint(0, 0);
 	}
 
 	void GuiGraphicsView::setVstOutputPosition(const int& vstOutput, const CPoint& position) {
-		if (vstOutput < vstOutputs.size()) {
+		if (vstOutput < (int)(vstOutputs.size())) {
 			vstOutputs[vstOutput]->setViewSize(CRect(CPoint(position), CPoint(vstOutputs[vstOutput]->getWidth(), (vstOutputs[vstOutput]->getHeight()))));
 		}
 	}
 
 	CPoint GuiGraphicsView::getVstOutputPosition(const int& vstOutput) const {
-		if (vstOutput < vstOutputs.size()) {
+		if (vstOutput < (int)(vstOutputs.size())) {
 			return vstOutputs[vstOutput]->getViewSize().getTopLeft();
 		}
 		return CPoint(0, 0);
@@ -309,7 +329,7 @@ namespace VSTGUI {
 				else if (message == "EndMouseLine") {
 					// Find the module or Vst output to which the connection should go
 					for (unsigned int j = 0; j < modules.size(); ++j) {
-						if (!modules[i]->isVisible()) continue; // Invisible modules don't count
+						if (!modules[j]->isVisible()) continue; // Invisible modules don't count
 						if (modules[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i) == 0.0) {
 								drawnConnection = Connection(i, j, 1.0);
@@ -356,7 +376,7 @@ namespace VSTGUI {
 				}
 				else if (message == "EndMouseLine") {
 					for (unsigned int j = 0; j < modules.size(); ++j) {
-						if (!modules[i]->isVisible()) continue;
+						if (!modules[j]->isVisible()) continue;
 						if (vstInputs[i]->getMouseUpCoordinates().isInside(modules[j]->getViewSize())) {
 							if (modules[j]->getGainValue(i + numberOfModules) == 0.0) {
 								drawnConnection = Connection(i + numberOfModules, j, 1.0);
