@@ -93,11 +93,15 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 	if (result == kResultTrue)
 	{
 		// Create I/O
-		for (uint16 i = 0; i < MAXVSTINPUTS; ++i) {
-			addAudioInput(STR16("Audio In Mono"), SpeakerArr::kMono);
+		for (unsigned int i = 0; i < MAXVSTINPUTS; ++i) {
+			std::string temp = "VST IN Mono ";
+			temp.append(std::to_string(i));
+			addAudioInput(USTRING(temp.c_str()), SpeakerArr::kMono);
 		}
-		for (uint16 i = 0; i < MAXVSTOUTPUTS; ++i) {
-			addAudioOutput(STR16("Audio Out Mono"), SpeakerArr::kMono);
+		for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
+			std::string temp = "VST OUT Mono ";
+			temp.append(std::to_string(i));
+			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::kMono);
 		}
 
 		// SampleRate is always 44100 here...
@@ -124,10 +128,28 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts)
 {
+	//FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	//fprintf(pFile, "y(n): %s\n", std::to_string(SpeakerArr::getChannelCount(inputs[0])).c_str()); // IS E.G. = 6 when 5.1 Project
+	//fprintf(pFile, "y(n): %s\n", std::to_string(SpeakerArr::getChannelCount(outputs[0])).c_str()); // IS E.G. = 6 when 5.1 Project
+	//fprintf(pFile, "y(n): %s\n", std::to_string(numIns).c_str()); // Should be always 1
+	//fprintf(pFile, "y(n): %s\n", std::to_string(numOuts).c_str()); // Should be always 1
+	//fclose(pFile);
+
 	// Minimum one input and one output (ToDo!)
-	if (numIns == MAXVSTINPUTS && numOuts == MAXVSTOUTPUTS) {
-		if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
-			return kResultTrue;
+	if (numIns >= 1 && numIns <= MAXVSTINPUTS && numOuts >= 1 && numOuts <= MAXVSTOUTPUTS) {
+		if (SpeakerArr::getChannelCount(inputs[0]) >= 1 && SpeakerArr::getChannelCount(outputs[0]) >= 1) {
+			removeAudioBusses();
+			for (unsigned int i = 0; i < SpeakerArr::getChannelCount(inputs[0]); ++i) {
+				std::string temp = "VST IN Mono ";
+				temp.append(std::to_string(i));
+				addAudioInput(USTRING(temp.c_str()), SpeakerArr::kMono);
+			}
+			for (unsigned int i = 0; i < SpeakerArr::getChannelCount(outputs[0]); ++i) {
+				std::string temp = "VST OUT Mono ";
+				temp.append(std::to_string(i));
+				addAudioOutput(USTRING(temp.c_str()), SpeakerArr::kMono);
+			}
+			return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
 		}
 	}
 	return kResultFalse;
@@ -558,10 +580,10 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 		float* outputSamples[MAXVSTOUTPUTS];
 
 		// Get the buffers for every single input and output
-		for (uint32 input = 0; input < MAXVSTINPUTS; ++input) {
+		for (uint32 input = 0; input < data.numInputs; ++input) {
 			inputSamples[input] = data.inputs[input].channelBuffers32[0];
 		}
-		for (uint32 output = 0; output < MAXVSTOUTPUTS; ++output) {
+		for (uint32 output = 0; output < data.numOutputs; ++output) {
 			outputSamples[output] = data.outputs[output].channelBuffers32[0];
 		}
 
@@ -580,7 +602,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			// Module input processing
 			for (auto module = 0; module < MAXMODULENUMBER; ++module) {
 				//vstInputBuffer.clear();
-				for (auto i = 0; i < MAXVSTINPUTS; ++i) {
+				for (auto i = 0; i < data.numInputs; ++i) {
 					vstInputBuffer[i] = (double)inputSamples[i][sample];
 				}
 				// Process the vector and write the output sample into the correct module output buffer
@@ -592,11 +614,15 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			}
 			
 			// VST output processing
-			for (auto vstOutput = 0; vstOutput < MAXVSTOUTPUTS; ++vstOutput) {
+			for (auto vstOutput = 0; vstOutput < data.numOutputs; ++vstOutput) {
 				if (vstOutputConnections[vstOutput] != -1) {
 					if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
 						// VST output is connected to a module's output => take sample from the module output buffer
 						outputSamples[vstOutput][sample] = (moduleOutputBuffer[vstOutputConnections[vstOutput]]);
+						/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+						fprintf(pFile, "y(n): %s\n", std::to_string(vstOutput).c_str());
+						fprintf(pFile, "y(n): %s\n", std::to_string(vstOutputConnections[vstOutput]).c_str());
+						fclose(pFile);*/
 					}
 					else {
 						// VST output is connected directly to VST input => take sample from the VST input
