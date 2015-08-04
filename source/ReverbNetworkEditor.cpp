@@ -41,7 +41,7 @@ namespace Vst {
 	// Structure for overriding module parameters (when user clicks on "paste")
 	struct overrideParametersQuery {
 		int moduleId;
-		XmlPresetReadWrite::module *moduleStruct;
+		XmlPresetReadWrite::Module *moduleStruct;
 	};
 
 	//--- GUI IDs
@@ -320,7 +320,6 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 			temp.append(" IN");
 			menu->addEntry((temp).c_str());
 		}
-		menu->addEntry("SIGNALGEN");
 		viewOutputSelectRow->addView(menu);
 		viewOutputSelectRow->sizeToFit();
 		viewOutputSelectRow->setBackgroundColor(CCOLOR_NOCOLOR);
@@ -457,10 +456,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	ppmOff->forget();
 	ppmOn->forget();
 
-	// Save the default module parameters for later (when the user clicks on "Default")
-	if (apGuiModules.size() > 0) {
-		copyModuleParameters(0, defaultModuleParameters);
-	}
+	
 
 	// Initialize EQ stability buttons
 	updateGuiWithControllerParameters();
@@ -472,6 +468,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	graphicsView->rearrangeModules();
 
 	workspaceView->parentSizeChanged();
+
+	// Save the default module parameters for later (when the user clicks on "Default")
+	if (apGuiModules.size() > 0) {
+		copyModuleParameters(0, defaultModuleParameters);
+	}
 
 	return true;
 }
@@ -573,7 +574,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		// Get the userData
 		overrideParametersQuery* userData = (overrideParametersQuery*)(dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->getUserData());
 		// Apply the copied parameters
-		pasteModuleParameters(userData->moduleId, XmlPresetReadWrite::module(*userData->moduleStruct));
+		pasteModuleParameters(userData->moduleId, XmlPresetReadWrite::Module(*userData->moduleStruct));
 		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash(); // Hide the splash view
 		frame->setMouseableArea(frame->getViewSize());
 	}
@@ -1039,8 +1040,10 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	handleViewSize.setWidth(handleViewSize.getWidth() - (closeViewButton->getWidth() + hideViewButton->getWidth() + defaultParametersButton->getWidth() + 
 		copyParametersButton->getWidth() + pasteParametersButton->getWidth() + 26));
 
-	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
+	/*GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0 + (totalNumberOfCreatedModules % 10) * 30, 0 + (totalNumberOfCreatedModules % 10) * 30),
 		CPoint(0, 0)), handleViewSize, moduleId, this);
+	baseModuleView->setBackgroundColor(CCOLOR_MODULE_MAINBACKGROUND);*/
+	GuiBaseAPModule* baseModuleView = new GuiBaseAPModule(CRect(CPoint(0, 0), CPoint(0, 0)), handleViewSize, moduleId, this);
 	baseModuleView->setBackgroundColor(CCOLOR_MODULE_MAINBACKGROUND);
 
 	std::string temp = "APM";
@@ -1528,6 +1531,18 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	for (int i = id_mixer_knob_gainFirst; i <= id_mixer_knob_gainLast; ++i) {
 		valueChanged(guiElements[i]);
 	}
+	for (int i = 0; i < MAXMODULENUMBER; ++i) {
+		for (int j = 0; j < MAXMODULENUMBER; ++j) {
+			updateGainValuesInOptionMenus(i, j, ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j)));
+			updateGraphicsViewModule(i, j, ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j)));
+		}
+		for (int j = 0; j < MAXVSTINPUTS; ++j) {
+			updateGainValuesInOptionMenus(i, MAXMODULENUMBER + j, ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + MAXMODULENUMBER + j)));
+			updateGraphicsViewModule(i, MAXMODULENUMBER + j, ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + MAXMODULENUMBER + j)));
+		}
+		updateGainValuesInOptionMenus(i, MAXMODULENUMBER + MAXVSTINPUTS, ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS)));
+		updateGraphicsViewModule(i, MAXMODULENUMBER + MAXVSTINPUTS, ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS)));
+	}
 
 	// Update all other parameters
 	//updateGuiParameter(PARAM_MIXERBYPASS_FIRST, PARAM_MIXERBYPASS_LAST, id_mixer_switch_bypassFirst, nullptr);
@@ -1604,7 +1619,7 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		guiElements[id_quantizer_textEdit_quantizationFirst + (tag - PARAM_QUANTIZERBITDEPTH_FIRST)]->setValueNormalized(value);
 	}
 	else if (tag >= PARAM_QUANTIZERBYPASS_FIRST && tag <= PARAM_QUANTIZERBYPASS_LAST) {
-		guiElements[id_quantizer_switch_bypassFirst]->setValueNormalized(value);
+		guiElements[id_quantizer_switch_bypassFirst + (tag - PARAM_QUANTIZERBYPASS_FIRST)]->setValueNormalized(value);
 	}
 	else if (tag >= PARAM_EQCENTERFREQ_FIRST && tag <= PARAM_EQCENTERFREQ_LAST) {
 		guiElements[id_equalizer_knob_centerFreqFirst + (tag - PARAM_EQCENTERFREQ_FIRST)]->setValueNormalized(value);
@@ -1725,6 +1740,8 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		for (auto&& module : apGuiModules) {
 			if (module == dynamic_cast<GuiBaseAPModule*>(sender)) {
 				workspaceView->changeViewZOrder(dynamic_cast<GuiBaseAPModule*>(sender), workspaceView->getNbViews() - 1);
+				workspaceView->setDirty();
+				break;
 			}
 		}
 	}
@@ -1785,12 +1802,13 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		else if (message == "OpenModuleDetailView") {
 			// User has double-clicked on a module
 			openModuleDetailView(graphicsView->getModuleClicked(), true);
+			this->notify(apGuiModules[graphicsView->getModuleClicked()], GuiBaseAPModule::kModuleWantsFocus);
 		}
 	}
 	return VSTGUIEditor::notify(sender, message);
 } 
 
-void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetStruct) {
+void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetStruct) {
 	if (presetStruct.maxModuleNumber != MAXMODULENUMBER || presetStruct.maxVstInputs != MAXVSTINPUTS || presetStruct.maxVstOutputs != MAXVSTOUTPUTS) {
 		// If those defines in the XML differ from the defines in the actual build then the preset will be probably incompatible
 		// To make it work anyway change the values in the XML file to match the current build
@@ -1830,6 +1848,12 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].soloed);
 			getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].soloed);
 		}
+		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.signalGeneratorInput.gainFactor));
+		getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.signalGeneratorInput.gainFactor));
+		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.muted);
+		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.muted);
+		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.soloed);
+		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.soloed);
 		// Finally the input slots
 		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.inputSlots.size(); ++k) {
 			if (k >= MAXMODULEINPUTS) break;
@@ -1924,8 +1948,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::preset& presetS
 	graphicsView->setDirty();
 }
 
-const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
-	XmlPresetReadWrite::preset p = {}; // Initialize
+const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
+	XmlPresetReadWrite::Preset p = {}; // Initialize
 	
 	// build info...
 	p.name = dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->getText();
@@ -1937,7 +1961,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 
 	// Build up the preset structure
 	for (unsigned int i = 0; i < apGuiModules.size(); ++i) {
-		XmlPresetReadWrite::module m = {};
+		XmlPresetReadWrite::Module m = {};
 		std::string temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText();
 		std::string stringToErase = "APM";
 		stringToErase.append(std::to_string(i));
@@ -1953,32 +1977,37 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		m.isVisible = apGuiModules[i]->isVisible();
 		m.isCollapsed = apGuiModules[i]->isCollapsed();
 
-		XmlPresetReadWrite::mixer mixer = {};
+		XmlPresetReadWrite::Mixer mixer = {};
 		for (unsigned int j = 0; j < MAXMODULENUMBER; ++j) {
-			XmlPresetReadWrite::moduleOutput mo = {};
+			XmlPresetReadWrite::ModuleOutput mo = {};
 			mo.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j));
 			mo.muted = (getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + j) != 0.0);
 			mo.soloed = (getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + j) != 0.0);
 			mixer.moduleOutputs.push_back(mo);
 		}
 		for (unsigned int j = 0; j < MAXVSTINPUTS; ++j) {
-			XmlPresetReadWrite::vstInput vi = {};
+			XmlPresetReadWrite::VstInput vi = {};
 			vi.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER));
 			vi.muted = (getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER) != 0.0);
 			vi.soloed = (getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + j + MAXMODULENUMBER) != 0.0);
 			mixer.vstInputs.push_back(vi);
 		}
+		XmlPresetReadWrite::SignalGeneratorInput sgI = {};
+		sgI.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS));
+		sgI.muted = (getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS) != 0.0);
+		sgI.soloed = (getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS) != 0.0);
+		mixer.signalGeneratorInput = sgI;
 		for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
 			mixer.inputSlots.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + j)));
 		}
 		m.mixerParamters = mixer;
 
-		XmlPresetReadWrite::quantizer q = {};
+		XmlPresetReadWrite::Quantizer q = {};
 		q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i));
 		q.bypass = (getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i) != 0.0);
 		m.quantizerParamters = q;
 
-		XmlPresetReadWrite::equalizer e = {};
+		XmlPresetReadWrite::Equalizer e = {};
 		e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
 		e.frequency = ValueConversion::normToPlainProcCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + i));
 		e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + i));
@@ -1991,7 +2020,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		e.bypass = (getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + i) != 0.0);
 		m.equalizerParameters = e;
 
-		XmlPresetReadWrite::allpass a = {};
+		XmlPresetReadWrite::Allpass a = {};
 		a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + i));
 		a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
 		a.diffKSignNegative = (getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i) != 0.0);
@@ -2001,7 +2030,7 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		a.bypass = (getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i) != 0.0);
 		m.allpassParameters = a;
 
-		XmlPresetReadWrite::output o = {};
+		XmlPresetReadWrite::Output o = {};
 		o.gain = ValueConversion::normToPlainOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + i));
 		o.bypass = (getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + i) != 0.0);
 		m.outputParameters = o;
@@ -2009,36 +2038,36 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 		p.modules.push_back(m);
 	}
 
-	XmlPresetReadWrite::signalGenerator sG = {};
+	XmlPresetReadWrite::SignalGenerator sG = {};
 	sG.signalType = ValueConversion::normToPlainSignalType(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_SIGNALTYPE));
 	sG.gain = ValueConversion::normToPlainSignalAmplitude(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE));
 	sG.width = ValueConversion::normToPlainSignalWidth(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_WIDTH));
 	sG.time = ValueConversion::normToPlainSignalTime(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_TIME));
 	p.signalGenerator = sG;
 
-	XmlPresetReadWrite::graphicsView gV = {};
+	XmlPresetReadWrite::GraphicsView gV = {};
 	for (unsigned int i = 0; i < MAXMODULENUMBER; ++i) {
-		XmlPresetReadWrite::graphicsModule gM = {};
+		XmlPresetReadWrite::GraphicsModule gM = {};
 		gM.isVisible = graphicsView->isModuleVisible(i);
 		gM.positionX = graphicsView->getModulePosition(i).x;
 		gM.positionY = graphicsView->getModulePosition(i).y;
 		gV.modules.push_back(gM);
 	}
 	for (unsigned int i = 0; i < MAXVSTINPUTS; ++i) {
-		XmlPresetReadWrite::graphicsVstInput gI = {};
+		XmlPresetReadWrite::GraphicsVstInput gI = {};
 		gI.positionX = graphicsView->getVstInputPosition(i).x;
 		gI.positionY = graphicsView->getVstInputPosition(i).y;
 		gV.vstInputs.push_back(gI);
 	}
 	for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
-		XmlPresetReadWrite::graphicsVstOutput gO = {};
+		XmlPresetReadWrite::GraphicsVstOutput gO = {};
 		gO.positionX = graphicsView->getVstOutputPosition(i).x;
 		gO.positionY = graphicsView->getVstOutputPosition(i).y;
 		gV.vstOutputs.push_back(gO);
 	}
 	p.graphicsView = gV;
 
-	XmlPresetReadWrite::general g = {};
+	XmlPresetReadWrite::General g = {};
 	for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
 		g.vstOutputMenuIndexes.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + i)));
 	}
@@ -2047,33 +2076,41 @@ const XmlPresetReadWrite::preset ReverbNetworkEditor::getXmlPreset() {
 	return p;
 }
 
-void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::module& m) {
-	XmlPresetReadWrite::mixer mixer = {};
+void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::Module& m) {
+	XmlPresetReadWrite::Mixer mixer = {};
 	for (unsigned int j = 0; j < MAXMODULENUMBER; ++j) {
-		XmlPresetReadWrite::moduleOutput mo = {};
+		XmlPresetReadWrite::ModuleOutput mo = {};
 		mo.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + sourceModuleId * MAXINPUTS + j));
 		mo.muted = (getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + sourceModuleId * MAXINPUTS + j) != 0.0);
 		mo.soloed = (getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + sourceModuleId * MAXINPUTS + j) != 0.0);
 		mixer.moduleOutputs.push_back(mo);
 	}
 	for (unsigned int j = 0; j < MAXVSTINPUTS; ++j) {
-		XmlPresetReadWrite::vstInput vi = {};
+		XmlPresetReadWrite::VstInput vi = {};
 		vi.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + sourceModuleId * MAXINPUTS + j + MAXMODULENUMBER));
 		vi.muted = (getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + sourceModuleId * MAXINPUTS + j + MAXMODULENUMBER) != 0.0);
 		vi.soloed = (getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + sourceModuleId * MAXINPUTS + j + MAXMODULENUMBER) != 0.0);
 		mixer.vstInputs.push_back(vi);
 	}
+	XmlPresetReadWrite::SignalGeneratorInput sgI = {};
+	sgI.gainFactor = ValueConversion::normToPlainInputGain(getController()->getParamNormalized(PARAM_MIXERGAIN_FIRST + sourceModuleId * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS));
+	sgI.muted = (getController()->getParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + sourceModuleId * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS) != 0.0);
+	sgI.soloed = (getController()->getParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + sourceModuleId * MAXINPUTS + MAXMODULENUMBER + MAXVSTINPUTS) != 0.0);
+	mixer.signalGeneratorInput = sgI;
 	for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
 		mixer.inputSlots.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + sourceModuleId * MAXMODULEINPUTS + j)));
 	}
 	m.mixerParamters = mixer;
 
-	XmlPresetReadWrite::quantizer q = {};
+	XmlPresetReadWrite::Quantizer q = {};
 	q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + sourceModuleId));
 	q.bypass = (getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.quantizerParamters = q;
+	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId) != 0.0).c_str());
+	fclose(pFile);*/
 
-	XmlPresetReadWrite::equalizer e = {};
+	XmlPresetReadWrite::Equalizer e = {};
 	e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + sourceModuleId));
 	e.frequency = ValueConversion::normToPlainProcCenterFreq(getController()->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + sourceModuleId));
 	e.qFactor = ValueConversion::normToPlainQFactor(getController()->getParamNormalized(PARAM_EQQFACTOR_FIRST + sourceModuleId));
@@ -2086,7 +2123,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	e.bypass = (getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.equalizerParameters = e;
 
-	XmlPresetReadWrite::allpass a = {};
+	XmlPresetReadWrite::Allpass a = {};
 	a.delay = ValueConversion::normToPlainDelay(getController()->getParamNormalized(PARAM_ALLPASSDELAY_FIRST + sourceModuleId));
 	a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + sourceModuleId));
 	a.diffKSignNegative = (getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + sourceModuleId) != 0.0);
@@ -2096,13 +2133,13 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	a.bypass = (getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.allpassParameters = a;
 
-	XmlPresetReadWrite::output o = {};
+	XmlPresetReadWrite::Output o = {};
 	o.gain = ValueConversion::normToPlainOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + sourceModuleId));
 	o.bypass = (getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.outputParameters = o;
 }
 
-void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::module& m) {
+void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::Module& m) {
 	// Set mixer parameters	
 	// Module outputs first
 	for (unsigned int k = 0; k < m.mixerParamters.moduleOutputs.size(); ++k) {
@@ -2122,6 +2159,12 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].soloed);
 		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].soloed);
 	}
+	getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.signalGeneratorInput.gainFactor));
+	getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.signalGeneratorInput.gainFactor));
+	getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.muted);
+	getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.muted);
+	getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.soloed);
+	getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.soloed);
 	// Finally the input slots
 	for (unsigned int k = 0; k < m.mixerParamters.inputSlots.size(); ++k) {
 		getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParamters.inputSlots[k]));

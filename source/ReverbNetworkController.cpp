@@ -459,12 +459,12 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 
 tresult PLUGIN_API ReverbNetworkController::setParamNormalizedFromPreset(ParamID tag, ParamValue value)
 {
-	Parameter* parameter = getParameterObject(tag);
+	/*Parameter* parameter = getParameterObject(tag);
 	if (parameter)
 	{
 		parameter->setNormalized(value);
 		return kResultTrue;
-	}
+	}*/
 	return kResultFalse;
 }
 
@@ -486,6 +486,11 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 			viewsArray.at(i)->updateEditorFromController(tag, value);
 		}
 	}
+	/*if (tag == PARAM_ALLPASSDECAY_FIRST) {
+		FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(value).c_str());
+		fclose(pFile);
+	}*/
 
 	return result;
 }

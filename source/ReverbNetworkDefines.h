@@ -23,7 +23,7 @@
 #endif
 
 // Log file output in User/AppData/Roaming/ReverbNetwork.log
-//#define LOGGING
+#define LOGGING
 
 #ifndef REVERBNETWORKDEFINES_H
 #define REVERBNETWORKDEFINES_H
@@ -37,10 +37,10 @@
 //#define MAXMODULEOUTPUTS 1
 
 // Maximum number of VST inputs
-#define MAXVSTINPUTS 8
+#define MAXVSTINPUTS 6
 
 // Maximum number of VST outputs
-#define MAXVSTOUTPUTS 8
+#define MAXVSTOUTPUTS 6
 
 // Limit values to 1.0 and -1.0 at the output of a module
 #define OUTPUTLIMITER

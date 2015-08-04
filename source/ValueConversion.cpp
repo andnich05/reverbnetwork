@@ -174,7 +174,8 @@ double ValueConversion::plainToNormOutputGain(const double& plainValue) {
 }
 
 double ValueConversion::normToPlainSignalType(const double& normValue) {
-	return std::round((MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE) * normValue + MIN_SIGNALGENERATOR_SIGNALTYPE);
+	//return std::round((MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE) * normValue + MIN_SIGNALGENERATOR_SIGNALTYPE);
+	return 0.0;
 }
 
 double ValueConversion::plainToNormSignalType(const double& plainValue) {

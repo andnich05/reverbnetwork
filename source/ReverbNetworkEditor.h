@@ -54,7 +54,7 @@ public:
 	typedef struct EditorUserData{
 		std::string presetName;
 		std::vector<std::string> moduleNames;
-		XmlPresetReadWrite::graphicsView graphicsView;
+		XmlPresetReadWrite::GraphicsView graphicsView;
 	};
 	EditorUserData editorUserData;
 
@@ -162,18 +162,18 @@ private:
 
 	XmlPresetReadWrite* xmlPreset; // XML preset structure
 	// Apply the loaded xml preset structure to the Vst plug-in
-	void setXmlPreset(const XmlPresetReadWrite::preset& presetStruct);
+	void setXmlPreset(const XmlPresetReadWrite::Preset& presetStruct);
 	// Build the xml preset structure with all plugin-in parameters
-	const XmlPresetReadWrite::preset getXmlPreset();
+	const XmlPresetReadWrite::Preset getXmlPreset();
 	// Differ between the possible file selector styles (no other possibility right now...)
 	CNewFileSelector::Style fileSelectorStyle;
 
-	XmlPresetReadWrite::module tempModuleParameters; // Contains the module parameters which are saved when the user clicks on "copy" in a module view
-	XmlPresetReadWrite::module defaultModuleParameters; // Contains the default parameters of a module
+	XmlPresetReadWrite::Module tempModuleParameters; // Contains the module parameters which are saved when the user clicks on "copy" in a module view
+	XmlPresetReadWrite::Module defaultModuleParameters; // Contains the default parameters of a module
 	// Copy parameters of specified module into the specified module structure
-	void copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::module& m);
+	void copyModuleParameters(const unsigned int& sourceModuleId, XmlPresetReadWrite::Module& m);
 	// Paste the parameters from the specified structure into the specified module (can be the 'defaultModuleParamters' => set to default)
-	void pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::module& m);
+	void pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::Module& m);
 
 	// Initialize Graphics view with all modules, vst in- and outputs
 	void initializeGraphicsView();

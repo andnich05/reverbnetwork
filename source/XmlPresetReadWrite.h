@@ -32,30 +32,37 @@ public:
 
 	//---Structures for all plugin components
 
-	struct moduleOutput {
+	struct ModuleOutput {
 		double gainFactor;
 		bool muted;
 		bool soloed;
 	};
 
-	struct vstInput {
+	struct VstInput {
 		double gainFactor;
 		bool muted;
 		bool soloed;
 	};
 
-	struct mixer {
-		std::vector<moduleOutput> moduleOutputs;
-		std::vector<vstInput> vstInputs;
+	struct SignalGeneratorInput {
+		double gainFactor;
+		bool muted;
+		bool soloed;
+	};
+
+	struct Mixer {
+		std::vector<ModuleOutput> moduleOutputs;
+		std::vector<VstInput> vstInputs;
+		SignalGeneratorInput signalGeneratorInput;
 		std::vector<int> inputSlots;
 	};
 
-	struct quantizer {
+	struct Quantizer {
 		bool bypass;
 		int quantization;
 	};
 
-	struct equalizer {
+	struct Equalizer {
 		bool bypass;
 		int filterTypeIndex;
 		double frequency;
@@ -68,7 +75,7 @@ public:
 		double b2;
 	};
 
-	struct allpass {
+	struct Allpass {
 		bool bypass;
 		double delay;
 		bool modulationEnabled;
@@ -78,60 +85,60 @@ public:
 		bool diffKSignNegative;
 	};
 
-	struct output {
+	struct Output {
 		bool bypass;
 		double gain;
 	};
 
-	struct module {
+	struct Module {
 		std::string name;
 		unsigned int id;
 		double positionX;
 		double positionY;
 		bool isVisible;
 		bool isCollapsed;
-		mixer mixerParamters;
-		quantizer quantizerParamters;
-		equalizer equalizerParameters;
-		allpass allpassParameters;
-		output outputParameters;
+		Mixer mixerParamters;
+		Quantizer quantizerParamters;
+		Equalizer equalizerParameters;
+		Allpass allpassParameters;
+		Output outputParameters;
 	};
 
-	struct general {
+	struct General {
 		std::vector<int> vstOutputMenuIndexes;
 	};
 
-	struct graphicsModule {
+	struct GraphicsModule {
 		bool isVisible;
 		double positionX;
 		double positionY;
 	};
 
-	struct graphicsVstInput {
+	struct GraphicsVstInput {
 		double positionX;
 		double positionY;
 	};
 
-	struct graphicsVstOutput {
+	struct GraphicsVstOutput {
 		double positionX;
 		double positionY;
 	};
 
-	struct signalGenerator {
+	struct SignalGenerator {
 		int signalType;
 		double gain;
 		int width;
 		double time;
 	};
 
-	struct graphicsView {
-		std::vector<graphicsModule> modules;
-		std::vector<graphicsVstInput> vstInputs;
-		std::vector<graphicsVstOutput> vstOutputs;
+	struct GraphicsView {
+		std::vector<GraphicsModule> modules;
+		std::vector<GraphicsVstInput> vstInputs;
+		std::vector<GraphicsVstOutput> vstOutputs;
 	};
 
 	// Main structure
-	struct preset {
+	struct Preset {
 		std::string name;
 		std::string buildVersion;
 		long int buildDate;
@@ -139,16 +146,16 @@ public:
 		int maxModuleNumber;
 		int maxVstInputs;
 		int maxVstOutputs;
-		std::vector<module> modules;
-		signalGenerator signalGenerator;
-		graphicsView graphicsView;
-		general generalParamters;
+		std::vector<Module> modules;
+		SignalGenerator signalGenerator;
+		GraphicsView graphicsView;
+		General generalParamters;
 	};
 
 	// Load a XML preset from disc, returns a structure with all preset parameters
-	const preset loadPreset(const char* filePath) const;
+	const Preset loadPreset(const char* filePath) const;
 	// Save a XML preset to disc
-	void savePreset(const char* filePath, const preset& p) const;
+	void savePreset(const char* filePath, const Preset& p) const;
 
 private:
 	
