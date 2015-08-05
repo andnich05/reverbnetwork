@@ -1604,6 +1604,8 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 		// Add the change to the ToDo-queue (see notify)
 		eqStabilityValues.push_back(stability);
 	}
+
+	#ifdef GUIUPDATEWHENAUTOMATING
 	// The following updates are called when the parameters are beeing automated so that the GUI elements move accordingly
 	else if (tag >= PARAM_MIXERGAIN_FIRST && tag <= PARAM_MIXERGAIN_LAST) {
 		int moduleNumber = (int)((tag - PARAM_MIXERGAIN_FIRST) / MAXINPUTS);
@@ -1680,6 +1682,7 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 	else if (tag >= PARAM_SIGNALGENERATOR_SIGNALTYPE && tag <= PARAM_SIGNALGENERATOR_FIRE) {
 		signalGenerator->updateParameter(tag, value);
 	}
+	#endif // GUIUPDATEWHENAUTOMATING
 }
 
 CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* message) {
@@ -1916,9 +1919,20 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 
 	// Signal generator 
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_SIGNALTYPE, ValueConversion::plainToNormSignalType(presetStruct.signalGenerator.signalType));
+	getController()->performEdit(PARAM_SIGNALGENERATOR_SIGNALTYPE, ValueConversion::plainToNormSignalType(presetStruct.signalGenerator.signalType));
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE, ValueConversion::plainToNormSignalAmplitude(presetStruct.signalGenerator.gain));
+	getController()->performEdit(PARAM_SIGNALGENERATOR_AMPLITUDE, ValueConversion::plainToNormSignalAmplitude(presetStruct.signalGenerator.gain));
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_WIDTH, ValueConversion::plainToNormSignalWidth(presetStruct.signalGenerator.width));
+	getController()->performEdit(PARAM_SIGNALGENERATOR_WIDTH, ValueConversion::plainToNormSignalWidth(presetStruct.signalGenerator.width));
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_TIME, ValueConversion::plainToNormSignalTime(presetStruct.signalGenerator.time));
+	getController()->performEdit(PARAM_SIGNALGENERATOR_TIME, ValueConversion::plainToNormSignalTime(presetStruct.signalGenerator.time));
+	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AUTOFIREENABLED, presetStruct.signalGenerator.autoFireEnabled);
+	getController()->performEdit(PARAM_SIGNALGENERATOR_AUTOFIREENABLED, presetStruct.signalGenerator.autoFireEnabled);
+
+	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE, ValueConversion::plainToNormSignalAmplitude(presetStruct.signalGenerator.gain))).c_str());
+	fprintf(pFile, "y(n): %s\n", std::to_string(PARAM_SIGNALGENERATOR_AMPLITUDE).c_str());
+	fclose(pFile);*/
 
 	// Graphics view
 	for (unsigned int i = 0; i < presetStruct.graphicsView.modules.size(); ++i) {
@@ -2043,6 +2057,7 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 	sG.gain = ValueConversion::normToPlainSignalAmplitude(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE));
 	sG.width = ValueConversion::normToPlainSignalWidth(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_WIDTH));
 	sG.time = ValueConversion::normToPlainSignalTime(getController()->getParamNormalized(PARAM_SIGNALGENERATOR_TIME));
+	sG.autoFireEnabled = getController()->getParamNormalized(PARAM_SIGNALGENERATOR_AUTOFIREENABLED) != 0.0;
 	p.signalGenerator = sG;
 
 	XmlPresetReadWrite::GraphicsView gV = {};

@@ -25,6 +25,9 @@
 // Log file output in User/AppData/Roaming/ReverbNetwork.log
 #define LOGGING
 
+// Update the controls of the GUI when VST parameters are being automated by the host
+#define GUIUPDATEWHENAUTOMATING
+
 #ifndef REVERBNETWORKDEFINES_H
 #define REVERBNETWORKDEFINES_H
 

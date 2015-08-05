@@ -38,6 +38,9 @@ SignalGenerator::SignalGenerator(const SignalGeneratorType& signalType)
 
 void SignalGenerator::setGain(const double& gainInDB) {
 	this->gainFactor = ValueConversion::logToLinear(gainInDB);
+	FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
+	fprintf(pFile, "y(n): %s\n", std::to_string(8888998989).c_str());
+	fclose(pFile);
 }
 
 void SignalGenerator::setAutoTime(const double& autoTimeInSec) {
@@ -75,3 +78,7 @@ double& SignalGenerator::generateSample() {
 	}
 	return sample;
 }
+
+
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// Signal Generator wird nicht aktualisiert vom XML PReset!

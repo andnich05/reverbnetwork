@@ -132,6 +132,7 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 		sG.gain = tool.child("gain").text().as_double();
 		sG.width = tool.child("width").text().as_int();
 		sG.time = tool.child("time").text().as_double();
+		sG.autoFireEnabled = tool.child("autoFireEnabled").text().as_bool();
 		loadedPreset.signalGenerator = sG;
 
 		GraphicsView gV = {};
@@ -265,6 +266,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const Preset& p) const
 	signalGenNode.append_child("gain").text().set(p.signalGenerator.gain);
 	signalGenNode.append_child("width").text().set(p.signalGenerator.width);
 	signalGenNode.append_child("time").text().set(p.signalGenerator.time);
+	signalGenNode.append_child("autoFireEnabled").text().set(p.signalGenerator.autoFireEnabled);
 
 	// Graphics View
 	pugi::xml_node graphicsNode = presetNode.append_child("graphicsView");

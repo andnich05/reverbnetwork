@@ -129,6 +129,7 @@ public:
 		double gain;
 		int width;
 		double time;
+		bool autoFireEnabled;
 	};
 
 	struct GraphicsView {
