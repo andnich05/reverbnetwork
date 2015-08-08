@@ -94,15 +94,15 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 	{
 		// Create I/O
 		// Preferred configuration is: Each channel has a separate input and output (works in Reaper, doesn't work in Audition)
-		for (unsigned int i = 0; i < MAXVSTINPUTS; ++i) {
-			std::string temp = "VST IN Mono ";
+		for (unsigned int i = 0; i < 1; ++i) {
+			std::string temp = "VST IN 5.1 ";
 			temp.append(std::to_string(i));
-			addAudioInput(USTRING(temp.c_str()), SpeakerArr::kMono);
+			addAudioInput(USTRING(temp.c_str()), SpeakerArr::k51);
 		}
-		for (unsigned int i = 0; i < MAXVSTOUTPUTS; ++i) {
-			std::string temp = "VST OUT Mono ";
+		for (unsigned int i = 0; i < 1; ++i) {
+			std::string temp = "VST OUT 5.1 ";
 			temp.append(std::to_string(i));
-			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::kMono);
+			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::k51);
 		}
 		/*std::string temp = "VST IN";
 		addAudioInput(USTRING(temp.c_str()), SpeakerArr::k91);
@@ -157,9 +157,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 
 	// Host wants another channel configuration
 
-	// Create 1 input and 1 output with multiple channels
-	if (numIns == 1 && numOuts == 1) {
-		if (SpeakerArr::getChannelCount(inputs[0]) >= 1 && SpeakerArr::getChannelCount(inputs[0]) <= MAXVSTINPUTS && SpeakerArr::getChannelCount(outputs[0]) >= 1 && SpeakerArr::getChannelCount(outputs[0]) <= MAXVSTOUTPUTS) {
+	// Create 1 input and 1 output with the desired number of channels by the host
+	if (numIns >= 1 && numOuts >= 1) {
+		if (SpeakerArr::getChannelCount(inputs[0]) >= 1 && SpeakerArr::getChannelCount(outputs[0]) >= 1) {
 			removeAudioBusses();
 
 			std::string temp = "VST IN ";
@@ -179,45 +179,45 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 			
 		}
 	}
-	// Create multiple inputs and outputs with mono channels
-	else if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
-		if (numIns >= 1 && numIns <= MAXVSTINPUTS && numOuts >= 1 && numOuts <= MAXVSTOUTPUTS) {
-			removeAudioBusses();
-			for (int i = 0; i < numIns; ++i) {
-				std::string temp = "VST IN Mono ";
-				temp.append(std::to_string(i));
-				addAudioInput(USTRING(temp.c_str()), SpeakerArr::kMono);
-			}
-			for (int i = 0; i < numOuts; ++i) {
-				std::string temp = "VST OUT Mono ";
-				temp.append(std::to_string(i));
-				addAudioOutput(USTRING(temp.c_str()), SpeakerArr::kMono);
-			}
-			return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
-		}
-	}
+	//// Create multiple inputs and outputs with mono channels
+	//else if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
+	//	if (numIns >= 1 && numIns <= MAXVSTINPUTS && numOuts >= 1 && numOuts <= MAXVSTOUTPUTS) {
+	//		removeAudioBusses();
+	//		for (int i = 0; i < numIns; ++i) {
+	//			std::string temp = "VST IN Mono ";
+	//			temp.append(std::to_string(i));
+	//			addAudioInput(USTRING(temp.c_str()), SpeakerArr::kMono);
+	//		}
+	//		for (int i = 0; i < numOuts; ++i) {
+	//			std::string temp = "VST OUT Mono ";
+	//			temp.append(std::to_string(i));
+	//			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::kMono);
+	//		}
+	//		return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
+	//	}
+	//}
 	// If there are multiple inputs with multiple channels (Cubase): Create 1 input with the desired number of channels
-	else if (numIns > 1 && numOuts > 1) {
-		if (SpeakerArr::getChannelCount(inputs[0]) > 1 && SpeakerArr::getChannelCount(inputs[0]) <= MAXVSTINPUTS && SpeakerArr::getChannelCount(outputs[0]) > 1 && SpeakerArr::getChannelCount(outputs[0]) <= MAXVSTOUTPUTS) {
-			removeAudioBusses();
+	//else if (numIns > 1 && numOuts > 1) {
+	//	if (SpeakerArr::getChannelCount(inputs[0]) > 1 && SpeakerArr::getChannelCount(inputs[0]) <= MAXVSTINPUTS && SpeakerArr::getChannelCount(outputs[0]) > 1 && SpeakerArr::getChannelCount(outputs[0]) <= MAXVSTOUTPUTS) {
+	//		removeAudioBusses();
 
-			std::string temp = "VST IN ";
-			temp.append(std::to_string(0));
-			addAudioInput(USTRING(temp.c_str()), inputs[0]);
+	//		std::string temp = "VST IN ";
+	//		temp.append(std::to_string(0));
+	//		addAudioInput(USTRING(temp.c_str()), inputs[0]);
 
-			temp = "VST OUT ";
-			temp.append(std::to_string(0));
-			addAudioOutput(USTRING(temp.c_str()), outputs[0]);
+	//		temp = "VST OUT ";
+	//		temp.append(std::to_string(0));
+	//		addAudioOutput(USTRING(temp.c_str()), outputs[0]);
 
-			/*std::string temp = "VST IN";
-			addAudioInput(USTRING(temp.c_str()), SpeakerArr::k91);
-			temp = "VST OUT";
-			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::k91);*/
+	//		/*std::string temp = "VST IN";
+	//		addAudioInput(USTRING(temp.c_str()), SpeakerArr::k91);
+	//		temp = "VST OUT";
+	//		addAudioOutput(USTRING(temp.c_str()), SpeakerArr::k91);*/
 
-			return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
+	//		return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
 
-		}
-	}
+	//	}
+	//}
 	// Everything else is not supported!
 	//else {
 	//	removeAudioBusses();
@@ -239,7 +239,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 
 tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 {
-	// Not all Hosts call this function (e.g. Audition doesn't (VST3))
 	ValueConversion::setSampleRate(processSetup.sampleRate);
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);
@@ -275,7 +274,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::setActive(TBool state)
 
 tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 {
-	// For Audition
 	ValueConversion::setSampleRate(processSetup.sampleRate);
 	for (auto&& module : apModules) {
 		module->setSampleRate(processSetup.sampleRate);
@@ -289,6 +287,9 @@ tresult PLUGIN_API ReverbNetworkProcessor::setState(IBStream* state)
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkProcessor::getState(IBStream* state)
 {
+	#ifdef LOGGING
+	Logging::addToLog("PROCESSOR", "getState() called");
+	#endif
 	return preset->getParamterState(state);
 }
 
@@ -664,142 +665,70 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 
 		// Sample interval
 		//t0 = std::chrono::high_resolution_clock::now();
-		if (data.inputs[0].numChannels == 1) { // Multiple mono inputs (standard configuration)
-			// Get the input buffers
-			for (int32 input = 0; input < data.numInputs; ++input) {
-				inputSamples[input] = data.inputs[input].channelBuffers32[0];
-			}
-			// Get the output buffers
-			for (int32 output = 0; output < data.numOutputs; ++output) {
-				outputSamples[output] = data.outputs[output].channelBuffers32[0];
-			}
-
-			// Get the connection matrix
-			//const std::vector<std::vector<short>>& moduleInputConnections = connectionMatrix->getModuleInputConnections();
-			const std::vector<short>& vstOutputConnections = connectionMatrix->getVstOutputConnections();
-
-			// Vector with all samples for all inputs which are connected to a module input
-			double vstInputBuffer[MAXVSTINPUTS];
-			double signalGeneratorSample = 0.0;
-
-			for (unsigned long sample = 0; sample < numberOfSamples; ++sample) {
-				signalGeneratorSample = signalGenerator->generateSample();
-				// Module input processing
-				for (auto module = 0; module < MAXMODULENUMBER; ++module) {
-					//vstInputBuffer.clear();
-
-					for (int32 input = 0; input < data.numInputs; ++input) {
-						vstInputBuffer[input] = (double)inputSamples[input][sample]; // Crash!!!
-					}
-
-					// Process the vector and write the output sample into the correct module output buffer
-					moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer, signalGeneratorSample);
-					// Update PPM values
-					if (moduleOutputBuffer[module] > ppmValues[module]) {
-						ppmValues[module] = moduleOutputBuffer[module];
-					}
-				}
-
-				// VST output processing
-				for (auto vstOutput = 0; vstOutput < data.numOutputs; ++vstOutput) {
-					if (vstOutputConnections[vstOutput] != -1) {
-						if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
-							// VST output is connected to a module's output => take sample from the module output buffer
-							outputSamples[vstOutput][sample] = (moduleOutputBuffer[vstOutputConnections[vstOutput]]);
-						}
-						else if (vstOutputConnections[vstOutput] - MAXMODULENUMBER < data.numInputs) {
-							// VST output is connected directly to VST input => take sample from the VST input
-							outputSamples[vstOutput][sample] = inputSamples[vstOutputConnections[vstOutput] - MAXMODULENUMBER][sample];
-						}
-						else {
-							// Not used VST input is connected to a used VST output => sample value is zero
-							outputSamples[vstOutput][sample] = 0.0;
-						}
-					}
-					else {
-						// Output isn't connected => sample value is zero
-						outputSamples[vstOutput][sample] = 0.0;
-					}
-				}
-
-				// Swap input and output buffers
-				double* temp = moduleInputBuffer;
-				moduleInputBuffer = moduleOutputBuffer;
-				moduleOutputBuffer = temp;
-
-			}
-
+		// Get the input buffers
+		for (int32 channel = 0; channel < data.inputs[0].numChannels; ++channel) {
+			inputSamples[channel] = data.inputs[0].channelBuffers32[channel];
 		}
-		else if (data.numInputs == 1) { // One Input with multiple channels
-			// Get the input buffers
-			for (int32 channel = 0; channel < data.inputs[0].numChannels; ++channel) {
-				inputSamples[channel] = data.inputs[0].channelBuffers32[channel];
-			}
-			// Get the output buffers
-			for (int32 channel = 0; channel < data.outputs[0].numChannels; ++channel) {
-				outputSamples[channel] = data.outputs[0].channelBuffers32[channel];
-			}
+		// Get the output buffers
+		for (int32 channel = 0; channel < data.outputs[0].numChannels; ++channel) {
+			outputSamples[channel] = data.outputs[0].channelBuffers32[channel];
+		}
 
-			// Get the connection matrix
-			//const std::vector<std::vector<short>>& moduleInputConnections = connectionMatrix->getModuleInputConnections();
-			const std::vector<short>& vstOutputConnections = connectionMatrix->getVstOutputConnections();
+		// Get the connection matrix
+		//const std::vector<std::vector<short>>& moduleInputConnections = connectionMatrix->getModuleInputConnections();
+		const std::vector<short>& vstOutputConnections = connectionMatrix->getVstOutputConnections();
 
-			// Vector with all samples for all inputs which are connected to a module input
-			double vstInputBuffer[MAXVSTINPUTS];
-			double signalGeneratorSample = 0.0;
+		// Vector with all samples for all inputs which are connected to a module input
+		double vstInputBuffer[MAXVSTINPUTS];
+		double signalGeneratorSample = 0.0;
 
-			for (unsigned long sample = 0; sample < numberOfSamples; ++sample) {
-				signalGeneratorSample = signalGenerator->generateSample();
-				// Module input processing
-				for (auto module = 0; module < MAXMODULENUMBER; ++module) {
-					//vstInputBuffer.clear();
+		for (unsigned long sample = 0; sample < numberOfSamples; ++sample) {
+			signalGeneratorSample = signalGenerator->generateSample();
+			// Module input processing
+			for (auto module = 0; module < MAXMODULENUMBER; ++module) {
+				//vstInputBuffer.clear();
 
-					for (int32 channel = 0; channel < data.inputs[0].numChannels; ++channel) {
-						vstInputBuffer[channel] = (double)inputSamples[channel][sample]; // Crash!!!
-					}
-
-					// Process the vector and write the output sample into the correct module output buffer
-					moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer, signalGeneratorSample);
-					// Update PPM values
-					if (moduleOutputBuffer[module] > ppmValues[module]) {
-						ppmValues[module] = moduleOutputBuffer[module];
-					}
+				for (int32 channel = 0; channel < data.inputs[0].numChannels; ++channel) {
+					vstInputBuffer[channel] = (double)inputSamples[channel][sample]; // Crash!!!
 				}
 
-				// VST output processing
-				for (auto vstOutput = 0; vstOutput < data.outputs[0].numChannels; ++vstOutput) {
-					if (vstOutputConnections[vstOutput] != -1) {
-						if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
-							// VST output is connected to a module's output => take sample from the module output buffer
-							outputSamples[vstOutput][sample] = (moduleOutputBuffer[vstOutputConnections[vstOutput]]);
+				// Process the vector and write the output sample into the correct module output buffer
+				moduleOutputBuffer[module] = apModules[module]->processSamples(moduleInputBuffer, vstInputBuffer, signalGeneratorSample);
+				// Update PPM values
+				if (moduleOutputBuffer[module] > ppmValues[module]) {
+					ppmValues[module] = moduleOutputBuffer[module];
+				}
+			}
+
+			// VST output processing
+			for (auto vstOutput = 0; vstOutput < data.outputs[0].numChannels; ++vstOutput) {
+				if (vstOutputConnections[vstOutput] != -1) {
+					if (vstOutputConnections[vstOutput] < MAXMODULENUMBER) {
+						// VST output is connected to a module's output => take sample from the module output buffer
+						outputSamples[vstOutput][sample] = (moduleOutputBuffer[vstOutputConnections[vstOutput]]);
 							
-						}
-						else if (vstOutputConnections[vstOutput] - MAXMODULENUMBER < data.inputs[0].numChannels) {
-							// VST output is connected directly to VST input => take sample from the VST input
-							outputSamples[vstOutput][sample] = inputSamples[vstOutputConnections[vstOutput] - MAXMODULENUMBER][sample];
-						}
-						else {
-							// Not used VST input is connected to a used VST output => sample value is zero
-							outputSamples[vstOutput][sample] = 0.0;
-						}
+					}
+					else if (vstOutputConnections[vstOutput] - MAXMODULENUMBER < data.inputs[0].numChannels) {
+						// VST output is connected directly to VST input => take sample from the VST input
+						outputSamples[vstOutput][sample] = inputSamples[vstOutputConnections[vstOutput] - MAXMODULENUMBER][sample];
 					}
 					else {
-						// Output isn't connected => sample value is zero
+						// Not used VST input is connected to a used VST output => sample value is zero
 						outputSamples[vstOutput][sample] = 0.0;
 					}
 				}
-
-				// Swap input and output buffers
-				double* temp = moduleInputBuffer;
-				moduleInputBuffer = moduleOutputBuffer;
-				moduleOutputBuffer = temp;
-
+				else {
+					// Output isn't connected => sample value is zero
+					outputSamples[vstOutput][sample] = 0.0;
+				}
 			}
-		}
-		else { // Unsupported configuration
-			return kResultFalse;
-		}
 
+			// Swap input and output buffers
+			double* temp = moduleInputBuffer;
+			moduleInputBuffer = moduleOutputBuffer;
+			moduleOutputBuffer = temp;
+
+		}
 		
 
 		//t1 = std::chrono::high_resolution_clock::now();

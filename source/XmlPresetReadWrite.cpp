@@ -247,7 +247,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const Preset& p) const
 		moduleNode.child("allpass").append_child("modulationExcursion").text().set(module.allpassParameters.modulationExcursion);
 		moduleNode.child("allpass").append_child("modulationRate").text().set(module.allpassParameters.modulationRate);
 		moduleNode.child("allpass").append_child("decay").text().set(module.allpassParameters.decay);
-		moduleNode.child("allpass").append_child("diffKSignPositive").text().set(module.allpassParameters.diffKSignNegative);
+		moduleNode.child("allpass").append_child("diffKSignNegative").text().set(module.allpassParameters.diffKSignNegative);
 
 		// Output
 		moduleNode.append_child("output");

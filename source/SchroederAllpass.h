@@ -82,9 +82,13 @@ private:
 	double nodeLeft; // Left node value in the signal flow diagram
 	double nodeRight; // Right node value in the signal flow diagram
 
+	double nodeRightMinusOne;
+	double nodeRightNewMinusOne;
+
 	long sampleCounter; // Circular counter used for modulation, counts from 1 to sampleRate / modulationRate (one periode)
 
 	void calculateGain(); // Calculate the loop gain
+
 };
 
 #endif // SCHROEDERALLPASS_H

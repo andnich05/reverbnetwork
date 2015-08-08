@@ -23,7 +23,7 @@
 #include <cmath>
 #include <string>
 
-double yaOld = 0;
+#define USEALLPASSINTERPOLATION
 
 SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	: buffer(nullptr)
@@ -51,6 +51,9 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	nodeRight = 0.0;
 	setDecayTimeSec(decaySec);
 	createBuffers();
+
+	nodeRightMinusOne = 0.0;
+	nodeRightNewMinusOne = 0.0;
 }
 
 SchroederAllpass::~SchroederAllpass() {
@@ -102,31 +105,45 @@ void SchroederAllpass::doProcessing(double& sample) {
 				sampleCounter = 1; // !!! Must start at 1 !!!
 			}
 			//---
-		}
-	}
 
-	// Read the left node value from last time, it is now the right node value
-	nodeRight = buffer[readPointer];
+			// Read the left node value from last time, it is now the right node value
+			nodeRight = buffer[readPointer];
 
-	//---Interpolation (Source: Pirkle book p238/239 and DAFX book)
-	// Get the !PREVIOUS! value from the buffer
-	double nodeRightPrevious = 0.0;
-	if (delaySamples >= 1.0) {
-		if (readPointer - 1 < 0) {
-			nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
-		}
-		else {
-			nodeRightPrevious = buffer[readPointer - 1];
+			//---Interpolation (Source: Pirkle book p238/239 and DAFX book)
+			// Get the !PREVIOUS! value from the buffer
+			double nodeRightPrevious = 0.0;
+			if (delaySamples >= 1.0) {
+				if (readPointer - 1 < 0) {
+					nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
+				}
+				else {
+					nodeRightPrevious = buffer[readPointer - 1];
+				}
+			}
+			else {
+				// When delay in samples is smaller than 1.0 => read and write pointer are at the same position similar to when the delay is at maximum
+				nodeRight = sample;
+			}
+	
+			#ifndef USEALLPASSINTERPOLATION
+			// Linear Interpolation
+			nodeRight = nodeRightPrevious * fractDelaySamples + nodeRight * (1.0 - fractDelaySamples);
+			#endif
+
+			#ifdef USEALLPASSINTERPOLATION
+			// Allpass interpolation
+			double a = (1 - fractDelaySamples) / (1 + fractDelaySamples);
+			nodeRight = nodeRightPrevious + (nodeRight - nodeRightMinusOne ) * a;
+			nodeRightMinusOne = nodeRight;
+			#endif
 		}
 	}
 	else {
-		// When delay in samples is smaller than 1.0 => read and write pointer are at the same position similar to when the delay is at maximum
-		nodeRight = sample;
+		// No modulation and no interpolation
+		// Read the left node value from last time, it is now the right node value
+		nodeRight = buffer[readPointer];
 	}
-	// Linear Interpolation
-	nodeRight = nodeRightPrevious * fractDelaySamples + nodeRight * (1.0 - fractDelaySamples);
-	//---
-	
+
 	// Calculate the current left node value
 	nodeLeft = sample + gain * nodeRight;
 	// Calculate the output value
@@ -152,8 +169,8 @@ void SchroederAllpass::createBuffers() {
 	freeBuffers(); // just in case...
 
 	// Create pre-initialized arrays for maximum delay value
-	buffer = new double[(long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0))]();
-	bufferSize = (long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0));
+	buffer = new double[(long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0)) + (long int)(MAX_ALLPASSMODEXCURSION / 1000.0 * sampleRate) + 2]();
+	bufferSize = (long int)((long int)(sampleRate * (MAX_ALLPASSDELAY / 1000.0)) + (long int)(MAX_ALLPASSMODEXCURSION / 1000.0 * sampleRate) + 2);
 }
 
 void SchroederAllpass::freeBuffers() {
@@ -165,7 +182,8 @@ void SchroederAllpass::freeBuffers() {
 
 void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	delayTimeSec = sec; 
-	delaySamples = sec * sampleRate; // DelaySamples is a floating point number!
+
+	delaySamples = std::round(sec * sampleRate);
 
 	// For interpolation
 	fractDelaySamples = delaySamples - (long)delaySamples;
@@ -203,6 +221,10 @@ void SchroederAllpass::calculateGain() {
 
 void SchroederAllpass::setModulationEnabled(const bool& enabled) {
 	this->modulationEnabled = enabled;
+	if (!enabled) {
+		// Set the delay time back to the normal value when modulation is being disabled
+		setDelayTimeSec(delayTimeSec);
+	}
 }
 
 void SchroederAllpass::setModulationExcursion(const double& excursion) {

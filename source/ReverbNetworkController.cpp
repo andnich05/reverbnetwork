@@ -443,7 +443,6 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 		// Read the values from the file stream and update the parameters
 		for (int32 i = 0; i < parameters.getParameterCount(); ++i) {
 			setParamNormalized(i, preset.getNormValueByParamId(i));
-			
 		}
 		// Update the GUI with the loaded parameters
 		for (int32 i = 0; i < viewsArray.total(); i++)

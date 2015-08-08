@@ -148,11 +148,11 @@ namespace VSTGUI {
 				getView(i)->setViewSize(viewSize.offset(40, 0));
 				getView(i)->setMouseableArea(getView(i)->getViewSize());
 				setDirty();
-				FILE* pFile = fopen("E:\\logVst.txt", "a");
+				/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 				CPoint bla = getView(i)->getViewSize().getTopLeft();
 				frameToLocal(bla);
 				fprintf(pFile, "y(n): %s\n", std::to_string(bla.x).c_str());
-				fclose(pFile);
+				fclose(pFile);*/
 			}
 
 			CCoord right = 0;
