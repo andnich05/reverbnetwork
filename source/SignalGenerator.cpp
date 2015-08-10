@@ -75,7 +75,3 @@ double& SignalGenerator::generateSample() {
 	}
 	return sample;
 }
-
-
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// Signal Generator wird nicht aktualisiert vom XML PReset!

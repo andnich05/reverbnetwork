@@ -215,7 +215,7 @@ namespace VSTGUI {
 				}
 			}
 			if (hasOutput) {
-				pContext->setFillColor(CColor(200, 200, 200));
+				pContext->setFillColor(CColor(0, 170, 180));
 				pContext->drawRect(outputRect, kDrawFilledAndStroked);
 				pContext->drawString(outputName.c_str(), CRect(CPoint(outputRect.left - 50, outputRect.top), CPoint(50, outputRect.getHeight())), CHoriTxtAlign::kRightText, false);
 			}

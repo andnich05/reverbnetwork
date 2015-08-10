@@ -39,7 +39,7 @@ public:
 	// Set the period of the automatic generation
 	void setAutoTime(const double& autoTimeInSec);
 	// Generate a single impulse now
-	inline void setFire(const bool& fire) { fireCounter = width; }
+	inline void setFire(const bool& fire) { if (fire) fireCounter = width; else fireCounter = 0; }
 	
 	// Returns a generated sample
 	double& generateSample();

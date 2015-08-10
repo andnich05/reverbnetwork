@@ -251,6 +251,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	frame->setBackgroundColor(CCOLOR_GRAPHICSVIEW_BACKGROUND);
 
 	splitView = new CSplitView(CRect(CPoint(0, 0), CPoint(940, frame->getHeight())), CSplitView::kVertical, 8);
+	splitView->setBackgroundColor(CCOLOR_NOCOLOR);
 
 	workspaceView = new GuiWorkspaceView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight() / 2)), this);
 	workspaceView->setBackgroundColor(CCOLOR_WORKSPACE_BACKGROUND);
@@ -335,10 +336,10 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->sizeToFit();
 
 	// Create graphics view
-	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())), MAXMODULENUMBER, this);
+	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 85, splitView->getViewSize().getHeight())), MAXMODULENUMBER, this);
 	graphicsView->setBackgroundColor(CCOLOR_GRAPHICSVIEW_BACKGROUND);
 	// Create toolbox for graphics view
-	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_addModule, "Add");
+	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_graphicsView_addModule, "Add");
 	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
 	buttonAddModule->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonAddModule->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
@@ -347,7 +348,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	buttonAddModule->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonAddModule->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonAddModule->setRoundRadius(1);
-	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(90, 20)), this, id_graphicsView_rearrangeModules, "Sort");
+	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_graphicsView_rearrangeModules, "Sort");
 	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
 	buttonRearrange->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonRearrange->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
@@ -368,7 +369,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	// Create Module List
 	viewModuleListMain = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
-	viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(90, splitView->getHeight())), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
+	viewModuleScrollList = new CScrollView(CRect(CPoint(0, 0), CPoint(85, splitView->getHeight())), CRect(CPoint(0, 0), CPoint(0, 0)), CScrollView::kVerticalScrollbar, 10.0);
 	viewModuleScrollList->getVerticalScrollbar()->setScrollerColor(CCOLOR_SCROLLVIEW_SCROLLBAR);
 	viewModuleScrollList->setStyle(CScrollView::kVerticalScrollbar | CScrollView::kAutoHideScrollbars);
 	GuiCustomRowColumnView* viewModuleList = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
@@ -376,7 +377,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		apGuiModules.push_back(createAPModule());
 		std::string title = "APM";
 		title.append(std::to_string(i));
-		CCheckBox* checkBoxShowHideModule = new CCheckBox(CRect(CPoint(0, 0), CPoint(80, 18)), this, id_general_checkBox_moduleVisibleFirst + i, title.c_str());
+		CCheckBox* checkBoxShowHideModule = new CCheckBox(CRect(CPoint(0, 0), CPoint(75, 18)), this, id_general_checkBox_moduleVisibleFirst + i, title.c_str());
 		checkBoxShowHideModule->setFont(kNormalFontSmall);
 		addGuiElementPointer(checkBoxShowHideModule, id_general_checkBox_moduleVisibleFirst + i);
 		viewModuleList->addView(checkBoxShowHideModule);
@@ -400,7 +401,7 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	splitView->addView(graphicsMainView);
 	splitView->addView(workspaceMainView);
 	initializeGraphicsView();
-	workspaceView->setViewSize(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 90, splitView->getViewSize().getHeight())));
+	workspaceView->setViewSize(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 85, splitView->getViewSize().getHeight())));
 	workspaceView->setMouseableArea(workspaceView->getViewSize());
 	mainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0);
 	mainView->addView(splitView);
@@ -538,7 +539,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		temp.append(" ");
 		temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
 		graphicsView->setModuleTitle(tag - id_module_textEdit_titleFirst, temp); // Update the titles in the graphics view
-		graphicsView->setDirty();
+		graphicsView->invalid();
 	}
 	else if (tag >= id_module_button_collapseFirst && tag <= id_module_button_collapseLast) {
 		if (apGuiModules[tag - id_module_button_collapseFirst]->isCollapsed()) {
@@ -549,38 +550,50 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	else if (tag >= id_module_button_hideFirst && tag <= id_module_button_hideLast) {	// Close button of AP module pressed
-		openModuleDetailView(tag - id_module_button_hideFirst, false);
+		if (pControl->getValue() == 1.0) {
+			openModuleDetailView(tag - id_module_button_hideFirst, false);
+		}
 	}
 	else if (tag >= id_module_button_copyParametersFirst && tag <= id_module_button_copyParametersLast) {
-		copyModuleParameters(tag - id_module_button_copyParametersFirst, tempModuleParameters);
+		if (pControl->getValue() == 1.0) {
+			copyModuleParameters(tag - id_module_button_copyParametersFirst, tempModuleParameters);
+		}
 	}
 	else if (tag >= id_module_button_pasteParametersFirst && tag <= id_module_button_pasteParametersLast) {
-		overrideParametersQuery* userData = new overrideParametersQuery;
-		userData->moduleId = tag - id_module_button_pasteParametersFirst;
-		userData->moduleStruct = &tempModuleParameters; // Get the copied parameters
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash(); // Show the splash view
-		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize()); // Disable the mouse for everything else
+		if (pControl->getValue() == 1.0) {
+			overrideParametersQuery* userData = new overrideParametersQuery;
+			userData->moduleId = tag - id_module_button_pasteParametersFirst;
+			userData->moduleStruct = &tempModuleParameters; // Get the copied parameters
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash(); // Show the splash view
+			frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize()); // Disable the mouse for everything else
+		}
 	}
 	else if (tag >= id_module_button_defaultParametersFirst && tag <= id_module_button_defaultParametersLast) {
-		overrideParametersQuery* userData = new overrideParametersQuery;
-		userData->moduleId = tag - id_module_button_defaultParametersFirst;
-		userData->moduleStruct = &defaultModuleParameters; // Get the default parameters
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash();
-		frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize());
+		if (pControl->getValue() == 1.0) {
+			overrideParametersQuery* userData = new overrideParametersQuery;
+			userData->moduleId = tag - id_module_button_defaultParametersFirst;
+			userData->moduleStruct = &defaultModuleParameters; // Get the default parameters
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->setUserData(userData);
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->splash();
+			frame->setMouseableArea(guiElements[id_general_splashScreen_overrideParametersQuery]->getViewSize());
+		}
 	}
 	else if (tag == id_general_button_splashViewOk) {
-		// Get the userData
-		overrideParametersQuery* userData = (overrideParametersQuery*)(dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->getUserData());
-		// Apply the copied parameters
-		pasteModuleParameters(userData->moduleId, XmlPresetReadWrite::Module(*userData->moduleStruct));
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash(); // Hide the splash view
-		frame->setMouseableArea(frame->getViewSize());
+		if (pControl->getValue() == 1.0) {
+			// Get the userData
+			overrideParametersQuery* userData = (overrideParametersQuery*)(dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->getUserData());
+			// Apply the copied parameters
+			pasteModuleParameters(userData->moduleId, XmlPresetReadWrite::Module(*userData->moduleStruct));
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash(); // Hide the splash view
+			frame->setMouseableArea(frame->getViewSize());
+		}
 	}
 	else if (tag == id_general_button_splashViewCancel) {
-		dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash();
-		frame->setMouseableArea(frame->getViewSize());
+		if (pControl->getValue() == 1.0) {
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_overrideParametersQuery])->unSplash();
+			frame->setMouseableArea(frame->getViewSize());
+		}
 	}
 	// Mixer
 	else if (tag >= id_mixer_optionMenu_inputSelectFirst && tag <= id_mixer_optionMenu_inputSelectLast) {
@@ -1973,8 +1986,10 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 	// Update the GUI with the new parameter values
 	updateGuiWithControllerParameters();
 
-	workspaceView->setDirty();
-	graphicsView->setDirty();
+	/*workspaceView->setDirty();
+	graphicsView->setDirty();*/
+	workspaceView->invalid();
+	graphicsView->invalid();
 }
 
 const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
@@ -2305,12 +2320,12 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 		graphicsView->setModuleInputNames(i, inputNames);
 	}
 	graphicsView->rearrangeModules();
-	graphicsView->setDirty();
+	graphicsView->invalid();
 }
 
 void ReverbNetworkEditor::updateGraphicsViewModule(const int& moduleId, const int& input, const double& gainValue) {
 	graphicsView->updateModule(moduleId, input, gainValue);
-	graphicsView->setDirty();
+	graphicsView->invalid();
 }
 
 void ReverbNetworkEditor::updateGainValuesInOptionMenus(const int& moduleNumber, const int& input, const double& gainValue) {

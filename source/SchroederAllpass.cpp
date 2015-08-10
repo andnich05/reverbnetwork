@@ -76,72 +76,77 @@ void SchroederAllpass::doProcessing(double& sample) {
 	//---
 
 	if (modulationEnabled) {
-		if (delaySamples > 0.0) {
-			//---Modulation (Source: Pirkle book p238/239 and DAFX book)
-			// Only a sine signal for the moment
-			double delaySamplesMod = delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter);
-			// In case the chosen excursion is greater than the allpass delay
+		//---Modulation (Source: Pirkle book p238/239 and DAFX book)
+		// Only a sine signal for the moment
+		double delaySamplesMod = delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter);
+		// In case the chosen excursion is greater than the allpass delay
 
-			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(delaySamplesMod).c_str());
-			fclose(pFile);*/
+		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+		fprintf(pFile, "y(n): %s\n", std::to_string(delaySamplesMod).c_str());
+		fclose(pFile);*/
 
-			if (delaySamplesMod < 0) {
-				delaySamplesMod = 0;
-			}
-			// Get the fractional part of the modulated delay
-			fractDelaySamples = delaySamplesMod - (long)delaySamplesMod;
+		if (delaySamplesMod < 0) {
+			delaySamplesMod = 0;
+		}
+		// Get the fractional part of the modulated delay
+		fractDelaySamples = delaySamplesMod - (long)delaySamplesMod;
 
-			// Set the distance between the read and write pointer
-			readPointer = writePointer - (long)delaySamplesMod;
-			// If the read pointer is negative, loop it back
-			if (readPointer < 0) {
-				readPointer += bufferSize;
-			}
+		// Set the distance between the read and write pointer
+		readPointer = writePointer - (long)delaySamplesMod;
+		// If the read pointer is negative, loop it back
+		if (readPointer < 0) {
+			readPointer += bufferSize;
+		}
 
-			// Increment counter
-			++sampleCounter;
-			if (sampleCounter > sampleRate / modulationRate) {
-				sampleCounter = 1; // !!! Must start at 1 !!!
-			}
-			//---
+		// Increment counter
+		++sampleCounter;
+		if (sampleCounter > sampleRate / modulationRate) {
+			sampleCounter = 1; // !!! Must start at 1 !!!
+		}
+		//---
 
-			// Read the left node value from last time, it is now the right node value
-			nodeRight = buffer[readPointer];
+		// Read the left node value from last time, it is now the right node value
+		nodeRight = buffer[readPointer];
 
-			//---Interpolation (Source: Pirkle book p238/239 and DAFX book)
-			// Get the !PREVIOUS! value from the buffer
-			double nodeRightPrevious = 0.0;
-			if (delaySamples >= 1.0) {
-				if (readPointer - 1 < 0) {
-					nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
-				}
-				else {
-					nodeRightPrevious = buffer[readPointer - 1];
-				}
+		//---Interpolation (Source: Pirkle book p238/239 and DAFX book)
+		// Get the !PREVIOUS! value from the buffer
+		double nodeRightPrevious = 0.0;
+		if (delaySamples >= 1.0) {
+			if (readPointer - 1 < 0) {
+				nodeRightPrevious = buffer[bufferSize - 1]; // Loop back
 			}
 			else {
-				// When delay in samples is smaller than 1.0 => read and write pointer are at the same position similar to when the delay is at maximum
-				nodeRight = sample;
+				nodeRightPrevious = buffer[readPointer - 1];
 			}
-	
-			#ifndef USEALLPASSINTERPOLATION
-			// Linear Interpolation
-			nodeRight = nodeRightPrevious * fractDelaySamples + nodeRight * (1.0 - fractDelaySamples);
-			#endif
-
-			#ifdef USEALLPASSINTERPOLATION
-			// Allpass interpolation
-			double a = (1 - fractDelaySamples) / (1 + fractDelaySamples);
-			nodeRight = nodeRightPrevious + (nodeRight - nodeRightMinusOne ) * a;
-			nodeRightMinusOne = nodeRight;
-			#endif
 		}
+		else {
+			// When delay in samples is smaller than 1.0 => read and write pointer are at the same position similar to when the delay is at maximum
+			// Right node equals the sample when delay is zero
+			nodeRight = sample;
+		}
+	
+		#ifndef USEALLPASSINTERPOLATION
+		// Linear Interpolation
+		nodeRight = nodeRightPrevious * fractDelaySamples + nodeRight * (1.0 - fractDelaySamples);
+		#endif
+
+		#ifdef USEALLPASSINTERPOLATION
+		// Allpass interpolation
+		double a = (1 - fractDelaySamples) / (1 + fractDelaySamples);
+		nodeRight = nodeRightPrevious + (nodeRight - nodeRightMinusOne ) * a;
+		nodeRightMinusOne = nodeRight;
+		#endif
 	}
 	else {
 		// No modulation and no interpolation
-		// Read the left node value from last time, it is now the right node value
-		nodeRight = buffer[readPointer];
+		if (delaySamples >= 1.0) {
+			// Read the left node value from last time, it is now the right node value
+			nodeRight = buffer[readPointer];
+		}
+		else {
+			// Right node equals the sample when delay is zero
+			nodeRight = sample;
+		}
 	}
 
 	// Calculate the current left node value

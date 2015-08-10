@@ -328,7 +328,7 @@
 #define PARAM_SIGNALGENERATOR_FIRE (PARAM_SIGNALGENERATOR_AUTOFIREENABLED + 1)
 
 // ---------------
-// Intern parameters which aren't added to the Controller (must be at the end of this list!)
+// Intern parameters which aren't editable but nevertheless must be added to the controller in order to work in VST3 Hosts (e.g. Cubase)
 
 // PPM update parameters
 #define PARAM_PPMUPDATE_FIRST (PARAM_SIGNALGENERATOR_FIRE + 1)
@@ -337,13 +337,6 @@
 // PPM update parameters
 #define PARAM_EQSTABILITY_FIRST (PARAM_PPMUPDATE_LAST + 1)
 #define PARAM_EQSTABILITY_LAST (PARAM_EQSTABILITY_FIRST + MAXMODULENUMBER - 1)
-
-// Since the editor object is destroyed every time the user closes the gui these parameters need to be saved somewhere => in the Controller
-// Module names
-#define PARAM_MODULENAME_FIRST (PARAM_EQSTABILITY_LAST + 1)
-#define PARAM_MODULENAME_LAST (PARAM_MODULENAME_FIRST + MAXMODULENUMBER - 1)
-// Preset name
-#define PARAM_PRESETNAME PARAM_MODULENAME_LAST + 1
 
 //---------------
 

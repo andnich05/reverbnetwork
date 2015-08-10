@@ -368,6 +368,22 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		p2->appendString(USTRING("False"));
 		p2->appendString(USTRING("True"));
 		EditControllerEx1::parameters.addParameter(p2);
+		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Fire!"), PARAM_SIGNALGENERATOR_FIRE, 0, MIN_SIGNALGENERATOR_FIRE, MAX_SIGNALGENERATOR_FIRE, DEF_SIGNALGENERATOR_FIRE, 1, ParameterInfo::kIsReadOnly));
+
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-PPM-Update");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_PPMUPDATE_FIRST + i, USTRING(""), 0.0, 1.0, 0.0, 0, ParameterInfo::kIsReadOnly);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-EQ-Stability");
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_PPMUPDATE_FIRST + i, USTRING(""), 0.0, 1.0, 0.0, 1, ParameterInfo::kIsReadOnly);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
 
 		// Initialize Editor user data
 		editorUserData.moduleNames.resize(MAXMODULENUMBER);

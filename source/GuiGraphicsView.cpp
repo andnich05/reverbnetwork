@@ -234,35 +234,29 @@ namespace VSTGUI {
 			++counter;
 		}
 
-		int moduleCounter = 0;
+		int moduleCounter = 1;
 		int rowCounter = 0;
-		int columnCounter = 0;
 		int lastUnusedModule = -1;
-		for (unsigned int m = 0; m < modules.size(); ++m) {
-			if (modules[m]) {
-				if (modules[m]->getNumberOfUsedInputs() == 0) {
-					modules[m]->setVisible(false);
-				}	
-			}
-		}
+		double rowMaxYCoordinate = 0.0;
+		double lastRowMaxYCoordinate = 0.0;
 
-		moduleCounter = 1;
-		rowCounter = 0;
-		columnCounter = 0;
-		int offset = 0;
-		if (lastUnusedModule != -1) {
-			offset = (int)(modules[lastUnusedModule]->getViewSize().getTopRight().x + 10.0);
-		}
 		for (unsigned int m = 0; m < modules.size(); ++m) {
 			if (modules[m]) {
 				if (modules[m]->getNumberOfUsedInputs() != 0) {
-					if ((modules[m]->getWidth() + 10) * (moduleCounter + 1) > this->getVisibleViewSize().getWidth()) {
+					if ((modules[m]->getWidth() + 10) * moduleCounter > this->getVisibleViewSize().getWidth() - modules[m]->getWidth() - 8) {
 						++rowCounter;
-						moduleCounter = 0;
+						moduleCounter = 1;
+						lastRowMaxYCoordinate = rowMaxYCoordinate;
 					}
-					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 10) * moduleCounter, (modules[m]->getHeight() + 5) * rowCounter), CPoint(modules[m]->getWidth(), modules[m]->getHeight())).offset(offset, 0));
+					modules[m]->setViewSize(CRect(CPoint((modules[m]->getWidth() + 8) * moduleCounter, (lastRowMaxYCoordinate + 5)), CPoint(modules[m]->getWidth(), modules[m]->getHeight())));
 					modules[m]->setMouseableArea(modules[m]->getViewSize());
+					if (rowMaxYCoordinate < modules[m]->getViewSize().getBottomRight().y) {
+						rowMaxYCoordinate = modules[m]->getViewSize().getBottomRight().y;
+					}
 					++moduleCounter;
+				}
+				else {
+					modules[m]->setVisible(false);
 				}
 			}
 		}
