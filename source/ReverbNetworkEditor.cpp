@@ -905,7 +905,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				// Update the graphics view
 				graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
 			}
-			workspaceView->setDirty();
+			workspaceView->invalid();
 		}
 	}
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
@@ -1132,7 +1132,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createQuantizer(const CRect& parent
 	GuiCustomRowColumnView* quantizerView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(90, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	quantizerView->setBackgroundColor(CCOLOR_NOCOLOR);
 	quantizerView->addView(createGroupTitle("QUANTIZER", quantizerView->getWidth()));
-	CCheckBox* checkBoxQuantizerBypass = new CCheckBox(CRect(CPoint(0, 0), CPoint(60, 20)), this, id_quantizer_switch_bypassFirst + moduleId, "Bypass");
+	CCheckBox* checkBoxQuantizerBypass = new CCheckBox(CRect(CPoint(0, 0), CPoint(60, 15)), this, id_quantizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxQuantizerBypass, id_quantizer_switch_bypassFirst + moduleId);
 	quantizerView->addView(checkBoxQuantizerBypass);
 	quantizerView->addView(createKnobGroup("Quantization", quantizerView->getWidth(), id_quantizer_knob_quantizationFirst + moduleId, id_quantizer_textEdit_quantizationFirst + moduleId,
@@ -1170,7 +1170,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId,
 		MIN_EQQFACTOR, MAX_EQQFACTOR, 2, UNIT_EQQFACTOR));
 	paramFirstRow->sizeToFit();
-	CCheckBox* checkBoxEqualizerBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_equalizer_switch_bypassFirst + moduleId, "Bypass");
+	CCheckBox* checkBoxEqualizerBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 15)), this, id_equalizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
 	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonStability, id_equalizer_button_stabilityFirst + moduleId);
@@ -1307,7 +1307,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	// Holds the allpass controls (delay and decay)
 	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(110, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	allpassView->setBackgroundColor(CCOLOR_NOCOLOR);
-	CCheckBox *checkBoxAllpassBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_allpass_switch_bypassFirst + moduleId, "Bypass");
+	CCheckBox *checkBoxAllpassBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 15)), this, id_allpass_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxAllpassBypass, id_allpass_switch_bypassFirst + moduleId);
 	allpassView->addView(createGroupTitle("ALLPASS", allpassView->getWidth()));
 	allpassView->addView(checkBoxAllpassBypass);
@@ -1413,7 +1413,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 GuiCustomRowColumnView* ReverbNetworkEditor::createOutput(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the output gain control
 	GuiCustomRowColumnView* gainView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(80, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
-	CCheckBox *checkBoxGainBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 20)), this, id_output_switch_bypassFirst + moduleId, "Bypass");
+	CCheckBox *checkBoxGainBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 15)), this, id_output_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxGainBypass, id_output_switch_bypassFirst + moduleId);
 	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
 	gainView->addView(checkBoxGainBypass);
@@ -1517,7 +1517,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	buttonMute->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonMute->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
 	buttonMute->setFont(CFontRef(kNormalFontSmall));
-	buttonMute->setTextColor(CColor(220, 0, 0, 255));
+	buttonMute->setTextColor(CColor(200, 0, 0, 255));
 	buttonMute->setTextColorHighlighted(CColor(255, 255, 255));
 	buttonMute->setGradientStartColorHighlighted(CColor(200, 0, 0, 255));
 	buttonMute->setGradientEndColorHighlighted(CColor(200, 0, 0, 255));
@@ -1528,9 +1528,9 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	buttonSolo->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonSolo->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
 	buttonSolo->setFont(CFontRef(kNormalFontSmall));
-	buttonSolo->setTextColor(CColor(0, 220, 0, 255));
-	buttonSolo->setGradientStartColorHighlighted(CColor(0, 200, 0, 255));
-	buttonSolo->setGradientEndColorHighlighted(CColor(0, 200, 0, 255));
+	buttonSolo->setTextColor(CColor(0, 150, 0, 255));
+	buttonSolo->setGradientStartColorHighlighted(CColor(0, 150, 0, 255));
+	buttonSolo->setGradientEndColorHighlighted(CColor(0, 150, 0, 255));
 	buttonSolo->setRoundRadius(1);
 
 	mixerRow->addView(inputTitle);
@@ -2320,7 +2320,6 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 		graphicsView->setModuleInputNames(i, inputNames);
 	}
 	graphicsView->rearrangeModules();
-	graphicsView->invalid();
 }
 
 void ReverbNetworkEditor::updateGraphicsViewModule(const int& moduleId, const int& input, const double& gainValue) {

@@ -197,7 +197,7 @@ namespace VSTGUI {
 			std::stringstream temp;
 			for (unsigned int i = 0; i < inputRects.size(); ++i) {
 				if (inputsEnabled[i]) {
-					pContext->setFillColor(CColor(50, 200, 50));
+					pContext->setFillColor(CColor(0, 150, 0));
 					pContext->drawRect(inputRects[i], CDrawStyle::kDrawFilledAndStroked); // module inputs
 					inputNames[i]->setViewSize(CRect(CPoint(inputRects[i].right + spacing, inputRects[i].top), CPoint(inputNames[i]->getWidth(), inputNames[i]->getHeight())));
 					inputNames[i]->setVisible(true);
@@ -215,7 +215,7 @@ namespace VSTGUI {
 				}
 			}
 			if (hasOutput) {
-				pContext->setFillColor(CColor(0, 170, 180));
+				pContext->setFillColor(CColor(200, 50, 50));
 				pContext->drawRect(outputRect, kDrawFilledAndStroked);
 				pContext->drawString(outputName.c_str(), CRect(CPoint(outputRect.left - 50, outputRect.top), CPoint(50, outputRect.getHeight())), CHoriTxtAlign::kRightText, false);
 			}

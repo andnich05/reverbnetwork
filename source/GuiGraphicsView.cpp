@@ -260,7 +260,7 @@ namespace VSTGUI {
 				}
 			}
 		}
-		this->setDirty();
+		this->invalid();
 	}
 
 	void GuiGraphicsView::setModulePosition(const int& moduleId, const CPoint& position) {
