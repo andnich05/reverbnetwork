@@ -79,6 +79,7 @@ public:
 		bool bypass;
 		double delay;
 		bool modulationEnabled;
+		int modulationSignalType;
 		double modulationExcursion;
 		double modulationRate;
 		double decay;

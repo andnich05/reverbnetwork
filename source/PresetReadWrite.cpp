@@ -84,6 +84,9 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_ALLPASSMODENABLED_FIRST; i <= PARAM_ALLPASSMODENABLED_LAST; ++i) {
 		parameterValues.push_back(DEF_ALLPASSMODENABLED);
 	}
+	for (auto i = PARAM_ALLPASSMODSIGNALTYPE_FIRST; i <= PARAM_ALLPASSMODSIGNALTYPE_LAST; ++i) {
+		parameterValues.push_back(DEF_ALLPASSMODSIGNALTYPE);
+	}
 	for (auto i = PARAM_ALLPASSMODEXCURSION_FIRST; i <= PARAM_ALLPASSMODEXCURSION_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormModExcursion(DEF_ALLPASSMODEXCURSION));
 	}

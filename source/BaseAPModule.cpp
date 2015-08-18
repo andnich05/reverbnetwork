@@ -170,6 +170,10 @@ void BaseAPModule::updateAllpassModulationEnabled(const bool& enabled) {
 	allpass->setModulationEnabled(enabled);
 }
 
+void BaseAPModule::updateAllpassModulationSignalType(const double& signalType) {
+	allpass->setModulationSignalType((ModulationSignalType)((int)(signalType)));
+}
+
 void BaseAPModule::updateAllpassModulationExcursion(const double& excursion) {
 	allpass->setModulationExcursion(excursion);
 }

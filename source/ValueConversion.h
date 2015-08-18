@@ -64,6 +64,8 @@ public:
 	static double diffKToDecay(const double& diffK, const double& delayInMs);
 	static double normToPlainDecay(const double& normValue);
 	static double plainToNormDecay(const double& plainValue);
+	static double normToPlainModSignalType(const double& normValue);
+	static double plainToNormModSignalType(const double& plainValue);
 	static double normToPlainModExcursion(const double& normValue);
 	static double plainToNormModExcursion(const double& plainValue);
 	static double normToPlainModRate(const double& normValue);

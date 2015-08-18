@@ -61,6 +61,7 @@ public:
 	//---from VSTGUIEditor---------------
 	bool PLUGIN_API open(void* parent, const PlatformType& platformType = kDefaultNative);
 	void PLUGIN_API close();
+	tresult PLUGIN_API onKeyDown(char16 key, int16 keyMsg, int16 modifiers);
 
 	//---from CControlListener---------
 	void valueChanged(CControl* pControl);

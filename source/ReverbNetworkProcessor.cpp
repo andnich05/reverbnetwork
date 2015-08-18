@@ -22,6 +22,7 @@
 #include "reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
+#include "pluginterfaces/vst/ivstevents.h"
 
 #include "ReverbNetworkDefines.h"
 #include "ReverbNetworkEnums.h"
@@ -93,7 +94,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 	if (result == kResultTrue)
 	{
 		// Create I/O
-		// Preferred configuration is: Each channel has a separate input and output (works in Reaper, doesn't work in Audition)
 		for (unsigned int i = 0; i < 1; ++i) {
 			std::string temp = "VST IN 5.1 ";
 			temp.append(std::to_string(i));
@@ -104,38 +104,15 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 			temp.append(std::to_string(i));
 			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::k51);
 		}
-		/*std::string temp = "VST IN";
-		addAudioInput(USTRING(temp.c_str()), SpeakerArr::k91);
-		temp = "VST OUT";
-		addAudioOutput(USTRING(temp.c_str()), SpeakerArr::k91);*/
 
-		//int numberOfInputs = 8; // Maximum 8 Vst inputs no matter what is defined as MAXVSTINPUTS
-		//// Get the right channel configuration
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kMono) == MAXVSTINPUTS) numberOfInputs = 1;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kStereo) == MAXVSTINPUTS) numberOfInputs = 2;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::k) == MAXVSTINPUTS) numberOfInputs = 3;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kMono) == MAXVSTINPUTS) numberOfInputs = 4;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kMono) == MAXVSTINPUTS) numberOfInputs = 5;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kMono) == MAXVSTINPUTS) numberOfInputs = 6;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kMono) == MAXVSTINPUTS) numberOfInputs = 7;
-		//if (SpeakerArr::getChannelCount(SpeakerArr::kMono) == MAXVSTINPUTS) numberOfInputs = 8;
-
-
+		// Create MIDI input event (1 bus with 1 channel for now...)
+		addEventInput(USTRING("Event In"), 1);
 
 		// SampleRate is always 44100 here...
 		ValueConversion::setSampleRate(processSetup.sampleRate);
 		for (auto&& module : apModules) {
 			module->setSampleRate(processSetup.sampleRate);
 		}
-
-	/*	FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(processSetup.symbolicSampleSize).c_str());
-		fclose(pFile);*/
-
-		/*connectionMatrix->setVstToModuleConnection(0, 0, 0);
-		connectionMatrix->setVstToModuleConnection(0, 1, 0);
-		connectionMatrix->setModuleToVstConnection(0, 0);
-		connectionMatrix->setModuleToVstConnection(1, 1);*/
 
 		// Create Timer
 		timerUpdateController = Timer::create(this, 500);
@@ -146,17 +123,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::initialize(FUnknown* context)
 //-----------------------------------------------------------------------------
 tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement* inputs, int32 numIns, SpeakerArrangement* outputs, int32 numOuts)
 {
-	//FILE* pFile = fopen("E:\\logVst.txt", "a");
-	//// Inputs and Outputs
-	//fprintf(pFile, "y(n): %s\n", std::to_string(numIns).c_str()); // Should be always 1
-	//fprintf(pFile, "y(n): %s\n", std::to_string(numOuts).c_str()); // Should be always 1
-	//// Channel configurations per Input and Output
-	//fprintf(pFile, "y(n): %s\n", std::to_string(SpeakerArr::getChannelCount(inputs[0])).c_str()); // IS E.G. = 6 when 5.1 Project
-	//fprintf(pFile, "y(n): %s\n", std::to_string(SpeakerArr::getChannelCount(outputs[0])).c_str()); // IS E.G. = 6 when 5.1 Project
-	//fclose(pFile);
-
 	// Host wants another channel configuration
-
 	// Create 1 input and 1 output with the desired number of channels by the host
 	if (numIns >= 1 && numOuts >= 1) {
 		if (SpeakerArr::getChannelCount(inputs[0]) >= 1 && SpeakerArr::getChannelCount(outputs[0]) >= 1) {
@@ -179,51 +146,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 			
 		}
 	}
-	//// Create multiple inputs and outputs with mono channels
-	//else if (SpeakerArr::getChannelCount(inputs[0]) == 1 && SpeakerArr::getChannelCount(outputs[0]) == 1) {
-	//	if (numIns >= 1 && numIns <= MAXVSTINPUTS && numOuts >= 1 && numOuts <= MAXVSTOUTPUTS) {
-	//		removeAudioBusses();
-	//		for (int i = 0; i < numIns; ++i) {
-	//			std::string temp = "VST IN Mono ";
-	//			temp.append(std::to_string(i));
-	//			addAudioInput(USTRING(temp.c_str()), SpeakerArr::kMono);
-	//		}
-	//		for (int i = 0; i < numOuts; ++i) {
-	//			std::string temp = "VST OUT Mono ";
-	//			temp.append(std::to_string(i));
-	//			addAudioOutput(USTRING(temp.c_str()), SpeakerArr::kMono);
-	//		}
-	//		return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
-	//	}
-	//}
-	// If there are multiple inputs with multiple channels (Cubase): Create 1 input with the desired number of channels
-	//else if (numIns > 1 && numOuts > 1) {
-	//	if (SpeakerArr::getChannelCount(inputs[0]) > 1 && SpeakerArr::getChannelCount(inputs[0]) <= MAXVSTINPUTS && SpeakerArr::getChannelCount(outputs[0]) > 1 && SpeakerArr::getChannelCount(outputs[0]) <= MAXVSTOUTPUTS) {
-	//		removeAudioBusses();
-
-	//		std::string temp = "VST IN ";
-	//		temp.append(std::to_string(0));
-	//		addAudioInput(USTRING(temp.c_str()), inputs[0]);
-
-	//		temp = "VST OUT ";
-	//		temp.append(std::to_string(0));
-	//		addAudioOutput(USTRING(temp.c_str()), outputs[0]);
-
-	//		/*std::string temp = "VST IN";
-	//		addAudioInput(USTRING(temp.c_str()), SpeakerArr::k91);
-	//		temp = "VST OUT";
-	//		addAudioOutput(USTRING(temp.c_str()), SpeakerArr::k91);*/
-
-	//		return AudioEffect::setBusArrangements(inputs, numIns, outputs, numOuts);
-
-	//	}
-	//}
-	// Everything else is not supported!
-	//else {
-	//	removeAudioBusses();
-	//}
-
-	// Host will call getBusArrangement()
 	return kResultFalse;
 }
 
@@ -528,6 +450,14 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						#endif
 					}
 				}
+				else if (pid >= PARAM_ALLPASSMODSIGNALTYPE_FIRST && pid <= PARAM_ALLPASSMODSIGNALTYPE_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_ALLPASSMODSIGNALTYPE_FIRST]->updateAllpassModulationSignalType(ValueConversion::normToPlainModSignalType(value));
+						#ifdef LOGGING
+						Logging::addToLog("ALLPASS", "Module " + std::to_string(pid - PARAM_ALLPASSMODSIGNALTYPE_FIRST) + " - Modulation signal type set to " + std::to_string(ValueConversion::normToPlainModSignalType(value)));
+						#endif
+					}
+				}
 				else if (pid >= PARAM_ALLPASSMODEXCURSION_FIRST && pid <= PARAM_ALLPASSMODEXCURSION_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_ALLPASSMODEXCURSION_FIRST]->updateAllpassModulationExcursion(ValueConversion::normToPlainModExcursion(value));
@@ -650,6 +580,23 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			}
 		}
 	}
+
+	// Process input events (e.g. MIDI)
+	// Doesn't work in all VST Hosts
+	if (data.inputEvents) {
+		if (data.inputEvents->getEventCount() > 0) {
+			Event inputEvent = {};
+			data.inputEvents->getEvent(0, inputEvent);
+			if (inputEvent.type == Event::kNoteOnEvent) {
+				// Fire Signal Generator if a note is on
+				signalGenerator->setFire(true);
+				#ifdef LOGGING
+				Logging::addToLog("MIDI", "Fire!");
+				#endif
+			}
+		}
+	}
+
 	// Process the audio samples
 	if (data.numSamples > 0 && data.numInputs != 0 && data.numOutputs != 0) {
 		// Reset PPM values

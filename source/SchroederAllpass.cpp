@@ -39,6 +39,7 @@ SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	ynD = 0;*/
 
 	modulationEnabled = DEF_ALLPASSMODENABLED;
+	modSignalType = (ModulationSignalType)((int)DEF_ALLPASSMODSIGNALTYPE);
 	modulationExcursion = DEF_ALLPASSMODEXCURSION / 1000.0;
 	modulationRate = DEF_ALLPASSMODRATE;
 
@@ -76,14 +77,23 @@ void SchroederAllpass::doProcessing(double& sample) {
 	//---
 
 	if (modulationEnabled) {
-		//---Modulation (Source: Pirkle book p238/239 and DAFX book)
-		// Only a sine signal for the moment
-		double delaySamplesMod = delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * (modulationRate / sampleRate) * sampleCounter);
-		// In case the chosen excursion is greater than the allpass delay
+		//---Modulation 
+		double delaySamplesMod = 0.0;
+		// Create the modulation signal
 
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(delaySamplesMod).c_str());
-		fclose(pFile);*/
+		double x = (modulationRate / sampleRate) * sampleCounter;
+		switch (modSignalType) {
+		case ModulationSignalType::sine:
+			// Source: DAFX book
+			delaySamplesMod = delaySamples + (sampleRate * modulationExcursion) * sin(2 * M_PI * x);
+			break;
+		case ModulationSignalType::triangle:
+			// Source: http://mathworld.wolfram.com/TriangleWave.html
+			delaySamplesMod = delaySamples + (sampleRate * modulationExcursion) * (2 / M_PI) * asin(sin(2 * M_PI * x));
+			break;
+		default:
+			break;
+		}
 
 		if (delaySamplesMod < 0) {
 			delaySamplesMod = 0;
@@ -230,6 +240,10 @@ void SchroederAllpass::setModulationEnabled(const bool& enabled) {
 		// Set the delay time back to the normal value when modulation is being disabled
 		setDelayTimeSec(delayTimeSec);
 	}
+}
+
+void SchroederAllpass::setModulationSignalType(const ModulationSignalType& signalType) {
+	this->modSignalType = signalType;
 }
 
 void SchroederAllpass::setModulationExcursion(const double& excursion) {

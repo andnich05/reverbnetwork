@@ -66,6 +66,7 @@ public:
 	void updateAllpassDecay(const double& decay);
 	void updateAllpassDiffKSign(const bool& isNegative);
 	void updateAllpassModulationEnabled(const bool& enabled);
+	void updateAllpassModulationSignalType(const double& signalType);
 	void updateAllpassModulationExcursion(const double& excursion);
 	void updateAllpassModulationRate(const double& rate);
 	inline void switchAllpassBypass(const double& bypass) { bypassAllpass = (bypass != 0.0); }

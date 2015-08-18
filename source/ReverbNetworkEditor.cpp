@@ -34,7 +34,6 @@
 #include "ValueConversion.h"
 #include "ReverbNetworkDefines.h"
 
-
 namespace Steinberg {
 namespace Vst {
 
@@ -128,7 +127,9 @@ namespace Vst {
 	const int32_t id_allpass_optionMenu_diffKSignLast = id_allpass_optionMenu_diffKSignFirst + MAXMODULENUMBER - 1;
 	const int32_t id_allpass_checkBox_modulationEnabledFirst = id_allpass_optionMenu_diffKSignLast + 1;
 	const int32_t id_allpass_checkBox_modulationEnabledLast = id_allpass_checkBox_modulationEnabledFirst + MAXMODULENUMBER - 1;
-	const int32_t id_allpass_textEdit_modulationExcursionFirst = id_allpass_checkBox_modulationEnabledLast + 1;
+	const int32_t id_allpass_optionMenu_modulationSignalTypeFirst = id_allpass_checkBox_modulationEnabledLast + 1;
+	const int32_t id_allpass_optionMenu_modulationSignalTypeLast = id_allpass_optionMenu_modulationSignalTypeFirst + MAXMODULENUMBER - 1;
+	const int32_t id_allpass_textEdit_modulationExcursionFirst = id_allpass_optionMenu_modulationSignalTypeLast + 1;
 	const int32_t id_allpass_textEdit_modulationExcursionLast = id_allpass_textEdit_modulationExcursionFirst + MAXMODULENUMBER - 1;
 	const int32_t id_allpass_textEdit_modulationRateFirst = id_allpass_textEdit_modulationExcursionLast + 1;
 	const int32_t id_allpass_textEdit_modulationRateLast = id_allpass_textEdit_modulationRateFirst + MAXMODULENUMBER - 1;
@@ -864,6 +865,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->setParamNormalized(PARAM_ALLPASSMODENABLED_FIRST + (tag - id_allpass_checkBox_modulationEnabledFirst), value);
 		controller->performEdit(PARAM_ALLPASSMODENABLED_FIRST + (tag - id_allpass_checkBox_modulationEnabledFirst), value);
 	}
+	else if (tag >= id_allpass_optionMenu_modulationSignalTypeFirst && tag <= id_allpass_optionMenu_modulationSignalTypeLast) {
+		controller->setParamNormalized(PARAM_ALLPASSMODSIGNALTYPE_FIRST + (tag - id_allpass_optionMenu_modulationSignalTypeFirst), ValueConversion::plainToNormModSignalType(value));
+		controller->performEdit(PARAM_ALLPASSMODSIGNALTYPE_FIRST + (tag - id_allpass_optionMenu_modulationSignalTypeFirst), ValueConversion::plainToNormModSignalType(value));
+	}
 	else if (tag >= id_allpass_textEdit_modulationExcursionFirst && tag <= id_allpass_textEdit_modulationExcursionLast) {
 		controller->setParamNormalized(PARAM_ALLPASSMODEXCURSION_FIRST + (tag - id_allpass_textEdit_modulationExcursionFirst), pControl->getValueNormalized());
 		controller->performEdit(PARAM_ALLPASSMODEXCURSION_FIRST + (tag - id_allpass_textEdit_modulationExcursionFirst), pControl->getValueNormalized());
@@ -994,7 +999,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	}
 
 	// Handle view to grab and move the module with the mouse
-	GuiCustomRowColumnView* handleView = new GuiCustomRowColumnView(CRect(0, 0, 660, 25), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0, 1.0);
+	GuiCustomRowColumnView* handleView = new GuiCustomRowColumnView(CRect(0, 0, 710, 25), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 5.0, 1.0);
 	handleView->setFrameWidth(1);
 	handleView->setFrameColor(CCOLOR_MODULE_HANDLEFRAME);
 	handleView->setBackgroundColor(CCOLOR_MODULE_HANDLEBACKGROUND);
@@ -1078,7 +1083,7 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	handleView->addView(closeViewButton);
 	
 	// Control view which holds the individual processing modules
-	GuiCustomRowColumnView* controlView = new GuiCustomRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 350), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 3.0, 1.0);
+	GuiCustomRowColumnView* controlView = new GuiCustomRowColumnView(CRect(0, handleView->getHeight(), handleView->getWidth(), 290), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 3.0, 1.0);
 	controlView->setBackgroundColor(CCOLOR_NOCOLOR);
 	controlView->setFrameWidth(1);
 	controlView->setFrameColor(CCOLOR_MODULE_MAINFRAME);
@@ -1305,7 +1310,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 
 GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentViewSize, const int& moduleId) {
 	// Holds the allpass controls (delay and decay)
-	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(110, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
+	GuiCustomRowColumnView* allpassView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(160, parentViewSize.getHeight())), GuiCustomRowColumnView::kRowStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0, 0.0);
 	allpassView->setBackgroundColor(CCOLOR_NOCOLOR);
 	CCheckBox *checkBoxAllpassBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 15)), this, id_allpass_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxAllpassBypass, id_allpass_switch_bypassFirst + moduleId);
@@ -1321,7 +1326,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	labelDiffK->addEntry("-k:");
 	labelDiffK->setCurrent(0);
 	labelDiffK->setFont(CFontRef(kNormalFontSmall));
-	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() - labelDiffK->getWidth() - 3, 15)), this, id_allpass_textEdit_diffKFirst + moduleId);
+	GuiCustomValueEdit* textEditDiffK = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() / 2 - labelDiffK->getWidth(), 15)), this, id_allpass_textEdit_diffKFirst + moduleId);
 	addGuiElementPointer(textEditDiffK, id_allpass_textEdit_diffKFirst + moduleId);
 	textEditDiffK->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	textEditDiffK->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1335,11 +1340,8 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	textEditDiffK->setFont(CFontRef(kNormalFontSmall));
 	diffKView->addView(labelDiffK);
 	diffKView->addView(textEditDiffK);
-	diffKView->setSpacing(3);
 	diffKView->sizeToFit();
-	allpassView->addView(createKnobGroup("Delay", allpassView->getWidth(), id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId,
-		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
-	GuiCustomValueEdit* textEditDelayInSamples = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth(), 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
+	GuiCustomValueEdit* textEditDelayInSamples = new GuiCustomValueEdit(CRect(CPoint(0.0, 0.0), CPoint(allpassView->getWidth() / 2, 15.0)), this, id_allpass_textEdit_samplesDelayFirst + moduleId);
 	addGuiElementPointer(textEditDelayInSamples, id_allpass_textEdit_samplesDelayFirst + moduleId);
 	textEditDelayInSamples->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	textEditDelayInSamples->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1352,11 +1354,38 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	textEditDelayInSamples->setStringToTruncate("samples", true);
 	textEditDelayInSamples->setMax(sampleRate * MAX_ALLPASSDELAY / 1000);
 	textEditDelayInSamples->setFont(CFontRef(kNormalFontSmall));
-	allpassView->addView(textEditDelayInSamples);
+
+	CRowColumnView* viewDelayDecay = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	viewDelayDecay->setBackgroundColor(CCOLOR_NOCOLOR);
+	CRowColumnView* viewDelay = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	viewDelay->setBackgroundColor(CCOLOR_NOCOLOR);
+	CRowColumnView* viewDecay = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	viewDecay->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewDelay->addView(createKnobGroup("Delay", allpassView->getWidth() / 2, id_allpass_knob_delayFirst + moduleId, id_allpass_textEdit_delayFirst + moduleId,
+		MIN_ALLPASSDELAY, MAX_ALLPASSDELAY, 2, UNIT_ALLPASSDELAY));
+	viewDelay->addView(textEditDelayInSamples);
+	viewDecay->addView(createKnobGroup("Decay", allpassView->getWidth() / 2, id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
+		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
+	viewDecay->addView(diffKView);
+	viewDelay->sizeToFit();
+	viewDecay->sizeToFit();
+	viewDelayDecay->addView(viewDelay);
+	viewDelayDecay->addView(viewDecay);
+	viewDelayDecay->sizeToFit();
+
 	
 	CCheckBox* checkBoxModulationEnabled = new CCheckBox(CRect(CPoint(0, 0), CPoint(allpassView->getWidth(), 15)), this, id_allpass_checkBox_modulationEnabledFirst + moduleId, "Delay Modulation");
 	addGuiElementPointer(checkBoxModulationEnabled, id_allpass_checkBox_modulationEnabledFirst + moduleId);
 	checkBoxModulationEnabled->setFont(kNormalFontSmall);
+	GuiCustomTextLabel* labelSignalType = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), "Waveform:", kNormalFontSmall, CHoriTxtAlign::kLeftText);
+	COptionMenu* optionMenuSignalType = new COptionMenu(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), this, id_allpass_optionMenu_modulationSignalTypeFirst + moduleId);
+	addGuiElementPointer(optionMenuSignalType, id_allpass_optionMenu_modulationSignalTypeFirst + moduleId);
+	optionMenuSignalType->setBackColor(CCOLOR_OPTIONMENU_BACKGROUND);
+	optionMenuSignalType->setFrameColor(CCOLOR_OPTIONMENU_FRAME);
+	optionMenuSignalType->addEntry("Sine");
+	optionMenuSignalType->addEntry("Triangle");
+	optionMenuSignalType->setCurrent(0);
+	optionMenuSignalType->setFont(CFontRef(kNormalFontSmall));
 	GuiCustomTextLabel* labelExcursion = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), "Excursion:", kNormalFontSmall, CHoriTxtAlign::kLeftText);
 	GuiCustomValueEdit* editExcursion = new GuiCustomValueEdit(CRect(CPoint(0, 0), CPoint(allpassView->getWidth() / 2, 15)), this, id_allpass_textEdit_modulationExcursionFirst + moduleId);
 	addGuiElementPointer(editExcursion, id_allpass_textEdit_modulationExcursionFirst + moduleId);
@@ -1389,6 +1418,11 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	editRate->setMin((float)MIN_ALLPASSMODRATE);
 	editRate->setMax(MAX_ALLPASSMODRATE);
 	editRate->setDefaultValue(DEF_ALLPASSMODRATE);
+	CRowColumnView* viewSignalType = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
+	viewSignalType->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewSignalType->addView(labelSignalType);
+	viewSignalType->addView(optionMenuSignalType);
+	viewSignalType->sizeToFit();
 	CRowColumnView* viewExcursion = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle);
 	viewExcursion->setBackgroundColor(CCOLOR_NOCOLOR);
 	viewExcursion->addView(labelExcursion);
@@ -1399,13 +1433,11 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createAllpass(const CRect& parentVi
 	viewRate->addView(labelRate);
 	viewRate->addView(editRate);
 	viewRate->sizeToFit();
+	allpassView->addView(viewDelayDecay);
 	allpassView->addView(checkBoxModulationEnabled);
+	allpassView->addView(viewSignalType);
 	allpassView->addView(viewExcursion);
 	allpassView->addView(viewRate);
-
-	allpassView->addView(createKnobGroup("Decay", allpassView->getWidth(), id_allpass_knob_decayFirst + moduleId, id_allpass_textEdit_decayFirst + moduleId,
-		MIN_ALLPASSDECAY, MAX_ALLPASSDECAY, 2, UNIT_ALLPASSDECAY));
-	allpassView->addView(diffKView);
 
 	return allpassView;
 }
@@ -1590,6 +1622,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_ALLPASSDECAY_FIRST, PARAM_ALLPASSDECAY_LAST, id_allpass_knob_decayFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDIFFKSIGN_FIRST, PARAM_ALLPASSDIFFKSIGN_LAST, id_allpass_optionMenu_diffKSignFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSMODENABLED_FIRST, PARAM_ALLPASSMODENABLED_LAST, id_allpass_checkBox_modulationEnabledFirst, nullptr);
+	updateGuiParameter(PARAM_ALLPASSMODSIGNALTYPE_FIRST, PARAM_ALLPASSMODSIGNALTYPE_LAST, id_allpass_optionMenu_modulationSignalTypeFirst, &ValueConversion::normToPlainModSignalType);
 	updateGuiParameter(PARAM_ALLPASSMODEXCURSION_FIRST, PARAM_ALLPASSMODEXCURSION_LAST, id_allpass_textEdit_modulationExcursionFirst, &ValueConversion::normToPlainModExcursion);
 	updateGuiParameter(PARAM_ALLPASSMODRATE_FIRST, PARAM_ALLPASSMODRATE_LAST, id_allpass_textEdit_modulationRateFirst, &ValueConversion::normToPlainModRate);
 	updateGuiParameter(PARAM_ALLPASSBYPASS_FIRST, PARAM_ALLPASSBYPASS_LAST, id_allpass_switch_bypassFirst, nullptr);
@@ -1848,7 +1881,7 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 	graphicsView->clearModules();
 	editorUserData.presetName = presetStruct.name; // save the preset name for later
 	
-	// Read an apply all loaded parameter values
+	// Read and apply all loaded parameter values
 	for (unsigned int i = 0; i < presetStruct.modules.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
 		editorUserData.moduleNames[i] = presetStruct.modules[i].name;
@@ -1928,7 +1961,9 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 		getController()->setParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignNegative);
 		getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + i, presetStruct.modules[i].allpassParameters.diffKSignNegative);
 		getController()->setParamNormalized(PARAM_ALLPASSMODENABLED_FIRST + i, presetStruct.modules[i].allpassParameters.modulationEnabled);
-		getController()->performEdit(PARAM_ALLPASSMODENABLED_FIRST + i, presetStruct.modules[i].allpassParameters.modulationEnabled);	
+		getController()->performEdit(PARAM_ALLPASSMODENABLED_FIRST + i, presetStruct.modules[i].allpassParameters.modulationEnabled);
+		getController()->setParamNormalized(PARAM_ALLPASSMODSIGNALTYPE_FIRST + i, ValueConversion::plainToNormModSignalType(presetStruct.modules[i].allpassParameters.modulationSignalType));
+		getController()->performEdit(PARAM_ALLPASSMODSIGNALTYPE_FIRST + i, ValueConversion::plainToNormModSignalType(presetStruct.modules[i].allpassParameters.modulationSignalType));
 		getController()->setParamNormalized(PARAM_ALLPASSMODEXCURSION_FIRST + i, ValueConversion::plainToNormModExcursion(presetStruct.modules[i].allpassParameters.modulationExcursion));
 		getController()->performEdit(PARAM_ALLPASSMODEXCURSION_FIRST + i, ValueConversion::plainToNormModExcursion(presetStruct.modules[i].allpassParameters.modulationExcursion));
 		getController()->setParamNormalized(PARAM_ALLPASSMODRATE_FIRST + i, ValueConversion::plainToNormModRate(presetStruct.modules[i].allpassParameters.modulationRate));
@@ -2069,6 +2104,7 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 		a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + i));
 		a.diffKSignNegative = (getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + i) != 0.0);
 		a.modulationEnabled = (getController()->getParamNormalized(PARAM_ALLPASSMODENABLED_FIRST + i) != 0.0);
+		a.modulationSignalType = ValueConversion::normToPlainModSignalType(getController()->getParamNormalized(PARAM_ALLPASSMODSIGNALTYPE_FIRST + i));
 		a.modulationExcursion = ValueConversion::normToPlainModExcursion(getController()->getParamNormalized(PARAM_ALLPASSMODEXCURSION_FIRST + i));
 		a.modulationRate = ValueConversion::normToPlainModRate(getController()->getParamNormalized(PARAM_ALLPASSMODRATE_FIRST + i));
 		a.bypass = (getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + i) != 0.0);
@@ -2173,6 +2209,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	a.decay = ValueConversion::normToPlainDecay(getController()->getParamNormalized(PARAM_ALLPASSDECAY_FIRST + sourceModuleId));
 	a.diffKSignNegative = (getController()->getParamNormalized(PARAM_ALLPASSDIFFKSIGN_FIRST + sourceModuleId) != 0.0);
 	a.modulationEnabled = (getController()->getParamNormalized(PARAM_ALLPASSMODENABLED_FIRST + sourceModuleId) != 0.0);
+	a.modulationSignalType = ValueConversion::normToPlainModSignalType(getController()->getParamNormalized(PARAM_ALLPASSMODSIGNALTYPE_FIRST + sourceModuleId));
 	a.modulationExcursion = ValueConversion::normToPlainModExcursion(getController()->getParamNormalized(PARAM_ALLPASSMODEXCURSION_FIRST + sourceModuleId));
 	a.modulationRate = ValueConversion::normToPlainModRate(getController()->getParamNormalized(PARAM_ALLPASSMODRATE_FIRST + sourceModuleId));
 	a.bypass = (getController()->getParamNormalized(PARAM_ALLPASSBYPASS_FIRST + sourceModuleId) != 0.0);
@@ -2253,6 +2290,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	getController()->performEdit(PARAM_ALLPASSDIFFKSIGN_FIRST + destModuleId, m.allpassParameters.diffKSignNegative);
 	getController()->setParamNormalized(PARAM_ALLPASSMODENABLED_FIRST + destModuleId, m.allpassParameters.modulationEnabled);
 	getController()->performEdit(PARAM_ALLPASSMODENABLED_FIRST + destModuleId, m.allpassParameters.modulationEnabled);
+	getController()->setParamNormalized(PARAM_ALLPASSMODSIGNALTYPE_FIRST + destModuleId, ValueConversion::plainToNormModSignalType(m.allpassParameters.modulationSignalType));
+	getController()->performEdit(PARAM_ALLPASSMODSIGNALTYPE_FIRST + destModuleId, ValueConversion::plainToNormModSignalType(m.allpassParameters.modulationSignalType));
 	getController()->setParamNormalized(PARAM_ALLPASSMODEXCURSION_FIRST + destModuleId, ValueConversion::plainToNormModExcursion(m.allpassParameters.modulationExcursion));
 	getController()->performEdit(PARAM_ALLPASSMODEXCURSION_FIRST + destModuleId, ValueConversion::plainToNormModExcursion(m.allpassParameters.modulationExcursion));
 	getController()->setParamNormalized(PARAM_ALLPASSMODRATE_FIRST + destModuleId, ValueConversion::plainToNormModRate(m.allpassParameters.modulationRate));
@@ -2375,6 +2414,15 @@ void ReverbNetworkEditor::openModuleDetailView(const int& moduleNumber, const bo
 	guiElements[id_general_checkBox_moduleVisibleFirst + moduleNumber]->setValue(open);
 	// Update parameter
 	valueChanged(guiElements[id_general_checkBox_moduleVisibleFirst + moduleNumber]);
+}
+
+tresult PLUGIN_API ReverbNetworkEditor::onKeyDown(char16 key, int16 keyMsg, int16 modifiers) {
+	// This will most likely not work because the VST Host will catch all keyboard events
+	if (key == 'f') {
+		getController()->performEdit(PARAM_SIGNALGENERATOR_FIRE, 1.0);
+		return kResultTrue;
+	}
+	return kResultFalse;
 }
 
 char ReverbNetworkEditor::controlModifierClicked(CControl* pControl, long button) {

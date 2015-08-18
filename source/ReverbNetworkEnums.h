@@ -34,6 +34,13 @@ enum FilterType {
 	numberOfFilterTypes
 };
 
+// Possible modulation signal types
+enum ModulationSignalType {
+	sine,
+	triangle,
+	numberOfSignalTypes
+};
+
 // Possible signal generator types
 enum SignalGeneratorType {
 	dirac,

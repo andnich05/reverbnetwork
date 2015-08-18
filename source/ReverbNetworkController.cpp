@@ -21,6 +21,7 @@
 #include "ReverbNetworkController.h"
 #include "reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
+#include "pluginterfaces/vst/ivstmidicontrollers.h"
 
 #include "ReverbNetworkDefines.h"
 #include "PresetReadWrite.h"
@@ -272,6 +273,16 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			parameter->appendString(USTRING("True"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Allpass modulation signal type
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM ";
+			temp.append(std::to_string(i));
+			temp.append("-ALLPASS-ModSigType");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_ALLPASSMODSIGNALTYPE_FIRST + i, 0, ParameterInfo::kIsList);
+			parameter->appendString(USTRING("Sine"));
+			parameter->appendString(USTRING("Triangle"));
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
 		// Allpass modulation excursion
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
@@ -368,7 +379,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		p2->appendString(USTRING("False"));
 		p2->appendString(USTRING("True"));
 		EditControllerEx1::parameters.addParameter(p2);
-		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Fire!"), PARAM_SIGNALGENERATOR_FIRE, 0, MIN_SIGNALGENERATOR_FIRE, MAX_SIGNALGENERATOR_FIRE, DEF_SIGNALGENERATOR_FIRE, 1, ParameterInfo::kIsReadOnly));
+		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Fire!"), PARAM_SIGNALGENERATOR_FIRE, 0, MIN_SIGNALGENERATOR_FIRE, MAX_SIGNALGENERATOR_FIRE, DEF_SIGNALGENERATOR_FIRE, 1, ParameterInfo::kIsReadOnly | ParameterInfo::kCanAutomate));
 
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
@@ -561,12 +572,12 @@ tresult PLUGIN_API ReverbNetworkController::queryInterface(const char* iid, void
 tresult PLUGIN_API ReverbNetworkController::getMidiControllerAssignment(int32 busIndex, int16 channel,
 	CtrlNumber midiControllerNumber, ParamID& tag)
 {
-	// we support for the Gain parameter all MIDI Channel but only first bus (there is only one!)
-	/*if (busIndex == 0 && midiControllerNumber == kCtrlVolume)
+	// MIDI assignement
+	if (busIndex == 0 && midiControllerNumber == kCtrlVolume)
 	{
-		tag = kGainId;
+		tag = PARAM_SIGNALGENERATOR_FIRE;
 		return kResultTrue;
-	}*/
+	}
 	return kResultFalse;
 }
 

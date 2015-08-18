@@ -21,6 +21,8 @@
 #ifndef SCHROEDERALLPASS_H
 #define SCHROEDERALLPASS_H
 
+#include "ReverbNetworkEnums.h"
+
 class SchroederAllpass
 {
 public:
@@ -48,6 +50,8 @@ public:
 	// ---Modulation setter functions
 	// Enable or disable modulation
 	void setModulationEnabled(const bool& enabled);
+	// Set the signal type to use for modulation
+	void setModulationSignalType(const ModulationSignalType& signalType);
 	// Set the time range which is modulated (e.g. delay = 20 ms, excursion = 5 ms => Range: from 15 ms to 25 ms)
 	void setModulationExcursion(const double& excursion);
 	// Set the modulation speed in Hertz (frequency of the modulation signal e.g. sine)
@@ -71,6 +75,7 @@ private:
 
 	// Modulation parameters
 	bool modulationEnabled;
+	ModulationSignalType modSignalType;
 	double modulationExcursion;
 	double modulationRate;
 

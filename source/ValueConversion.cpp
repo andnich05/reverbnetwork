@@ -149,6 +149,14 @@ double ValueConversion::plainToNormDecay(const double& plainValue) {
 	return (plainValue - MIN_ALLPASSDECAY) / (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY);
 }
 
+double ValueConversion::normToPlainModSignalType(const double& normValue) {
+	return std::round((MAX_ALLPASSMODSIGNALTYPE - MIN_ALLPASSMODSIGNALTYPE) * normValue + MIN_ALLPASSMODSIGNALTYPE);
+}
+
+double ValueConversion::plainToNormModSignalType(const double& plainValue) {
+	return (plainValue - MIN_ALLPASSMODSIGNALTYPE) / (MAX_ALLPASSMODSIGNALTYPE - MIN_ALLPASSMODSIGNALTYPE);
+}
+
 double ValueConversion::normToPlainModExcursion(const double& normValue) {
 	return (MAX_ALLPASSMODEXCURSION - MIN_ALLPASSMODEXCURSION) * normValue + MIN_ALLPASSMODEXCURSION;
 }
