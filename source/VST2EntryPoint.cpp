@@ -64,5 +64,5 @@
 //------------------------------------------------------------------------
 ::AudioEffect* createEffectInstance(audioMasterCallback audioMaster)
 {
-	return Steinberg::Vst::Vst2Wrapper::create(GetPluginFactory(), Steinberg::Vst::ReverbNetworkProcessorUID, 'GdV2', audioMaster);
+	return Steinberg::Vst::Vst2Wrapper::create(GetPluginFactory(), Steinberg::Vst::ReverbNetworkProcessorUID, 'RvbN', audioMaster);
 }

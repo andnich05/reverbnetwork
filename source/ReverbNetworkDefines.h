@@ -23,7 +23,7 @@
 #endif
 
 // Log file output in User/AppData/Roaming/ReverbNetwork.log
-#define LOGGING
+//#define LOGGING
 
 // Update the controls of the GUI when VST parameters are being automated by the host
 #define GUIUPDATEWHENAUTOMATING
@@ -39,10 +39,10 @@
 // Maximum number of AP outputs (should be 1)
 //#define MAXMODULEOUTPUTS 1
 
-// Maximum number of VST inputs
+// Maximum number of VST inputs in Editor
 #define MAXVSTINPUTS 6
 
-// Maximum number of VST outputs
+// Maximum number of VST outputs in Editor
 #define MAXVSTOUTPUTS 6
 
 // Limit values to 1.0 and -1.0 at the output of a module

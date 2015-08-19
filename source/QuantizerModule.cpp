@@ -84,7 +84,7 @@ void QuantizerModule::processSample(double& sample) const {
 
 		// Mulitply spread factor with shifted samples
 		unsigned long int toOr = (long int)(std::round(factor * (double)(shifted)));
-		// unsigned masked sample OR spreaded number
+		// unsigned masked sample <OR> spreaded number
 		tu = tu | toOr;
 
 		// Convert back to signed
@@ -107,7 +107,7 @@ void QuantizerModule::processSample(double& sample) const {
 		//-----------------------------------
 	}
 	else if (BITCORRECTIONMETHOD == withoutScaling) {
-		// Method 3: with bit shifting, without scaling (only shifting)
+		// Method 3: with bit shifting, without scaling
 		//--------------------------------
 		// Clear the bits of the sample
 		temp &= mask;
@@ -157,7 +157,7 @@ void QuantizerModule::calculateFactor() {
 		// Shift the mask
 		mask <<= bitsToReset; // ...111000
 		// Get the maximum value which can occur
-		unsigned long maxValue = 0 | mask;
+		unsigned long maxValue = (unsigned long)mask;
 		// Calculate the value wich has to be added to every sample in order to correct the asymmetry
 		factor = ((pow(2, 32) - 1) - maxValue) / 2;
 		break;
