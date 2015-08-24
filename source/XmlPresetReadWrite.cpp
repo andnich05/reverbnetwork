@@ -19,6 +19,7 @@
 */
 
 #include "XmlPresetReadWrite.h"
+#include "ReverbNetworkDefines.h"
 #include "../pugixml-1.6/src/pugixml.hpp"
 #include <string>
 
@@ -64,6 +65,7 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 				mo.muted = subTool.child("muted").text().as_bool();
 				mo.soloed = subTool.child("soloed").text().as_bool();
 				mix.moduleOutputs.push_back(mo);
+				if (mix.moduleOutputs.size() >= MAXMODULENUMBER) break;
 			}
 			for (pugi::xml_node subTool = tool.child("mixer").child("vstIn"); subTool; subTool = subTool.next_sibling("vstIn")) {
 				VstInput vi = {};
@@ -71,6 +73,7 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 				vi.muted = subTool.child("muted").text().as_bool();
 				vi.soloed = subTool.child("soloed").text().as_bool();
 				mix.vstInputs.push_back(vi);
+				if (mix.vstInputs.size() >= MAXVSTINPUTS) break;
 			}
 			pugi::xml_node sgTool = tool.child("mixer").child("signalGeneratorIn");
 			SignalGeneratorInput sgI = {};
@@ -81,13 +84,14 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 
 			for (pugi::xml_node subTool = tool.child("mixer").child("inputSlot"); subTool; subTool = subTool.next_sibling("inputSlot")) {
 				mix.inputSlots.push_back(subTool.text().as_int());
+				if (mix.inputSlots.size() >= MAXMODULEINPUTS) break;
 			}
-			m.mixerParamters = mix;
+			m.mixerParameters = mix;
 
 			Quantizer q = {};
 			q.bypass = tool.child("quantizer").child("bypass").text().as_bool();
 			q.quantization = tool.child("quantizer").child("quantization").text().as_int();
-			m.quantizerParamters = q;
+			m.quantizerParameters = q;
 
 			Equalizer e = {};
 			e.bypass = tool.child("equalizer").child("bypass").text().as_bool();
@@ -119,11 +123,13 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 			m.outputParameters = o;
 
 			loadedPreset.modules.push_back(m);
+			if (loadedPreset.modules.size() >= MAXMODULENUMBER) break;
 		}
 
 		General g = {};
 		for (tool = doc.child("reverbNetwork").child("preset").child("parameters").child("general").child("vstOutputMenuIndex"); tool; tool = tool.next_sibling("vstOutputMenuIndex")) {
 			g.vstOutputMenuIndexes.push_back(tool.text().as_int());
+			if (g.vstOutputMenuIndexes.size() >= MAXVSTOUTPUTS) break;
 		}
 		loadedPreset.generalParamters = g;
 
@@ -143,18 +149,21 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 			gM.positionX = tool.child("position").child("x").text().as_double();
 			gM.positionY = tool.child("position").child("y").text().as_double();
 			gV.modules.push_back(gM);
+			if (gV.modules.size() >= MAXMODULENUMBER) break;
 		}
 		for (tool = doc.child("reverbNetwork").child("preset").child("graphicsView").child("vstInput"); tool; tool = tool.next_sibling("vstInput")) {
 			GraphicsVstInput gI = {};
 			gI.positionX = tool.child("position").child("x").text().as_double();
 			gI.positionY = tool.child("position").child("y").text().as_double();
 			gV.vstInputs.push_back(gI);
+			if (gV.vstInputs.size() >= MAXVSTINPUTS) break;
 		}
 		for (tool = doc.child("reverbNetwork").child("preset").child("graphicsView").child("vstOutput"); tool; tool = tool.next_sibling("vstOutput")) {
 			GraphicsVstOutput gO = {};
 			gO.positionX = tool.child("position").child("x").text().as_double();
 			gO.positionY = tool.child("position").child("y").text().as_double();
 			gV.vstOutputs.push_back(gO);
+			if (gV.vstOutputs.size() >= MAXVSTOUTPUTS) break;
 		}
 		loadedPreset.graphicsView = gV;
 
@@ -202,30 +211,30 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const Preset& p) const
 
 		// Mixer
 		pugi::xml_node mixerNode = moduleNode.append_child("mixer");
-		for (auto&& mOut : module.mixerParamters.moduleOutputs) {
+		for (auto&& mOut : module.mixerParameters.moduleOutputs) {
 			pugi::xml_node mOutNode = mixerNode.append_child("moduleOut");
 			mOutNode.append_child("gain").text().set(mOut.gainFactor);
 			mOutNode.append_child("muted").text().set(mOut.muted);
 			mOutNode.append_child("soloed").text().set(mOut.soloed);
 		}
-		for (auto&& vIn : module.mixerParamters.vstInputs) {
+		for (auto&& vIn : module.mixerParameters.vstInputs) {
 			pugi::xml_node vInNone = mixerNode.append_child("vstIn");
 			vInNone.append_child("gain").text().set(vIn.gainFactor);
 			vInNone.append_child("muted").text().set(vIn.muted);
 			vInNone.append_child("soloed").text().set(vIn.soloed);
 		}
 		pugi::xml_node sgIn = mixerNode.append_child("signalGeneratorIn");
-		sgIn.append_child("gain").text().set(module.mixerParamters.signalGeneratorInput.gainFactor);
-		sgIn.append_child("muted").text().set(module.mixerParamters.signalGeneratorInput.muted);
-		sgIn.append_child("soloed").text().set(module.mixerParamters.signalGeneratorInput.soloed);
-		for (auto&& inputSlot : module.mixerParamters.inputSlots) {
+		sgIn.append_child("gain").text().set(module.mixerParameters.signalGeneratorInput.gainFactor);
+		sgIn.append_child("muted").text().set(module.mixerParameters.signalGeneratorInput.muted);
+		sgIn.append_child("soloed").text().set(module.mixerParameters.signalGeneratorInput.soloed);
+		for (auto&& inputSlot : module.mixerParameters.inputSlots) {
 			mixerNode.append_child("inputSlot").text().set(inputSlot);
 		}
 		
 		// Quantizer
 		moduleNode.append_child("quantizer");
-		moduleNode.child("quantizer").append_child("bypass").text().set(module.quantizerParamters.bypass);
-		moduleNode.child("quantizer").append_child("quantization").text().set(module.quantizerParamters.quantization);
+		moduleNode.child("quantizer").append_child("bypass").text().set(module.quantizerParameters.bypass);
+		moduleNode.child("quantizer").append_child("quantization").text().set(module.quantizerParameters.quantization);
 
 		// Equalizer
 		moduleNode.append_child("equalizer");

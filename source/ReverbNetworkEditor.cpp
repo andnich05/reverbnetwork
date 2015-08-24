@@ -1893,43 +1893,43 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 
 		// Set mixer parameters	
 		// Module outputs first
-		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.moduleOutputs.size(); ++k) {
+		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParameters.moduleOutputs.size(); ++k) {
 			if (k >= MAXMODULENUMBER) break;
-			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.moduleOutputs[k].gainFactor));
-			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.moduleOutputs[k].gainFactor));
-			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].muted);
-			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].muted);
-			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].soloed);
-			getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParamters.moduleOutputs[k].soloed);
+			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.moduleOutputs[k].gainFactor));
+			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k, ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.moduleOutputs[k].gainFactor));
+			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParameters.moduleOutputs[k].muted);
+			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParameters.moduleOutputs[k].muted);
+			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParameters.moduleOutputs[k].soloed);
+			getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k, presetStruct.modules[i].mixerParameters.moduleOutputs[k].soloed);
 		}
 		// Then the Vst inputs
-		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.vstInputs.size(); ++k) {
+		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParameters.vstInputs.size(); ++k) {
 			if (k >= MAXVSTINPUTS) break;
-			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.vstInputs[k].gainFactor));
-			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.vstInputs[k].gainFactor));
-			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].muted);
-			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].muted);
-			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].soloed);
-			getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParamters.moduleOutputs.size(), presetStruct.modules[i].mixerParamters.vstInputs[k].soloed);
+			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.vstInputs[k].gainFactor));
+			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.vstInputs[k].gainFactor));
+			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].muted);
+			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].muted);
+			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].soloed);
+			getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].soloed);
 		}
-		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.signalGeneratorInput.gainFactor));
-		getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParamters.signalGeneratorInput.gainFactor));
-		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.muted);
-		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.muted);
-		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.soloed);
-		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParamters.moduleOutputs.size() + presetStruct.modules[i].mixerParamters.vstInputs.size(), presetStruct.modules[i].mixerParamters.signalGeneratorInput.soloed);
+		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.signalGeneratorInput.gainFactor));
+		getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.signalGeneratorInput.gainFactor));
+		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.muted);
+		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.muted);
+		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.soloed);
+		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.soloed);
 		// Finally the input slots
-		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParamters.inputSlots.size(); ++k) {
+		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParameters.inputSlots.size(); ++k) {
 			if (k >= MAXMODULEINPUTS) break;
-			getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(presetStruct.modules[i].mixerParamters.inputSlots[k]));
-			getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(presetStruct.modules[i].mixerParamters.inputSlots[k]));
+			getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(presetStruct.modules[i].mixerParameters.inputSlots[k]));
+			getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(presetStruct.modules[i].mixerParameters.inputSlots[k]));
 		}
 
 		// Set quantizer parameters
-		getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::plainToNormQuantization(presetStruct.modules[i].quantizerParamters.quantization));
-		getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::plainToNormQuantization(presetStruct.modules[i].quantizerParamters.quantization));
-		getController()->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i, presetStruct.modules[i].quantizerParamters.bypass);
-		getController()->performEdit(PARAM_QUANTIZERBYPASS_FIRST + i, presetStruct.modules[i].quantizerParamters.bypass);
+		getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::plainToNormQuantization(presetStruct.modules[i].quantizerParameters.quantization));
+		getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + i, ValueConversion::plainToNormQuantization(presetStruct.modules[i].quantizerParameters.quantization));
+		getController()->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i, presetStruct.modules[i].quantizerParameters.bypass);
+		getController()->performEdit(PARAM_QUANTIZERBYPASS_FIRST + i, presetStruct.modules[i].quantizerParameters.bypass);
 
 		// Set equalizer parameters
 		getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + i, ValueConversion::plainToNormFilterTypeSelect(presetStruct.modules[i].equalizerParameters.filterTypeIndex));
@@ -2079,12 +2079,12 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 		for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
 			mixer.inputSlots.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + i * MAXMODULEINPUTS + j)));
 		}
-		m.mixerParamters = mixer;
+		m.mixerParameters = mixer;
 
 		XmlPresetReadWrite::Quantizer q = {};
 		q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + i));
 		q.bypass = (getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + i) != 0.0);
-		m.quantizerParamters = q;
+		m.quantizerParameters = q;
 
 		XmlPresetReadWrite::Equalizer e = {};
 		e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + i));
@@ -2181,12 +2181,12 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	for (unsigned int j = 0; j < MAXMODULEINPUTS; ++j) {
 		mixer.inputSlots.push_back(ValueConversion::normToPlainMixerInputSelect(getController()->getParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + sourceModuleId * MAXMODULEINPUTS + j)));
 	}
-	m.mixerParamters = mixer;
+	m.mixerParameters = mixer;
 
 	XmlPresetReadWrite::Quantizer q = {};
 	q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + sourceModuleId));
 	q.bypass = (getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId) != 0.0);
-	m.quantizerParamters = q;
+	m.quantizerParameters = q;
 	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
 	fprintf(pFile, "y(n): %s\n", std::to_string(getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId) != 0.0).c_str());
 	fclose(pFile);*/
@@ -2224,40 +2224,40 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId, const XmlPresetReadWrite::Module& m) {
 	// Set mixer parameters	
 	// Module outputs first
-	for (unsigned int k = 0; k < m.mixerParamters.moduleOutputs.size(); ++k) {
-		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k, ValueConversion::plainToNormInputGain(m.mixerParamters.moduleOutputs[k].gainFactor));
-		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k, ValueConversion::plainToNormInputGain(m.mixerParamters.moduleOutputs[k].gainFactor));
-		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].muted);
-		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].muted);
-		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].soloed);
-		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParamters.moduleOutputs[k].soloed);
+	for (unsigned int k = 0; k < m.mixerParameters.moduleOutputs.size(); ++k) {
+		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k, ValueConversion::plainToNormInputGain(m.mixerParameters.moduleOutputs[k].gainFactor));
+		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k, ValueConversion::plainToNormInputGain(m.mixerParameters.moduleOutputs[k].gainFactor));
+		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParameters.moduleOutputs[k].muted);
+		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParameters.moduleOutputs[k].muted);
+		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParameters.moduleOutputs[k].soloed);
+		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k, m.mixerParameters.moduleOutputs[k].soloed);
 	}
 	// Then the Vst inputs
-	for (unsigned int k = 0; k < m.mixerParamters.vstInputs.size(); ++k) {
-		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.vstInputs[k].gainFactor));
-		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.vstInputs[k].gainFactor));
-		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].muted);
-		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].muted);
-		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].soloed);
-		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParamters.moduleOutputs.size(), m.mixerParamters.vstInputs[k].soloed);
+	for (unsigned int k = 0; k < m.mixerParameters.vstInputs.size(); ++k) {
+		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.vstInputs[k].gainFactor));
+		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.vstInputs[k].gainFactor));
+		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].muted);
+		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].muted);
+		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].soloed);
+		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].soloed);
 	}
-	getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.signalGeneratorInput.gainFactor));
-	getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParamters.signalGeneratorInput.gainFactor));
-	getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.muted);
-	getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.muted);
-	getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.soloed);
-	getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParamters.moduleOutputs.size() + m.mixerParamters.vstInputs.size(), m.mixerParamters.signalGeneratorInput.soloed);
+	getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.signalGeneratorInput.gainFactor));
+	getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.signalGeneratorInput.gainFactor));
+	getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.muted);
+	getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.muted);
+	getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.soloed);
+	getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.soloed);
 	// Finally the input slots
-	for (unsigned int k = 0; k < m.mixerParamters.inputSlots.size(); ++k) {
-		getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParamters.inputSlots[k]));
-		getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParamters.inputSlots[k]));
+	for (unsigned int k = 0; k < m.mixerParameters.inputSlots.size(); ++k) {
+		getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParameters.inputSlots[k]));
+		getController()->performEdit(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParameters.inputSlots[k]));
 	}
 
 	// Set quantizer parameters
-	getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + destModuleId, ValueConversion::plainToNormQuantization(m.quantizerParamters.quantization));
-	getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + destModuleId, ValueConversion::plainToNormQuantization(m.quantizerParamters.quantization));
-	getController()->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + destModuleId, m.quantizerParamters.bypass);
-	getController()->performEdit(PARAM_QUANTIZERBYPASS_FIRST + destModuleId, m.quantizerParamters.bypass);
+	getController()->setParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + destModuleId, ValueConversion::plainToNormQuantization(m.quantizerParameters.quantization));
+	getController()->performEdit(PARAM_QUANTIZERBITDEPTH_FIRST + destModuleId, ValueConversion::plainToNormQuantization(m.quantizerParameters.quantization));
+	getController()->setParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + destModuleId, m.quantizerParameters.bypass);
+	getController()->performEdit(PARAM_QUANTIZERBYPASS_FIRST + destModuleId, m.quantizerParameters.bypass);
 
 	// Set equalizer parameters
 	getController()->setParamNormalized(PARAM_EQFILTERTYPE_FIRST + destModuleId, ValueConversion::plainToNormFilterTypeSelect(m.equalizerParameters.filterTypeIndex));

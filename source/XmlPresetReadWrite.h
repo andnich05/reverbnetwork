@@ -98,8 +98,8 @@ public:
 		double positionY;
 		bool isVisible;
 		bool isCollapsed;
-		Mixer mixerParamters;
-		Quantizer quantizerParamters;
+		Mixer mixerParameters;
+		Quantizer quantizerParameters;
 		Equalizer equalizerParameters;
 		Allpass allpassParameters;
 		Output outputParameters;
