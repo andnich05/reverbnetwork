@@ -33,7 +33,7 @@ enum BitCorrectionMethod {
 	withoutScaling // Very fast, few operations, simple, doesn't scale the signal to full range
 };
 
-#define BITCORRECTIONMETHOD withoutScaling
+#define BITCORRECTIONMETHOD withoutBitShifting
 
 QuantizerModule::QuantizerModule(unsigned int quantization) 
 	: mask(-1), factor(0.0) {
@@ -98,7 +98,7 @@ void QuantizerModule::processSample(double& sample) const {
 			// Convert signed to unsigned
 			unsigned long tu = temp + (unsigned long)min32bitValueSigned;
 
-			// Divide the sample by the new number n, round it and multiply it with n again
+			// Divide the sample, round it and multiply it again
 			tu = (unsigned long)((unsigned long)(std::round((double)tu / factor)) * factor);
 
 			// Convert back to signed
@@ -149,7 +149,7 @@ void QuantizerModule::calculateFactor() {
 		factor = (pow(2.0, (double)bitsToReset) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1.0);
 		break;
 	case withoutBitShifting: 
-		factor = (pow(2.0, 32.0) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1);
+		factor = (pow(2.0, 32.0) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1.0);
 		break;
 	case withoutScaling:
 		// Set the mask back to default
@@ -159,7 +159,7 @@ void QuantizerModule::calculateFactor() {
 		// Get the maximum value which can occur
 		unsigned long maxValue = (unsigned long)mask;
 		// Calculate the value wich has to be added to every sample in order to correct the asymmetry
-		factor = ((pow(2, 32) - 1) - maxValue) / 2;
+		factor = (pow(2, 32) - maxValue) / 2;
 		break;
 	}
 }
