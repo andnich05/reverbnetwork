@@ -152,9 +152,9 @@ namespace VSTGUI {
 
 	void GuiSignalGenerator::valueChanged(VSTGUI::CControl* pControl) {
 		if (pControl == buttonManualFire) {
-			//if (pControl->getValue() == 1.0) {
+			if (pControl->getValue() == 0.0) {
 				editor->getController()->performEdit(PARAM_SIGNALGENERATOR_FIRE, 1.0);
-			//}
+			}
 		}
 		else if (pControl == buttonAutoFire) {
 			editor->getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AUTOFIREENABLED, pControl->getValue());

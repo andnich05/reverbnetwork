@@ -104,6 +104,7 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 			e.a2 = tool.child("equalizer").child("a2").text().as_double();
 			e.b1 = tool.child("equalizer").child("b1").text().as_double();
 			e.b2 = tool.child("equalizer").child("b2").text().as_double();
+			e.limiter = tool.child("equalizer").child("limiter").text().as_bool();
 			m.equalizerParameters = e;
 
 			Allpass a = {};
@@ -120,6 +121,7 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 			Output o = {};
 			o.bypass = tool.child("output").child("bypass").text().as_bool();
 			o.gain = tool.child("output").child("gain").text().as_double();
+			o.limiter = tool.child("output").child("limiter").text().as_bool();
 			m.outputParameters = o;
 
 			loadedPreset.modules.push_back(m);
@@ -248,6 +250,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const Preset& p) const
 		moduleNode.child("equalizer").append_child("a2").text().set(module.equalizerParameters.a2);
 		moduleNode.child("equalizer").append_child("b1").text().set(module.equalizerParameters.b1);
 		moduleNode.child("equalizer").append_child("b2").text().set(module.equalizerParameters.b2);
+		moduleNode.child("equalizer").append_child("limiter").text().set(module.equalizerParameters.limiter);
 
 		// Allpass
 		moduleNode.append_child("allpass");
@@ -264,6 +267,7 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const Preset& p) const
 		moduleNode.append_child("output");
 		moduleNode.child("output").append_child("bypass").text().set(module.outputParameters.bypass);
 		moduleNode.child("output").append_child("gain").text().set(module.outputParameters.gain);
+		moduleNode.child("output").append_child("limiter").text().set(module.outputParameters.limiter);
 	}
 
 	// General parameters

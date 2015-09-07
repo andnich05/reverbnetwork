@@ -24,14 +24,14 @@
 #include <cmath>
 
 // Limit output values when the filter becomes unstable
-#define LIMITER
+//#define LIMITER
 
-#ifdef LIMITER
+//#ifdef LIMITER
 // Max und min values at double precision: http://steve.hollasch.net/cgindex/coding/ieeefloat.html
 // ± ~10^(-323.3) to ~10^(308.3)
 const double maxSampleValue = 1.0e10;
 const double minSampleValue = -1.0e10;
-#endif
+//#endif
 
 EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain)
 	: samplingFreq(0.0)
@@ -40,6 +40,7 @@ EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, 
 	, gain(gain)
 	, filterType(filterType)
 	, stable(false)
+	, limit(true)
 {
 	// Initialize everything
 	xn0 = 0.0;
@@ -250,10 +251,14 @@ void EqualizerModule::processSample(double& sample) {
 	// Difference Equation
 	sample = a0 * sample + a1 * xn1 + a2 * xn2 - b1 * yn1 - b2 * yn2;
 
-	#ifdef LIMITER
-	if (sample > maxSampleValue) sample = maxSampleValue;
-	if (sample < minSampleValue) sample = minSampleValue;
-	#endif
+	if (limit) {
+		if (sample > 1.0) sample = 1.0;
+		if (sample < -1.0) sample = -1.0;
+	}
+	else {
+		if (sample > maxSampleValue) sample = maxSampleValue;
+		if (sample < minSampleValue) sample = minSampleValue;
+	}
 	
 	// Shift samples
 	xn2 = xn1;

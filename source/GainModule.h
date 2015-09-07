@@ -31,10 +31,14 @@ public:
 	inline void setGain(const double& g) { gain = g; }
 	// Process sample by reference
 	void processSample (double& sample) const;
+	// Enable or disable Limiter
+	void enableLimiter(const bool& enable) { this->limit = enable; }
 
 private:
 	// Gain as a factor
 	double gain;
+	// Limiter
+	bool limit;
 };
 
 #endif // GAINMODULE_H

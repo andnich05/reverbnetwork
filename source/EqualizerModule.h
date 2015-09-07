@@ -54,6 +54,8 @@ public:
 	void processSample(double& sample);
 	// Check whether the current filter is stable or not
 	inline const bool& isStable() { return stable; }
+	// Enable or disable limiter
+	inline const bool& enableLimiter(const bool& enable) { this->limit = enable; return calculateCoefficients(); }
 
 private:
 	// Calculate the filter coefficients
@@ -84,6 +86,8 @@ private:
 	double K, oneDividedByQ;
 	// True if the current filter is stable; is returned by all setter functions
 	bool stable;
+	// True if output samples should be limited
+	bool limit;
 };
 
 #endif // EQUALIZERMODULE_H

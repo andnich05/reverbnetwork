@@ -73,6 +73,7 @@ public:
 		double a2;
 		double b1;
 		double b2;
+		bool limiter;
 	};
 
 	struct Allpass {
@@ -89,6 +90,7 @@ public:
 	struct Output {
 		bool bypass;
 		double gain;
+		bool limiter;
 	};
 
 	struct Module {

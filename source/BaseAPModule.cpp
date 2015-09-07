@@ -155,6 +155,10 @@ const bool& BaseAPModule::updateEqualizerCoefficients(const double& value, const
 	return equalizer->isStable();
 }
 
+const bool& BaseAPModule::updateEqualizerLimiter(const double& limit) {
+	return equalizer->enableLimiter(limit != 0.0);
+}
+
 void BaseAPModule::updateAllpassDelay(const double& delay) {
 	allpass->setDelayTimeSec(delay / 1000.0);
 }
@@ -184,4 +188,8 @@ void BaseAPModule::updateAllpassModulationRate(const double& rate) {
 
 void BaseAPModule::updateOutputGain(const double& gain) {
 	gainOutput->setGain(ValueConversion::logToLinear(gain));
+}
+
+void BaseAPModule::updateOutputLimiter(const double& limit) {
+	gainOutput->enableLimiter(limit != 0.0);
 }

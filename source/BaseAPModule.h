@@ -59,6 +59,7 @@ public:
 	const bool& updateEqualizerQFactor(const double& qFactor);
 	const bool& updateEqualizerGain(const double& gain);
 	const bool& updateEqualizerCoefficients(const double& value, const long int& paramId);
+	const bool& updateEqualizerLimiter(const double& limit);
 	inline void switchEqualizerBypass(const double& bypass) { bypassEqualizer = (bypass != 0.0); }
 
 	// Allpass update functions
@@ -73,6 +74,7 @@ public:
 
 	// Output update functions
 	void updateOutputGain(const double& gain);
+	void updateOutputLimiter(const double& limit);
 	inline void switchOutputBypass(const double& bypass) { bypassGain = (bypass != 0.0); }
 
 	//---

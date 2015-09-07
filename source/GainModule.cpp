@@ -21,8 +21,12 @@
 #include "GainModule.h"
 #include "ReverbNetworkDefines.h"
 
+const double maxValue = 1.0e100;
+const double minValue = -1.0e100;
+
 GainModule::GainModule(double gain) 
-	: gain(gain) {
+	: gain(gain),
+	limit(true) {
 
 }
 
@@ -33,12 +37,20 @@ GainModule::~GainModule() {
 void GainModule::processSample(double& sample) const {
 	sample *= gain;
 
-#ifdef OUTPUTLIMITER
-	if (sample > 1.0) {
-		sample = 1.0;
+	if (limit) {
+		if (sample > 1.0) {
+			sample = 1.0;
+		}
+		else if (sample < -1.0) {
+			sample = -1.0;
+		}
 	}
-	else if (sample < -1.0) {
-		sample = -1.0;
+	else {
+		if (sample > maxValue) {
+			sample = maxValue;
+		}
+		else if (sample < minValue) {
+			sample = minValue;
+		}
 	}
-#endif
 }

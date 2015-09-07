@@ -37,6 +37,9 @@
 namespace Steinberg {
 namespace Vst {
 
+	const double guiRefreshTime = 40.0; // Refresh time of the GUI in msec
+	const double ppmUpdateFactor = 20.0 / 1.7 * (guiRefreshTime / 1000.0); // -20 dB in 1.7 sec
+
 	// Structure for overriding module parameters (when user clicks on "paste")
 	struct overrideParametersQuery {
 		int moduleId;
@@ -107,7 +110,9 @@ namespace Vst {
 	const int32_t id_equalizer_textEdit_b1Last = id_equalizer_textEdit_b1First + MAXMODULENUMBER - 1;
 	const int32_t id_equalizer_textEdit_b2First = id_equalizer_textEdit_b1Last + 1;
 	const int32_t id_equalizer_textEdit_b2Last = id_equalizer_textEdit_b2First + MAXMODULENUMBER - 1;
-	const int32_t id_equalizer_switch_bypassFirst = id_equalizer_textEdit_b2Last + 1;
+	const int32_t id_equalizer_checkBox_limiterFirst = id_equalizer_textEdit_b2Last + 1;
+	const int32_t id_equalizer_checkBox_limiterLast = id_equalizer_checkBox_limiterFirst + MAXMODULENUMBER - 1;
+	const int32_t id_equalizer_switch_bypassFirst = id_equalizer_checkBox_limiterLast + 1;
 	const int32_t id_equalizer_switch_bypassLast = id_equalizer_switch_bypassFirst + MAXMODULENUMBER - 1;
 
 	// Allpass GUI ids
@@ -141,7 +146,9 @@ namespace Vst {
 	const int32_t id_output_knob_gainLast = id_output_knob_gainFirst + MAXMODULENUMBER - 1;
 	const int32_t id_output_textEdit_gainFirst = id_output_knob_gainLast + 1;
 	const int32_t id_output_textEdit_gainLast = id_output_textEdit_gainFirst + MAXMODULENUMBER - 1;
-	const int32_t id_output_switch_bypassFirst = id_output_textEdit_gainLast + 1;
+	const int32_t id_output_checkbox_limiterFirst = id_output_textEdit_gainLast + 1;
+	const int32_t id_output_checkbox_limiterLast = id_output_checkbox_limiterFirst + MAXMODULENUMBER - 1;
+	const int32_t id_output_switch_bypassFirst = id_output_checkbox_limiterLast + 1;
 	const int32_t id_output_switch_bypassLast = id_output_switch_bypassFirst + MAXMODULENUMBER - 1;
 
 	// PPM GUI ids
@@ -187,7 +194,7 @@ ReverbNetworkEditor::ReverbNetworkEditor(void* controller)
 	editorUserData.graphicsView = {};
 
 	// Set GUI refresh timer to 40 ms (25 Hz)
-	setIdleRate(40);
+	setIdleRate(guiRefreshTime);
 
 	sampleRate = 0.0;
 }
@@ -739,7 +746,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				guiElements[id_equalizer_textEdit_b2First + (tag - id_equalizer_optionMenu_filterTypeFirst)]->getValue()));
 		}
 		else {
-			// Update the other parameters when everything else
+			// Update the other parameters when not Raw Biquad
 			updateEqStability(tag - id_equalizer_optionMenu_filterTypeFirst, true);
 			controller->performEdit(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCENTERFREQ_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQQFACTOR_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
@@ -804,6 +811,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_textEdit_b2First), ValueConversion::plainToNormEqCoefficients(value));
 		controller->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + (tag - id_equalizer_textEdit_b2First), ValueConversion::plainToNormEqCoefficients(value));
 		updateEqStability(tag - id_equalizer_textEdit_b2First, ValueConversion::checkEqStability(ValueConversion::normToPlainEqCoefficients(ValueConversion::plainToNormEqCoefficients(guiElements[id_equalizer_textEdit_b1First + (tag - id_equalizer_textEdit_b2First)]->getValue())), ValueConversion::normToPlainEqCoefficients(ValueConversion::plainToNormEqCoefficients(value))));
+	}
+	else if (tag >= id_equalizer_checkBox_limiterFirst && tag <= id_equalizer_checkBox_limiterLast)  {
+		controller->setParamNormalized(PARAM_EQLIMITER_FIRST + (tag - id_equalizer_checkBox_limiterFirst), value);
+		controller->performEdit(PARAM_EQLIMITER_FIRST + (tag - id_equalizer_checkBox_limiterFirst), value);
 	}
 	else if (tag >= id_equalizer_switch_bypassFirst && tag <= id_equalizer_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_EQBYPASS_FIRST + (tag - id_equalizer_switch_bypassFirst), value);
@@ -893,6 +904,10 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		controller->performEdit(PARAM_OUTGAIN_FIRST + (tag - id_output_textEdit_gainFirst), ValueConversion::plainToNormOutputGain(value));
 		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setValue(ValueConversion::plainToNormOutputGain(value));
 		guiElements[id_output_knob_gainFirst + (tag - id_output_textEdit_gainFirst)]->setDirty();
+	}
+	else if (tag >= id_output_checkbox_limiterFirst && tag <= id_output_checkbox_limiterLast)  {
+		controller->setParamNormalized(PARAM_OUTLIMITER_FIRST + (tag - id_output_checkbox_limiterFirst), value);
+		controller->performEdit(PARAM_OUTLIMITER_FIRST + (tag - id_output_checkbox_limiterFirst), value);
 	}
 	else if (tag >= id_output_switch_bypassFirst && tag <= id_output_switch_bypassLast)  {
 		controller->setParamNormalized(PARAM_OUTBYPASS_FIRST + (tag - id_output_switch_bypassFirst), value);
@@ -1171,13 +1186,12 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	paramFirstRow->setBackgroundColor(CCOLOR_NOCOLOR);
 	paramFirstRow->addView(createKnobGroup("Frequency", equalizerView->getWidth() / 2, id_equalizer_knob_centerFreqFirst + moduleId, id_equalizer_textEdit_centerFreqFirst + moduleId,
 		MIN_EQCENTERFREQ, ValueConversion::getMaxEqFrequency(), 2, UNIT_EQCENTERFREQ));
-
 	paramFirstRow->addView(createKnobGroup("QFactor", equalizerView->getWidth() / 2, id_equalizer_knob_qFactorFirst + moduleId, id_equalizer_textEdit_qFactorFirst + moduleId,
 		MIN_EQQFACTOR, MAX_EQQFACTOR, 2, UNIT_EQQFACTOR));
 	paramFirstRow->sizeToFit();
 	CCheckBox* checkBoxEqualizerBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 15)), this, id_equalizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
-	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
+	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth() / 2 - 10, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonStability, id_equalizer_button_stabilityFirst + moduleId);
 	buttonStability->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonStability->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
@@ -1188,9 +1202,17 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	buttonStability->setRoundRadius(1);
 	buttonStability->setMouseEnabled(false);
 	buttonStability->setFont(CFontRef(kNormalFontSmall));
+	CCheckBox* checkBoxLimiter = new CCheckBox(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth() / 2, 15)), this, id_equalizer_checkBox_limiterFirst + moduleId, "Limiter");
+	addGuiElementPointer(checkBoxLimiter, id_equalizer_checkBox_limiterFirst + moduleId);
+	checkBoxLimiter->setFont(CFontRef(kNormalFontSmall));
+	CRowColumnView* viewStabilityLimiter = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 10.0);
+	viewStabilityLimiter->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewStabilityLimiter->addView(buttonStability);
+	viewStabilityLimiter->addView(checkBoxLimiter);
+	viewStabilityLimiter->sizeToFit();
 	equalizerView->addView(createGroupTitle("EQUALIZER", equalizerView->getWidth()));
 	equalizerView->addView(checkBoxEqualizerBypass);
-	equalizerView->addView(buttonStability);
+	equalizerView->addView(viewStabilityLimiter);
 	equalizerView->addView(filterTypeView);
 	GuiCustomRowColumnView* equalizerNormalView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle);
 	equalizerNormalView->setBackgroundColor(CCOLOR_NOCOLOR);
@@ -1449,9 +1471,17 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createOutput(const CRect& parentVie
 	addGuiElementPointer(checkBoxGainBypass, id_output_switch_bypassFirst + moduleId);
 	gainView->addView(createGroupTitle("OUT", gainView->getWidth()));
 	gainView->addView(checkBoxGainBypass);
+	CCheckBox* checkBoxLimiter = new CCheckBox(CRect(CPoint(0, 0), CPoint(60, 15)), this, id_output_checkbox_limiterFirst + moduleId, "Limiter");
+	addGuiElementPointer(checkBoxLimiter, id_output_checkbox_limiterFirst + moduleId);
+	checkBoxLimiter->setFont(kNormalFontSmall);
 	GuiCustomRowColumnView* knobPpmView = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kColumnStyle, GuiCustomRowColumnView::kLeftTopEqualy, 5.0);
-	knobPpmView->addView(createKnobGroup("Gain", gainView->getWidth() - 20, id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId,
+	CRowColumnView* viewKnobLimiter = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	viewKnobLimiter->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewKnobLimiter->addView(createKnobGroup("Gain", gainView->getWidth() - 20, id_output_knob_gainFirst + moduleId, id_output_textEdit_gainFirst + moduleId,
 		MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, 2, UNIT_OUTPUTGAIN));
+	viewKnobLimiter->addView(checkBoxLimiter);
+	viewKnobLimiter->sizeToFit();
+	knobPpmView->addView(viewKnobLimiter);
 	CVuMeter* ppm = new CVuMeter(CRect(CPoint(0, 0), CPoint(5, 200)), ppmOn, ppmOff, 200);
 	addGuiElementPointer(ppm, id_output_ppmFirst + moduleId);
 	knobPpmView->addView(ppm);
@@ -1459,6 +1489,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createOutput(const CRect& parentVie
 	knobPpmView->sizeToFit();
 	gainView->addView(knobPpmView);
 	gainView->setBackgroundColor(CCOLOR_NOCOLOR);
+	
 	return gainView;
 }
 
@@ -1617,6 +1648,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_EQCOEFFICIENTA2_FIRST, PARAM_EQCOEFFICIENTA2_LAST, id_equalizer_textEdit_a2First, &ValueConversion::normToPlainEqCoefficients);
 	updateGuiParameter(PARAM_EQCOEFFICIENTB1_FIRST, PARAM_EQCOEFFICIENTB1_LAST, id_equalizer_textEdit_b1First, &ValueConversion::normToPlainEqCoefficients);
 	updateGuiParameter(PARAM_EQCOEFFICIENTB2_FIRST, PARAM_EQCOEFFICIENTB2_LAST, id_equalizer_textEdit_b2First, &ValueConversion::normToPlainEqCoefficients);
+	updateGuiParameter(PARAM_EQLIMITER_FIRST, PARAM_EQLIMITER_LAST, id_equalizer_checkBox_limiterFirst, nullptr);
 	updateGuiParameter(PARAM_EQBYPASS_FIRST, PARAM_EQBYPASS_LAST, id_equalizer_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDELAY_FIRST, PARAM_ALLPASSDELAY_LAST, id_allpass_knob_delayFirst, nullptr);
 	updateGuiParameter(PARAM_ALLPASSDECAY_FIRST, PARAM_ALLPASSDECAY_LAST, id_allpass_knob_decayFirst, nullptr);
@@ -1627,6 +1659,7 @@ void ReverbNetworkEditor::updateGuiWithControllerParameters() {
 	updateGuiParameter(PARAM_ALLPASSMODRATE_FIRST, PARAM_ALLPASSMODRATE_LAST, id_allpass_textEdit_modulationRateFirst, &ValueConversion::normToPlainModRate);
 	updateGuiParameter(PARAM_ALLPASSBYPASS_FIRST, PARAM_ALLPASSBYPASS_LAST, id_allpass_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_OUTGAIN_FIRST, PARAM_OUTGAIN_LAST, id_output_knob_gainFirst, nullptr);
+	updateGuiParameter(PARAM_OUTLIMITER_FIRST, PARAM_OUTLIMITER_LAST, id_output_checkbox_limiterFirst, nullptr);
 	updateGuiParameter(PARAM_OUTBYPASS_FIRST, PARAM_OUTBYPASS_LAST, id_output_switch_bypassFirst, nullptr);
 	updateGuiParameter(PARAM_GENERALVSTOUTPUTSELECT_FIRST, PARAM_GENERALVSTOUTPUTSELECT_LAST, id_general_optionMenu_vstOutputFirst, &ValueConversion::normToPlainMixerInputSelect);
 	updateGuiParameter(PARAM_MODULEVISIBLE_FIRST, PARAM_MODULEVISIBLE_LAST, id_general_checkBox_moduleVisibleFirst, nullptr);
@@ -1655,7 +1688,9 @@ void ReverbNetworkEditor::updateGuiParameter(uint32 firstParamId, uint32 lastPar
 void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue value) {
 	if (tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) {
 		// Update the PPM with values from Processor
-		lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = value;	
+		if (value > lastPpmValues[tag - PARAM_PPMUPDATE_FIRST]) {
+			lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = 1.0 - ValueConversion::linearToLog(value) / -60.0; // 60 dB range (ToDo: show the exact value or add labels to the PPM)
+		}
 	}
 	else if (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST) {
 		// Update EQ stability
@@ -1755,7 +1790,13 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		// Update PPMs of the modules
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			if (guiElements[id_output_ppmFirst + i]) {
-				guiElements[id_output_ppmFirst + i]->setValue(1.0 - ((lastPpmValues[i] - 1.0) * (lastPpmValues[i] - 1.0)));
+				if (lastPpmValues[i] > guiElements[id_output_ppmFirst + i]->getValue()) {
+					guiElements[id_output_ppmFirst + i]->setValue(lastPpmValues[i]);
+				}
+				else {
+					guiElements[id_output_ppmFirst + i]->setValue(guiElements[id_output_ppmFirst + i]->getValue() - (ppmUpdateFactor / 60.0));
+				}
+				lastPpmValues[i] = 0.0;
 			}
 		}
 		// If there is something in the ToDo-queue
@@ -1952,6 +1993,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 		getController()->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b1));
 		getController()->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b2));
 		getController()->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + i, ValueConversion::plainToNormEqCoefficients(presetStruct.modules[i].equalizerParameters.b2));
+		getController()->setParamNormalized(PARAM_EQLIMITER_FIRST + i, presetStruct.modules[i].equalizerParameters.limiter);
+		getController()->performEdit(PARAM_EQLIMITER_FIRST + i, presetStruct.modules[i].equalizerParameters.limiter);
 
 		// Set allpass parameters
 		getController()->setParamNormalized(PARAM_ALLPASSDELAY_FIRST + i, ValueConversion::plainToNormDelay(presetStruct.modules[i].allpassParameters.delay));
@@ -1974,6 +2017,8 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 		// Set output parameters
 		getController()->setParamNormalized(PARAM_OUTGAIN_FIRST + i, ValueConversion::plainToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
 		getController()->performEdit(PARAM_OUTGAIN_FIRST + i, ValueConversion::plainToNormOutputGain(presetStruct.modules[i].outputParameters.gain));
+		getController()->setParamNormalized(PARAM_OUTLIMITER_FIRST + i, presetStruct.modules[i].outputParameters.limiter);
+		getController()->performEdit(PARAM_OUTLIMITER_FIRST + i, presetStruct.modules[i].outputParameters.limiter);
 		getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 		getController()->performEdit(PARAM_OUTBYPASS_FIRST + i, presetStruct.modules[i].outputParameters.bypass);
 	
@@ -2096,6 +2141,7 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 		e.a2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + i));
 		e.b1 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + i));
 		e.b2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + i));
+		e.limiter = (getController()->getParamNormalized(PARAM_EQLIMITER_FIRST + i) != 0.0);
 		e.bypass = (getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + i) != 0.0);
 		m.equalizerParameters = e;
 
@@ -2112,6 +2158,7 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 
 		XmlPresetReadWrite::Output o = {};
 		o.gain = ValueConversion::normToPlainOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + i));
+		o.limiter = (getController()->getParamNormalized(PARAM_OUTLIMITER_FIRST + i) != 0.0);
 		o.bypass = (getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + i) != 0.0);
 		m.outputParameters = o;
 
@@ -2201,6 +2248,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	e.a2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTA2_FIRST + sourceModuleId));
 	e.b1 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB1_FIRST + sourceModuleId));
 	e.b2 = ValueConversion::normToPlainEqCoefficients(getController()->getParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + sourceModuleId));
+	e.limiter = (getController()->getParamNormalized(PARAM_EQLIMITER_FIRST + sourceModuleId) != 0.0);
 	e.bypass = (getController()->getParamNormalized(PARAM_EQBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.equalizerParameters = e;
 
@@ -2217,6 +2265,7 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 
 	XmlPresetReadWrite::Output o = {};
 	o.gain = ValueConversion::normToPlainOutputGain(getController()->getParamNormalized(PARAM_OUTGAIN_FIRST + sourceModuleId));
+	o.limiter = (getController()->getParamNormalized(PARAM_OUTLIMITER_FIRST + sourceModuleId) != 0.0);
 	o.bypass = (getController()->getParamNormalized(PARAM_OUTBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.outputParameters = o;
 }
@@ -2278,6 +2327,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	getController()->performEdit(PARAM_EQCOEFFICIENTB1_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b1));
 	getController()->setParamNormalized(PARAM_EQCOEFFICIENTB2_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b2));
 	getController()->performEdit(PARAM_EQCOEFFICIENTB2_FIRST + destModuleId, ValueConversion::plainToNormEqCoefficients(m.equalizerParameters.b2));
+	getController()->setParamNormalized(PARAM_EQLIMITER_FIRST + destModuleId, m.equalizerParameters.limiter);
+	getController()->performEdit(PARAM_EQLIMITER_FIRST + destModuleId, m.equalizerParameters.limiter);
 	getController()->setParamNormalized(PARAM_EQBYPASS_FIRST + destModuleId, m.equalizerParameters.bypass);
 	getController()->performEdit(PARAM_EQBYPASS_FIRST + destModuleId, m.equalizerParameters.bypass);
 
@@ -2302,6 +2353,8 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	// Set output parameters
 	getController()->setParamNormalized(PARAM_OUTGAIN_FIRST + destModuleId, ValueConversion::plainToNormOutputGain(m.outputParameters.gain));
 	getController()->performEdit(PARAM_OUTGAIN_FIRST + destModuleId, ValueConversion::plainToNormOutputGain(m.outputParameters.gain));
+	getController()->setParamNormalized(PARAM_OUTLIMITER_FIRST + destModuleId, m.outputParameters.limiter);
+	getController()->performEdit(PARAM_OUTLIMITER_FIRST + destModuleId, m.outputParameters.limiter);
 	getController()->setParamNormalized(PARAM_OUTBYPASS_FIRST + destModuleId, m.outputParameters.bypass);
 	getController()->performEdit(PARAM_OUTBYPASS_FIRST + destModuleId, m.outputParameters.bypass);
 

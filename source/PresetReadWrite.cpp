@@ -69,6 +69,9 @@ PresetReadWrite::PresetReadWrite() {
 	for (auto i = PARAM_EQCOEFFICIENTB2_FIRST; i <= PARAM_EQCOEFFICIENTB2_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormEqCoefficients(DEF_EQCOEFFICIENTS));
 	}
+	for (auto i = PARAM_EQLIMITER_FIRST; i <= PARAM_EQLIMITER_LAST; ++i) {
+		parameterValues.push_back(DEF_EQLIMITER);
+	}
 	for (auto i = PARAM_EQBYPASS_FIRST; i <= PARAM_EQBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_EQBYPASS);
 	}
@@ -98,6 +101,9 @@ PresetReadWrite::PresetReadWrite() {
 	}
 	for (auto i = PARAM_OUTGAIN_FIRST; i <= PARAM_OUTGAIN_LAST; ++i) {
 		parameterValues.push_back(ValueConversion::plainToNormOutputGain(DEF_OUTPUTGAIN));
+	}
+	for (auto i = PARAM_OUTLIMITER_FIRST; i <= PARAM_OUTLIMITER_LAST; ++i) {
+		parameterValues.push_back(DEF_OUTLIMITER);
 	}
 	for (auto i = PARAM_OUTBYPASS_FIRST; i <= PARAM_OUTBYPASS_LAST; ++i) {
 		parameterValues.push_back(DEF_OUTPUTBYPASS);

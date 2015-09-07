@@ -225,6 +225,16 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), i, USTRING(UNIT_EQCOEFFICIENTS), MIN_EQCOEFFICIENTS, MAX_EQCOEFFICIENTS, DEF_EQCOEFFICIENTS, 0, ParameterInfo::kCanAutomate);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
+		// Equalizer Limiter
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-EQ-Limiter");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_EQLIMITER_FIRST + i, 0, 0);
+			parameter->appendString(USTRING("Off"));
+			parameter->appendString(USTRING("On"));
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
 		// Equalizer Bypass
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
@@ -318,6 +328,16 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			temp.append(std::to_string(i));
 			temp.append("-OUT-Gain");
 			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_OUTGAIN_FIRST + i, USTRING(UNIT_OUTPUTGAIN), MIN_OUTPUTGAIN, MAX_OUTPUTGAIN, DEF_OUTPUTGAIN, 0, ParameterInfo::kCanAutomate);
+			EditControllerEx1::parameters.addParameter(parameter);
+		}
+		// Limiter
+		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
+			std::string temp = "APM";
+			temp.append(std::to_string(i));
+			temp.append("-OUT-Limiter");
+			StringListParameter* parameter = new StringListParameter(USTRING(temp.c_str()), PARAM_OUTLIMITER_FIRST + i, 0, 0);
+			parameter->appendString(USTRING("Off"));
+			parameter->appendString(USTRING("On"));
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 		// Bypass

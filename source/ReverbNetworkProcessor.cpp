@@ -410,6 +410,14 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						#endif
 					}
 				}
+				else if (pid >= PARAM_EQLIMITER_FIRST && pid <= PARAM_EQLIMITER_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_EQLIMITER_FIRST]->updateEqualizerLimiter(value);
+						#ifdef LOGGING
+						Logging::addToLog("EQUALIZER", "Module " + std::to_string(pid - PARAM_EQLIMITER_FIRST) + " - Limiter set to " + std::to_string(value));
+						#endif
+					}
+				}
 				else if (pid >= PARAM_EQBYPASS_FIRST && pid <= PARAM_EQBYPASS_LAST) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
 						apModules[pid - PARAM_EQBYPASS_FIRST]->switchEqualizerBypass(value);
@@ -487,6 +495,14 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 						apModules[pid - PARAM_OUTGAIN_FIRST]->updateOutputGain(ValueConversion::normToPlainOutputGain(value));
 						#ifdef LOGGING
 						Logging::addToLog("OUTPUT", "Module " + std::to_string(pid - PARAM_OUTGAIN_FIRST) + " - Gain set to " + std::to_string(ValueConversion::normToPlainOutputGain(value)));
+						#endif
+					}
+				}
+				else if (pid >= PARAM_OUTLIMITER_FIRST && pid <= PARAM_OUTLIMITER_LAST) {
+					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
+						apModules[pid - PARAM_OUTLIMITER_FIRST]->updateOutputLimiter(value);
+						#ifdef LOGGING
+						Logging::addToLog("OUTPUT", "Module " + std::to_string(pid - PARAM_OUTLIMITER_FIRST) + " - Limiter set to " + std::to_string(value));
 						#endif
 					}
 				}
@@ -695,7 +711,14 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (paramQueue) {
 						int32 index2 = 0;
 						paramQueue->addPoint(0, ppmValues[i], index2);
+						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
+						fprintf(pFile, "%s\n", std::to_string(i).c_str());
+						fprintf(pFile, "%s\n", std::to_string(ppmValues[i]).c_str());
+						fprintf(pFile, "%s\n", std::to_string(ppmOldValues[i]).c_str());
+						fprintf(pFile, "%s\n", std::to_string(888888888).c_str());
+						fclose(pFile);*/
 						ppmOldValues[i] = ppmValues[i];
+						
 					}
 				}
 			}
