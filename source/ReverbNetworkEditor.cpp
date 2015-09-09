@@ -1689,7 +1689,12 @@ void ReverbNetworkEditor::updateEditorFromController(ParamID tag, ParamValue val
 	if (tag >= PARAM_PPMUPDATE_FIRST && tag <= PARAM_PPMUPDATE_LAST) {
 		// Update the PPM with values from Processor
 		if (value > lastPpmValues[tag - PARAM_PPMUPDATE_FIRST]) {
-			lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = 1.0 - ValueConversion::linearToLog(value) / -60.0; // 60 dB range (ToDo: show the exact value or add labels to the PPM)
+			if (value != 0.0) {
+				lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = 1.0 - ValueConversion::linearToLog(std::abs(value)) / -60.0; // 60 dB range (ToDo: show the exact value or add labels to the PPM)
+			}
+			else {
+				lastPpmValues[tag - PARAM_PPMUPDATE_FIRST] = 0.0;
+			}
 		}
 	}
 	else if (tag >= PARAM_EQSTABILITY_FIRST && tag <= PARAM_EQSTABILITY_LAST) {

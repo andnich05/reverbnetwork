@@ -29,8 +29,8 @@
 //#ifdef LIMITER
 // Max und min values at double precision: http://steve.hollasch.net/cgindex/coding/ieeefloat.html
 // ± ~10^(-323.3) to ~10^(308.3)
-const double maxSampleValue = 1.0e10;
-const double minSampleValue = -1.0e10;
+const double maxSampleValue = 1.0e100;
+const double minSampleValue = -1.0e100;
 //#endif
 
 EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain)
