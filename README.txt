@@ -2,7 +2,7 @@
 -- SUMMARY --
 
 Reverb Network VST Audio Plug-in
-Copyright (c) 2010-2015 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.
+Copyright (c) 2015 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.
 
 Reverb Network is an audio plug-in which is based on Steinberg's VST Technology. Its main purpose is the creation of reverb algorithms by connecting all-pass filter modules to a network in its build-in user interface. Currently only Windows is supported (since Windows 7).
 
