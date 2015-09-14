@@ -93,19 +93,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">..\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">build\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</EmbedManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">build\$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</GenerateManifest>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</EmbedManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(Platform)\$(Configuration)\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">..\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">..\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">build\$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">..\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">false</LinkIncremental>
@@ -113,9 +113,9 @@
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">false</GenerateManifest>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</EmbedManifest>
     <EmbedManifest Condition="'$(Configuration)|$(Platform)'=='Release x64|Win32'">false</EmbedManifest>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(Platform)\$(Configuration)\</OutDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release x64|x64'">$(Platform)\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">build\$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release x64|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release x64|x64'">false</LinkIncremental>
@@ -130,11 +130,17 @@
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.vst3</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release x64|x64'">.vst3</TargetExt>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName)X64</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)X64</TargetName>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../../../../vstgui4/vstgui/lib;../../../../../vstgui4;../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../vstgui4/vstgui/lib;../../vstgui4;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS=1;DEVELOPMENT=1;_CRT_SECURE_NO_DEPRECATE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -149,7 +155,7 @@
       <AdditionalIncludeDirectories>../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>..\$(Configuration)\ReverbNetwork.vst3</OutputFile>
+      <OutputFile>build\$(Platform)\$(Configuration)\ReverbNetwork.vst3</OutputFile>
       <ModuleDefinitionFile>ReverbNetwork.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)ReverbNetwork.pdb</ProgramDatabaseFile>
@@ -167,7 +173,7 @@
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../vstgui4/vstgui/lib;../../vstgui4;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS=1;DEVELOPMENT=1;_CRT_SECURE_NO_DEPRECATE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -181,8 +187,8 @@
       <AdditionalIncludeDirectories>../../../../..;../../../../../vstplugins/vst;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>$(CommonProgramW6432)\VST3\Steinberg\$(ProjectName)$(TargetExt)</OutputFile>
-      <ModuleDefinitionFile>adelay.def</ModuleDefinitionFile>
+      <OutputFile>build\$(Platform)\$(Configuration)\ReverbNetworkX64.vst3</OutputFile>
+      <ModuleDefinitionFile>ReverbNetwork.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(OutDir)adelay.pdb</ProgramDatabaseFile>
       <SubSystem>Windows</SubSystem>
@@ -195,7 +201,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>../../../../../vstgui4/vstgui/lib;../../../../../vstgui4;../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../vstgui4/vstgui/lib;../../vstgui4;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS=1;RELEASE=1;_CRT_SECURE_NO_DEPRECATE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -207,7 +213,7 @@
       <AdditionalIncludeDirectories>../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>..\$(Configuration)\ReverbNetwork.vst3</OutputFile>
+      <OutputFile>build\$(Platform)\$(Configuration)\ReverbNetwork.vst3</OutputFile>
       <ModuleDefinitionFile>ReverbNetwork.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -252,7 +258,7 @@
     </Midl>
     <ClCompile>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>../../../../../vstgui4/vstgui/lib;../../../../../vstgui4;../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../vstgui4/vstgui/lib;../../vstgui4;../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WINDOWS=1;RELEASE=1;_CRT_SECURE_NO_DEPRECATE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <PrecompiledHeader>
@@ -264,7 +270,7 @@
       <AdditionalIncludeDirectories>../../../../..;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <OutputFile>..\$(Configuration)\ReverbNetworkX64.vst3</OutputFile>
+      <OutputFile>build\$(Platform)\$(Configuration)\ReverbNetworkX64.vst3</OutputFile>
       <ModuleDefinitionFile>ReverbNetwork.def</ModuleDefinitionFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -307,12 +313,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3editor.cpp" />
-    <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3groupcontroller.cpp" />
-    <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.cpp" />
-    <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_uidescription_win32.cpp" />
-    <ClCompile Include="..\..\..\..\..\vstgui4\vstgui\vstgui_win32.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
+    <ClCompile Include="..\..\vstgui4\vstgui\plugin-bindings\vst3editor.cpp" />
+    <ClCompile Include="..\..\vstgui4\vstgui\plugin-bindings\vst3groupcontroller.cpp" />
+    <ClCompile Include="..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.cpp" />
+    <ClCompile Include="..\..\vstgui4\vstgui\vstgui_uidescription_win32.cpp" />
+    <ClCompile Include="..\..\vstgui4\vstgui\vstgui_win32.cpp" />
+    <ClCompile Include="..\source\vst\vst2wrapper\vst2wrapper.sdk.cpp" />
     <ClCompile Include="source\ComponentMessage.cpp" />
     <ClCompile Include="source\GuiCustomRowColumnView.cpp" />
     <ClCompile Include="source\GuiCustomTextLabel.cpp" />
@@ -345,31 +351,31 @@
     <ClCompile Include="source\ReverbNetworkController.cpp" />
     <ClCompile Include="source\ReverbNetworkProcessor.cpp" />
     <ClCompile Include="source\factory.cpp" />
-    <ClCompile Include="..\..\..\..\source\main\dllmain.cpp" />
-    <ClCompile Include="..\..\..\..\source\main\pluginfactoryvst3.cpp" />
-    <ClCompile Include="..\..\..\..\source\common\pluginview.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstaudioeffect.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstbus.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstcomponent.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstcomponentbase.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vsteditcontroller.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstguieditor.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstinitiids.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstnoteexpressiontypes.cpp" />
-    <ClCompile Include="..\..\..\..\source\vst\vstparameters.cpp" />
-    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\conststringtable.cpp" />
-    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\funknown.cpp" />
-    <ClCompile Include="..\..\..\..\..\pluginterfaces\base\ustring.cpp" />
+    <ClCompile Include="..\source\main\dllmain.cpp" />
+    <ClCompile Include="..\source\main\pluginfactoryvst3.cpp" />
+    <ClCompile Include="..\source\common\pluginview.cpp" />
+    <ClCompile Include="..\source\vst\vstaudioeffect.cpp" />
+    <ClCompile Include="..\source\vst\vstbus.cpp" />
+    <ClCompile Include="..\source\vst\vstcomponent.cpp" />
+    <ClCompile Include="..\source\vst\vstcomponentbase.cpp" />
+    <ClCompile Include="..\source\vst\vsteditcontroller.cpp" />
+    <ClCompile Include="..\source\vst\vstguieditor.cpp" />
+    <ClCompile Include="..\source\vst\vstinitiids.cpp" />
+    <ClCompile Include="..\source\vst\vstnoteexpressiontypes.cpp" />
+    <ClCompile Include="..\source\vst\vstparameters.cpp" />
+    <ClCompile Include="..\..\pluginterfaces\base\conststringtable.cpp" />
+    <ClCompile Include="..\..\pluginterfaces\base\funknown.cpp" />
+    <ClCompile Include="..\..\pluginterfaces\base\ustring.cpp" />
     <ClCompile Include="source\VST2EntryPoint.cpp" />
     <ClCompile Include="source\XmlPresetReadWrite.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstnoteexpression.h" />
-    <ClInclude Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3editor.h" />
-    <ClInclude Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3groupcontroller.h" />
-    <ClInclude Include="..\..\..\..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstguieditor.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstnoteexpressiontypes.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstnoteexpression.h" />
+    <ClInclude Include="..\..\vstgui4\vstgui\plugin-bindings\vst3editor.h" />
+    <ClInclude Include="..\..\vstgui4\vstgui\plugin-bindings\vst3groupcontroller.h" />
+    <ClInclude Include="..\..\vstgui4\vstgui\plugin-bindings\vst3padcontroller.h" />
+    <ClInclude Include="..\source\vst\vstguieditor.h" />
+    <ClInclude Include="..\source\vst\vstnoteexpressiontypes.h" />
     <ClInclude Include="source\ComponentMessage.h" />
     <ClInclude Include="source\GuiCustomRowColumnView.h" />
     <ClInclude Include="source\GuiCustomTextLabel.h" />
@@ -404,38 +410,38 @@
     <ClInclude Include="source\reverbnetworkids.h" />
     <ClInclude Include="source\ReverbNetworkProcessor.h" />
     <ClInclude Include="source\version.h" />
-    <ClInclude Include="..\..\..\..\source\main\pluginfactoryvst3.h" />
-    <ClInclude Include="..\..\..\..\source\common\pluginview.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstaudioeffect.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstbus.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstcomponent.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstcomponentbase.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vsteditcontroller.h" />
-    <ClInclude Include="..\..\..\..\source\vst\vstparameters.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\conststringtable.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\falignpop.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\falignpush.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\fplatform.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ftypes.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\funknown.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ipluginbase.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\keycodes.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\base\ustring.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstattributes.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstaudioprocessor.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstcomponent.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivsteditcontroller.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstevents.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivsthostapplication.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstmessage.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstmidicontrollers.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstparameterchanges.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstplugview.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstprocesscontext.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\ivstunits.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\vstpresetkeys.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\vst\vsttypes.h" />
-    <ClInclude Include="..\..\..\..\..\pluginterfaces\gui\iplugview.h" />
+    <ClInclude Include="..\source\main\pluginfactoryvst3.h" />
+    <ClInclude Include="..\source\common\pluginview.h" />
+    <ClInclude Include="..\source\vst\vstaudioeffect.h" />
+    <ClInclude Include="..\source\vst\vstbus.h" />
+    <ClInclude Include="..\source\vst\vstcomponent.h" />
+    <ClInclude Include="..\source\vst\vstcomponentbase.h" />
+    <ClInclude Include="..\source\vst\vsteditcontroller.h" />
+    <ClInclude Include="..\source\vst\vstparameters.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\conststringtable.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\falignpop.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\falignpush.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\fplatform.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\ftypes.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\funknown.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\ipluginbase.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\keycodes.h" />
+    <ClInclude Include="..\..\pluginterfaces\base\ustring.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstattributes.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstaudioprocessor.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstcomponent.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivsteditcontroller.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstevents.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivsthostapplication.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstmessage.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstmidicontrollers.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstparameterchanges.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstplugview.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstprocesscontext.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\ivstunits.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\vstpresetkeys.h" />
+    <ClInclude Include="..\..\pluginterfaces\vst\vsttypes.h" />
+    <ClInclude Include="..\..\pluginterfaces\gui\iplugview.h" />
     <ClInclude Include="source\XmlPresetReadWrite.h" />
   </ItemGroup>
   <ItemGroup>
@@ -446,7 +452,7 @@
     <ResourceCompile Include="ReverbNetwork.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\base\win\base_vc10.vcxproj">
+    <ProjectReference Include="..\..\base\win\base_vc10.vcxproj">
       <Project>{5755cc40-c699-491b-bd7c-5d841c26c28d}</Project>
     </ProjectReference>
   </ItemGroup>
