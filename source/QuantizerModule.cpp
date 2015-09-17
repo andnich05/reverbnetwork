@@ -29,11 +29,11 @@ const double min32bitValueSigned = pow(2, 32) / 2;
 // Quantization methods in order to correct the signal asymmetry, each has it's benefits and drawbacks
 enum BitCorrectionMethod {
 	withBitShifting, // Fast, many operations, complex, scales the signal to full range
-	withoutBitShifting, // Relatively fast, only a few operations, simple, scales the signal to full range
+	withoutBitShifting, // Slow, only a few operations, simple, scales the signal to full range
 	withoutScaling // Very fast, few operations, simple, doesn't scale the signal to full range
 };
 
-#define BITCORRECTIONMETHOD withoutBitShifting
+#define BITCORRECTIONMETHOD withoutScaling
 
 QuantizerModule::QuantizerModule(unsigned int quantization) 
 	: mask(-1), factor(0.0) {
@@ -52,30 +52,21 @@ void QuantizerModule::setQuantization(const double& q) {
 void QuantizerModule::processSample(double& sample) const {
 	// Convert to 32 bit signed integer
 	long int temp = 0;
-	if (sample >= 0.0) {
-		// Check for out of range sample values
-		if (sample <= 1.0) {
-			temp = (long int)(sample * max32bitValueSigned);
-		}
-		else {
-			temp = (long int)max32bitValueSigned;
-		}
+	if (sample > 1.0) {
+		temp = (long int)max32bitValueSigned;
+	}
+	else if (sample < -1.0) {
+		temp = -(long int)max32bitValueSigned;
 	}
 	else {
-		// Check for out of range sample values
-		if (sample >= -1.0) {
-			temp = (long int)(sample * min32bitValueSigned);
-		}
-		else {
-			temp = (long int)min32bitValueSigned;
-		}
+		temp = (long int)(sample * max32bitValueSigned);
 	}
 
 	if (BITCORRECTIONMETHOD == withBitShifting) {
 		// Method 1: with bit shifting
 		//--------------------------------
 		// Convert signed to unsigned
-		unsigned long tu = temp + (unsigned long)min32bitValueSigned;
+		unsigned long tu = temp + (unsigned long)max32bitValueSigned;
 
 		tu &= mask;
 
@@ -96,7 +87,7 @@ void QuantizerModule::processSample(double& sample) const {
 		//------------------------------------
 		if (bitsToReset < 32) {
 			// Convert signed to unsigned
-			unsigned long tu = temp + (unsigned long)min32bitValueSigned;
+			unsigned long tu = temp + (unsigned long)max32bitValueSigned;
 
 			// Divide the sample, round it and multiply it again
 			tu = (unsigned long)((unsigned long)(std::round((double)tu / factor)) * factor);
@@ -117,21 +108,14 @@ void QuantizerModule::processSample(double& sample) const {
 	}
 
 	// Convert the integer back to double
-	if (temp >= 0) {
-		if (temp <= (long int)(max32bitValueSigned)) {
-			sample = (double)temp / (double)max32bitValueSigned;
-		}
-		else {
-			sample = 1.0;
-		}
+	if (temp > max32bitValueSigned) {
+		sample = 1.0;
+	}
+	else if (temp < -max32bitValueSigned) {
+		sample = -1.0;
 	}
 	else {
-		if (temp >= (long int)(-min32bitValueSigned)) {
-			sample = (double)temp / (double)min32bitValueSigned;
-		}
-		else {
-			sample = -1.0;
-		}
+		sample = (double)temp / (double)max32bitValueSigned;
 	}
 
 		/*pFile = fopen("E:\\logVst.txt", "a");

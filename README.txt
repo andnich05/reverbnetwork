@@ -1,12 +1,11 @@
-
 -- SUMMARY --
 
 Reverb Network VST Audio Plug-in
 Copyright (c) 2015 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.
 
-Reverb Network is an audio plug-in which is based on Steinberg's VST Technology. Its main purpose is the creation of reverb algorithms by connecting all-pass filter modules to a network in its build-in user interface. Currently only Windows is supported (since Windows 7).
+Reverb Network is an audio plug-in which is based on Steinberg's VST Technology. Its main purpose is the creation of reverb algorithms by connecting all-pass filter modules to a fully configurable modular network in its build-in user interface. Currently only Windows is supported (since Windows 7).
 
-This project was created as part of the master thesis at the RheinMain University of Applied Sciences and is currently hosted on GitHub:
+This project is currently hosted on GitHub:
 https://github.com/andnich05/reverbnetwork
 
 This software is OPEN SOURCE and is published under the GNU GENERAL PUBLIC LICENSE (see COPYING for details)
@@ -22,9 +21,9 @@ pugixml - http://pugixml.org/
 To build the plug-in by yourself you will need the following:
 
 - Microsoft Visual Studio 2013 or newer (Express version should be fine, although has not been tested yet)
-- Steinberg VST3 SDK: https://www.steinberg.net/de/company/developer.html
+- Steinberg VST3 3.6.0 or newer SDK (+ VSTGUI 4.2 or newer): https://www.steinberg.net/de/company/developer.html
 
-Keep in mind that Steinberg is constantly changing stuff in the SDK so it is possible that the code will need some changes if a newer SDK version than 3.6.0 is used. VSTGUI (4.2 or newer) should come along with the SDK.
+Keep in mind that Steinberg is constantly changing stuff in the SDK so it is possible that the code will need some changes if a newer SDK version than 3.6.0 is used.
 
 Put the folder "reverbnetwork" into the folder "public.sdk" of the VST3 SDK. Start the "ReverbNetwork.sln" (the structure should be: "public.sdk/reverbnetwork/ReverbNetwork.sln") and build the solution. You can build both the x86 and the x64 version of the plug-in. Make sure you build the plug-in as Release, the Debug build is VERY slow. You can customize the plug-in in the file "ReverbNetworkDefines.h".
 
@@ -51,7 +50,7 @@ Cockos Reaper 4.77
 VST2: compatible (some keyboard entries are not passed to the plug-in e.g. SPACE)
 
 Wavosaur 1.1.0.0
-VST2: compatible (Using more than two channels per input and output is not possible; possible crash when the plug-in was compiled on Windows 8/8.1 when closing Wavosaur)
+VST2: compatible (Using more than two channels per input and output is not possible; possible crash when closing Wavosaur when the plug-in was compiled on Windows 8/8.1)
 
 Audacity 2.1.1
 VST2: compatible (preview function does not output a signal)
@@ -68,5 +67,3 @@ A: Yes, simply rename the file extension from "vst3" to "dll".
 
 Andrej Nichelmann (andnich05) - andnich05dev@gmail.com
 Klaus Michael Indlekofer
-
-	

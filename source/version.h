@@ -67,11 +67,11 @@
 #define SUB_VERSION_STR "0"
 #define SUB_VERSION_INT 0
 
-#define RELEASE_NUMBER_STR "0"
+#define RELEASE_NUMBER_STR "1"
 #define RELEASE_NUMBER_INT 0
 
-#define BUILD_NUMBER_STR "95" // Build number to be sure that each result could identified.
-#define BUILD_NUMBER_INT 95
+#define BUILD_NUMBER_STR "98" // Build number to be sure that each result could identified.
+#define BUILD_NUMBER_INT 98
 
 // Version with build number (example "1.0.3.342")
 #define FULL_VERSION_STR MAJOR_VERSION_STR "." SUB_VERSION_STR "." RELEASE_NUMBER_STR "." BUILD_NUMBER_STR
