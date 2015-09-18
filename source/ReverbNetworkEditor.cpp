@@ -173,8 +173,13 @@ namespace Vst {
 	const int32_t id_general_button_splashViewOk = id_general_splashScreen_overrideParametersQuery + 1;
 	const int32_t id_general_button_splashViewCancel = id_general_button_splashViewOk + 1;
 
+	// About Splash Screen
+	const int32_t id_general_splashScreen_about = id_general_button_splashViewCancel + 1;
+	const int32_t id_general_button_splashViewOkAbout = id_general_splashScreen_about + 1;
+	const int32_t id_general_button_about = id_general_button_splashViewOkAbout + 1;
+
 	// Graphics view
-	const int32_t id_graphicsView_rearrangeModules = id_general_button_splashViewCancel + 1;
+	const int32_t id_graphicsView_rearrangeModules = id_general_button_about + 1;
 	const int32_t id_graphicsView_addModule = id_graphicsView_rearrangeModules + 1;
 
 // Contructor is called every time the editor is reopened => watch out for memory leaks!
@@ -341,6 +346,22 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	signalGenerator->setBackgroundColor(CCOLOR_NOCOLOR);
 	viewVstOutputSelect->addView(signalGenerator);
 
+	// Create About Button
+	CTextButton* buttonAbout = new CTextButton(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_general_button_about, "About");
+	addGuiElementPointer(buttonAbout, id_graphicsView_addModule);
+	buttonAbout->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonAbout->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonAbout->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonAbout->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonAbout->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonAbout->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
+	buttonAbout->setRoundRadius(1);
+	CRowColumnView* viewAboutDummy = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 0.0, 5.0);
+	viewAboutDummy->setBackgroundColor(CCOLOR_NOCOLOR);
+	viewAboutDummy->addView(buttonAbout);
+	viewAboutDummy->sizeToFit();
+	viewVstOutputSelect->addView(viewAboutDummy);
+
 	viewVstOutputSelect->sizeToFit();
 
 	// Create graphics view
@@ -459,13 +480,40 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	addGuiElementPointer(splashOverrideParametersQuery, id_general_splashScreen_overrideParametersQuery);
 	mainView->addView(splashOverrideParametersQuery);
 	
+	// Create About View
+	std::string title = "Reverb Network VST Plug-in ";
+	title.append(pluginVersion);
+	GuiCustomTextLabel* labelVersion = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(500, 15)), title.c_str(), kNormalFont, CHoriTxtAlign::kLeftText);
+	GuiCustomTextLabel* labelCopyright = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(550, 15)), "Copyright (c) 2014-2015 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.", kNormalFont, CHoriTxtAlign::kLeftText);
+	CTextButton* buttonOkAbout = new CTextButton(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_general_button_splashViewOkAbout, "Okay");
+	addGuiElementPointer(buttonOkAbout, id_general_button_splashViewOkAbout);
+	buttonOkAbout->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	buttonOkAbout->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	buttonOkAbout->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	buttonOkAbout->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	buttonOkAbout->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
+	buttonOkAbout->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
+	buttonOkAbout->setRoundRadius(1);
+	CRowColumnView* subViewAbout = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), GuiCustomRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 5.0);
+	subViewAbout->setBackgroundColor(CCOLOR_NOCOLOR);
+	subViewAbout->addView(labelVersion);
+	subViewAbout->addView(labelCopyright);
+	subViewAbout->addView(buttonOkAbout);
+	subViewAbout->sizeToFit();
+	subViewAbout->setViewSize(CRect(CPoint(mainView->getViewSize().getCenter().x - subViewAbout->getViewSize().getWidth() / 2, mainView->getViewSize().getCenter().y - subViewAbout->getViewSize().getHeight() / 2), CPoint(subViewAbout->getViewSize().getSize())));
+	subViewAbout->setMouseableArea(subViewAbout->getViewSize());
+	CViewContainer* viewAbout = new CViewContainer(mainView->getViewSize());
+	viewAbout->addView(subViewAbout);
+	viewAbout->setBackgroundColor(CCOLOR_SPLASHVIEW_BACKGROUND);
+	GuiCustomSplashScreen* splashScreenAbout = new GuiCustomSplashScreen(mainView->getViewSize(), this, id_general_splashScreen_about, viewAbout);
+	addGuiElementPointer(splashScreenAbout, id_general_splashScreen_about);
+	mainView->addView(splashScreenAbout);
+
 	// Delete the bitmap obejcts
 	knobBackground->forget();
 	knobBackgroundSmall->forget();
 	ppmOff->forget();
 	ppmOn->forget();
-
-	
 
 	// Initialize EQ stability buttons
 	updateGuiWithControllerParameters();
@@ -970,6 +1018,18 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				fileSelector->forget();
 				pControl->setDirty();
 			}
+		}
+	}
+	else if (tag == id_general_button_about) {
+		if (pControl->getValue() == 1.0) {
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_about])->splash();
+			frame->setMouseableArea(guiElements[id_general_splashScreen_about]->getViewSize());
+		}
+	}
+	else if (tag == id_general_button_splashViewOkAbout) {
+		if (pControl->getValue() == 1.0) {
+			dynamic_cast<GuiCustomSplashScreen*>(guiElements[id_general_splashScreen_about])->unSplash();
+			frame->setMouseableArea(frame->getViewSize());
 		}
 	}
 	else if (tag == id_graphicsView_rearrangeModules) {

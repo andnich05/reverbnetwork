@@ -67,11 +67,11 @@
 #define SUB_VERSION_STR "0"
 #define SUB_VERSION_INT 0
 
-#define RELEASE_NUMBER_STR "1"
+#define RELEASE_NUMBER_STR "0"
 #define RELEASE_NUMBER_INT 0
 
-#define BUILD_NUMBER_STR "98" // Build number to be sure that each result could identified.
-#define BUILD_NUMBER_INT 98
+#define BUILD_NUMBER_STR "99" // Build number to be sure that each result could identified.
+#define BUILD_NUMBER_INT 99
 
 // Version with build number (example "1.0.3.342")
 #define FULL_VERSION_STR MAJOR_VERSION_STR "." SUB_VERSION_STR "." RELEASE_NUMBER_STR "." BUILD_NUMBER_STR
@@ -79,13 +79,15 @@
 // Version without build number (example "1.0.3")
 #define VERSION_STR MAJOR_VERSION_STR "." SUB_VERSION_STR "." RELEASE_NUMBER_STR
 
-#define stringOriginalFilename	"ReverbNetwork.vst3"
+
 #if PLATFORM_64
+#define stringOriginalFilename	"ReverbNetworkX64.vst3"
 #define stringFileDescription	"ReverbNetwork (64Bit)"
 #else
+#define stringOriginalFilename	"ReverbNetwork.vst3"
 #define stringFileDescription	"ReverbNetwork"
 #endif
-#define stringCompanyName		"RheinMain University of Applied Sciences\0"
+#define stringCompanyName		"RheinMain University\0"
 #define stringLegalCopyright	"© 2015 Andrej Nichelmann and Klaus Michael Indlekofer"
 #define stringLegalTrademarks	"VST is a trademark of Steinberg Media Technologies GmbH"
 

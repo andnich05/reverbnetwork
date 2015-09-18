@@ -67,7 +67,7 @@
 
 BEGIN_FACTORY_DEF("RheinMain University of Applied Sciences",
 	"http://www.hs-rm.de/en/hochschule/startseite/",
-	"mailto:a@b.com")
+	"andnich05dev@gmail.com")
 
 	//---
 	// Set plugin version 
