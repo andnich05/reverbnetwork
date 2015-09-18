@@ -7,9 +7,9 @@ Reverb Network is an audio plug-in which is based on Steinberg's VST Technology.
 
  ![image](https://github.com/andnich05/reverbnetwork/raw/master/img/ReverbNetworkGuiOverview.png)
 
-This project is currently hosted on GitHub and SourceForge:
-https://github.com/andnich05/reverbnetwork
-http://sourceforge.net/projects/reverbnetwork/
+This project is currently hosted on:
+* GitHub: https://github.com/andnich05/reverbnetwork
+* SourceForge: https://sourceforge.net/projects/reverbnetwork/
 
 This software is OPEN SOURCE and is published under the GNU GENERAL PUBLIC LICENSE (see COPYING for details)
 
