@@ -18,9 +18,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "SignalGenerator.h"
-#include "ValueConversion.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/SignalGenerator.h"
+#include "../include/ValueConversion.h"
+#include "../include/ReverbNetworkDefines.h"
 
 SignalGenerator::SignalGenerator(const SignalGeneratorType& signalType) 
 	: signalType(signalType) {
@@ -58,9 +58,6 @@ double& SignalGenerator::generateSample() {
 		if (autoFireCounter >= (unsigned long)autoTimeInSamples) {
 			autoFireCounter = 0;
 		}
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(sample).c_str());
-		fclose(pFile);*/
 	}
 
 	//// Manual fire generation

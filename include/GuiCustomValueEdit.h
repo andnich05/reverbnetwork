@@ -22,6 +22,7 @@
 #define GUICUSTOMVALUEEDIT_H
 
 #include "../vstgui4/vstgui/lib/controls/ctextedit.h"
+#include "../include/ReverbNetworkEnums.h"
 
 class GuiCustomValueEdit : public VSTGUI::CTextEdit {
 
@@ -33,8 +34,12 @@ public:
 
 	void setStringToTruncate(const std::string& str, bool truncateSpaceBeforeString);
 
+	void setValueToStringUserData(const valueToStringUserData & userData);
+	const valueToStringUserData & getValueToStringUserData() const;
+
 private:
 	std::string stringToTruncate;
+	valueToStringUserData userData;
 };
 
 #endif // GUICUSTOMVALUEEDIT_H

@@ -56,11 +56,10 @@
 */
 
 #include "public.sdk/source/main/pluginfactoryvst3.h"
-#include "ReverbNetworkController.h"
-#include "ReverbNetworkProcessor.h"
-#include "reverbnetworkids.h"
-//#include "exampletest.h"
-#include "version.h"	// for versioning
+#include "../include/ReverbNetworkController.h"
+#include "../include/ReverbNetworkProcessor.h"
+#include "../include/reverbnetworkids.h"
+#include "../include/version.h"	// for versioning
 
 #define stringPluginName "ReverbNetwork"
 

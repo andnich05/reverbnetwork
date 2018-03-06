@@ -18,8 +18,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GainModule.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/GainModule.h"
+#include "../include/ReverbNetworkDefines.h"
 
 const double maxValue = 1.0e100;
 const double minValue = -1.0e100;

@@ -18,9 +18,10 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "SchroederAllpass.h"
-#include "ReverbNetworkDefines.h"
-#include <cmath>
+#include "../include/SchroederAllpass.h"
+#include "../include/ReverbNetworkDefines.h"
+#define _USE_MATH_DEFINES
+#include <math.h>
 #include <string>
 
 #define USEALLPASSINTERPOLATION
@@ -309,11 +310,6 @@ void SchroederAllpass::setModulationRateMs(const double& rate) {
 //	if (bufferPos >= delaySamples) {
 //		bufferPos = 0;
 //	}
-//	//FILE* pFile = fopen("E:\\logVst.txt", "a");
-//	////fprintf(pFile, "y(n): %s\n", std::to_string(delayTime).c_str());
-//	////fprintf(pFile, "y(n): %s\n", std::to_string(decayTime).c_str());
-//	//fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
-//	//fclose(pFile);
 //}
 //
 //void SchroederAllpass::createBuffers() {
@@ -361,7 +357,4 @@ void SchroederAllpass::setModulationRateMs(const double& rate) {
 //	}
 //
 //
-//	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-//	fprintf(pFile, "y(n): %s\n", std::to_string(gain).c_str());
-//	fclose(pFile);*/
 //}

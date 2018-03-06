@@ -50,7 +50,6 @@ void GuiCustomValueEdit::takeFocus()
 	}
 }
 
-//------------------------------------------------------------------------
 void GuiCustomValueEdit::looseFocus()
 {
 	CTextEdit::looseFocus();
@@ -64,9 +63,18 @@ void GuiCustomValueEdit::looseFocus()
 	}
 }
 	
-
 void GuiCustomValueEdit::setStringToTruncate(const std::string& str, bool truncateSpaceBeforeString) {
 	if (!str.empty()) {
 		stringToTruncate = truncateSpaceBeforeString ? " " + str : str;
 	}
+}
+
+void GuiCustomValueEdit::setValueToStringUserData(const valueToStringUserData & userData)
+{
+	this->userData = userData;
+}
+
+const valueToStringUserData & GuiCustomValueEdit::getValueToStringUserData() const
+{
+	return userData;
 }

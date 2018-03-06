@@ -24,17 +24,15 @@
 #include "../vstgui4/vstgui/lib/cviewcontainer.h"
 #include "public.sdk/source/vst/vstguieditor.h"
 
-namespace VSTGUI {
+class GuiWorkspaceView : public CViewContainer {
+public:
+	GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor);
 
-	class GuiWorkspaceView : public CViewContainer {
-	public:
-		GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor);
+protected:
+	virtual void parentSizeChanged() override;
 
-		virtual void parentSizeChanged() VSTGUI_OVERRIDE_VMETHOD;
-
-	private:
-		Steinberg::Vst::VSTGUIEditor* editor;
-	}; 
-}
+private:
+	Steinberg::Vst::VSTGUIEditor* editor;
+}; 
 
 #endif // GUIWORKSPACEVIEW_H

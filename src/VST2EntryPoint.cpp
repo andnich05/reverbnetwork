@@ -59,7 +59,7 @@
 // http://vstdev.richackard.com/doc/vstsdk/vst2xwrapper.html
 
 #include "public.sdk/source/vst/vst2wrapper/vst2wrapper.h"
-#include "reverbnetworkids.h"	// for class ids
+#include "../include/reverbnetworkids.h"
 
 //------------------------------------------------------------------------
 ::AudioEffect* createEffectInstance(audioMasterCallback audioMaster)

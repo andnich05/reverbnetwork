@@ -18,8 +18,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "MixerModule.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/MixerModule.h"
+#include "../include/ReverbNetworkDefines.h"
 #include <string>
 
 MixerModule::MixerModule(const double& defaultGain) {

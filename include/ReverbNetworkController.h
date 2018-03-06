@@ -82,7 +82,7 @@ public:
 	tresult PLUGIN_API getMidiControllerAssignment(int32 busIndex, int16 channel, CtrlNumber midiControllerNumber, ParamID& tag);
 
 private:
-	TArray <ReverbNetworkEditor*> viewsArray; // For more than one editor
+	std::vector<ReverbNetworkEditor*> viewsArray; // For more than one editor
 
 	static std::string pluginVersion;
 

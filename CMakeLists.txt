@@ -13,10 +13,7 @@ set(plug_sources
 	include/GuiGraphicsConnections.h
 	include/GuiGraphicsModule.h
 	include/GuiGraphicsView.h
-	include/GuiHandleView.h
-	include/GuiOpenGLGraphicsView.h
 	include/GuiOptionMenuInputSelector.h
-	include/GuiScrollViewAutoSizeable.h
 	include/GuiSignalGenerator.h
 	include/GuiWorkspaceView.h
 	include/Logging.h
@@ -31,7 +28,6 @@ set(plug_sources
 	include/ReverbNetworkProcessor.h
 	include/SchroederAllpass.h
 	include/SignalGenerator.h
-	include/TimerThread.h
 	include/ValueConversion.h
 	include/version.h
 	include/XmlPresetReadWrite.h
@@ -49,10 +45,7 @@ set(plug_sources
 	src/GuiGraphicsConnections.cpp
 	src/GuiGraphicsModule.cpp
 	src/GuiGraphicsView.cpp
-	src/GuiHandleView.cpp
-	src/GuiOpenGLGraphicsView.cpp
 	src/GuiOptionMenuInputSelector.cpp
-	src/GuiScrollViewAutoSizeable.cpp
 	src/GuiSignalGenerator.cpp
 	src/GuiWorkspaceView.cpp
 	src/Logging.cpp
@@ -64,10 +57,10 @@ set(plug_sources
 	src/ReverbNetworkProcessor.cpp
 	src/SchroederAllpass.cpp
 	src/SignalGenerator.cpp
-	src/TimerThread.cpp
 	src/ValueConversion.cpp
 	src/VST2EntryPoint.cpp
 	src/XmlPresetReadWrite.cpp
+	#../../VST3_SDK/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
 )
 
 #--- HERE change the target Name for your plug-in (for ex. set(target myDelay))-------

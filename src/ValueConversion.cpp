@@ -18,19 +18,19 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ValueConversion.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/ValueConversion.h"
+
 #include <cstdlib>
 #include <string>
-#include "ReverbNetworkEnums.h"
+
+#include "../include/ReverbNetworkDefines.h"
+#include "../include/ReverbNetworkEnums.h"
+#include "../include/GuiCustomValueEdit.h"
 
 double ValueConversion::sampleRate = 44100.0;
 
 ValueConversion::ValueConversion() {
 	
-}
-
-ValueConversion::~ValueConversion() {
 }
 
 double ValueConversion::normToPlainMixerInputSelect(const double& normValue) {
@@ -230,21 +230,19 @@ double ValueConversion::logToLinear(const double& logValue) {
 }
 
 bool ValueConversion::textEditStringToValueConversion(const char* txt, float& result, void* userData) {
-	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
-	fclose(pFile);*/
 	result = (float)(atof(txt));
 	return true;
 }
 
-bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], void* userData) {
-	if (userData == nullptr) {
+bool ValueConversion::textEditValueToStringConversion(float value, char utf8String[256], VSTGUI::CParamDisplay* display) {
+	GuiCustomValueEdit * valueEdit = dynamic_cast<GuiCustomValueEdit *>(display);
+
+	if (!valueEdit) {
 		sprintf(utf8String, "%1.2f", value);
 		return true;
 	}
-	valueToStringUserData* v = (valueToStringUserData*)userData;
 
-	switch (v->precision) {
+	switch (valueEdit->getValueToStringUserData ().precision) {
 	case 0:
 		sprintf(utf8String, "%1.0f", value);
 		break;
@@ -268,7 +266,7 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 		break;
 	}
 	sprintf(utf8String + strlen(utf8String), " ");
-	sprintf(utf8String + strlen(utf8String), v->unit.c_str());
+	sprintf(utf8String + strlen(utf8String), valueEdit->getValueToStringUserData().unit.c_str());
 	return true;
 }
 

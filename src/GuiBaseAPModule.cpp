@@ -42,6 +42,8 @@ GuiBaseAPModule::GuiBaseAPModule(const VSTGUI::CRect &rect, const VSTGUI::CRect&
 	, moduleId(moduleId)
 	, collapsed(false)
 	, editor(editor)
+{
+
 }
 
 unsigned int GuiBaseAPModule::getModuleId() const {
@@ -99,24 +101,24 @@ VSTGUI::CMouseEventResult GuiBaseAPModule::onMouseMoved(VSTGUI::CPoint &where, c
 {
 	if (mousePressed) {
 		// Move the view to the new position
-		this->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(where.x - mousePressedX, where.y - mousePressedY), CPoint(this->getWidth(), this->getHeight())));
+		this->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(where.x - mousePressedX, where.y - mousePressedY), VSTGUI::CPoint(this->getWidth(), this->getHeight())));
 
 		// invalid() updates the GUI; setDirty() is similar but does not force an immediate redraw, although setDirty() is thread safe(?)
 
 		// Don't paint the modules outside the parent view
 		if (this->getViewSize().getBottomRight().y > getParentView()->getViewSize().getBottomRight().y) {
-			this->setViewSize(VSTGUI::CRect(CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()),
-				CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+			this->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(getViewSize().getTopLeft().x, getParentView()->getViewSize().getBottomRight().y - getViewSize().getHeight()),
+				VSTGUI::CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		if (this->getViewSize().getBottomRight().x > getParentView()->getViewSize().getBottomRight().x) {
-			this->setViewSize(VSTGUI::CRect(CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y),
-				CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+			this->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(getParentView()->getViewSize().getBottomRight().x - getViewSize().getWidth(), getViewSize().getTopLeft().y),
+				VSTGUI::CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		if (this->getViewSize().getTopLeft().x < 0.0) {
-			this->setViewSize(VSTGUI::CRect(CPoint(0, getViewSize().getTopLeft().y), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+			this->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(0, getViewSize().getTopLeft().y), VSTGUI::CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 		if (this->getViewSize().getTopLeft().y < 0.0) {
-			this->setViewSize(VSTGUI::CRect(CPoint(getViewSize().getTopLeft().x, 0), CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
+			this->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(getViewSize().getTopLeft().x, 0), VSTGUI::CPoint(this->getViewSize().getWidth(), this->getViewSize().getHeight())));
 		}
 
 		this->setMouseableArea(this->getViewSize());

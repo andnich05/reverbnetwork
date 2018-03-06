@@ -45,7 +45,7 @@ public:
 	// Get a gain value (in case it has been changed through the graphics view
 	inline const double& getGainValue(const int& input) { return inputGainValues[input]; }
 	// Get the size (incl. position) of an input rectangle (for dragging connections)
-	inline const VSTGUI::CRect getInputRect(const int& input) { return VSTGUI::CRect(VSTGUI::CPoint(localToFrame(inputRects[input].getTopLeft())), VSTGUI::CPoint((inputRects[input].getWidth(), inputRects[input].getHeight()))); }
+	inline const VSTGUI::CRect getInputRect(const int& input) { return VSTGUI::CRect(VSTGUI::CPoint(localToFrame(inputRects[input].getTopLeft())), VSTGUI::CPoint(inputRects[input].getWidth(), inputRects[input].getHeight())); }
 	// Get the center coordinates of an input
 	inline const VSTGUI::CPoint& getInputRectCenter(const int& input) { return localToFrame(inputRects[input].getCenter()); }
 	// Get the center coordinates of the output

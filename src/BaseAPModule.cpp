@@ -18,14 +18,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "BaseAPModule.h"
-#include "MixerModule.h"
-#include "QuantizerModule.h"
-#include "EqualizerModule.h"
-#include "SchroederAllpass.h"
-#include "GainModule.h"
-#include "ReverbNetworkDefines.h"
-#include "ValueConversion.h"
+#include "../include/BaseAPModule.h"
+#include "../include/MixerModule.h"
+#include "../include/QuantizerModule.h"
+#include "../include/EqualizerModule.h"
+#include "../include/SchroederAllpass.h"
+#include "../include/GainModule.h"
+#include "../include/ReverbNetworkDefines.h"
+#include "../include/ValueConversion.h"
 
 #include <cmath>
 #include <string>

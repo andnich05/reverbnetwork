@@ -18,9 +18,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "EqualizerModule.h"
-#include "ValueConversion.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/EqualizerModule.h"
+#include "../include/ValueConversion.h"
+#include "../include/ReverbNetworkDefines.h"
 #include <cmath>
 
 // Limit output values when the filter becomes unstable

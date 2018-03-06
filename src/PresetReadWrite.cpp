@@ -18,9 +18,9 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "PresetReadWrite.h"
-#include "ReverbNetworkDefines.h"
-#include "ValueConversion.h"
+#include "../include/PresetReadWrite.h"
+#include "../include/ReverbNetworkDefines.h"
+#include "../include/ValueConversion.h"
 
 PresetReadWrite::PresetReadWrite() {
 	// Initialize the values with the default values (Must be in the same order as in ReverbNetworkDefines.h!)

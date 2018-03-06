@@ -23,24 +23,20 @@
 
 #include "../vstgui4/vstgui/lib/controls/coptionmenu.h"
 
-namespace VSTGUI {
-
 class GuiOptionMenuInputSelector :
-	public COptionMenu
+	public VSTGUI::COptionMenu
 {
 public:
-	GuiOptionMenuInputSelector(const CRect& size, CControlListener* listener, int32_t tag, CBitmap* background = 0, CBitmap* bgWhenClick = 0, const int32_t style = 0);
-	~GuiOptionMenuInputSelector();
+	GuiOptionMenuInputSelector(const VSTGUI::CRect& size, VSTGUI::IControlListener* listener, int32_t tag, VSTGUI::CBitmap* background = 0, VSTGUI::CBitmap* bgWhenClick = 0, const int32_t style = 0);
 
 	// Get the index which active before the current index was selected
 	inline int32_t getLastIndex() const { return lastIndex; }
 
+protected:
+	virtual void setValue(float val) override;
+
 private:
 	int32_t lastIndex;
-
-	virtual void setValue(float val) VSTGUI_OVERRIDE_VMETHOD;
 };
-
-}
 
 #endif // GUIOPTIONMENUINPUTSELECTOR_H

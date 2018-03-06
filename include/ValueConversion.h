@@ -21,11 +21,12 @@
 #ifndef VALUECONVERSION_H
 #define VALUECONVERSION_H
 
+#include "../vstgui4/vstgui/lib/controls/cparamdisplay.h"
+
 class ValueConversion
 {
 public:
 	ValueConversion();
-	~ValueConversion();
 
 	// Sample rate of the host
 	inline static void setSampleRate(const double s) { sampleRate = s; }
@@ -93,7 +94,7 @@ public:
 	static bool textEditStringToValueConversion(const char* txt, float& result, void* userData);
 	// This conversion is performed when the user does some input in the textEdit; converts the string to float with sprintf(%f...)
 	// userData contains the precision for the value to be displayed
-	static bool textEditValueToStringConversion(float value, char utf8String[256], void* userData);
+	static bool textEditValueToStringConversion(float value, char utf8String[256], VSTGUI::CParamDisplay* display);
 
 	// Get the maximum allowed frequency for the equalizer (is smaller than sampleRate / 2)
 	static double getMaxEqFrequency();

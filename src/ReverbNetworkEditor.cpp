@@ -18,21 +18,21 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ReverbNetworkEditor.h"
+#include "../include/ReverbNetworkEditor.h"
 
-#include "GuiCustomRowColumnView.h"
-#include "GuiCustomTextLabel.h"
-#include "GuiOptionMenuInputSelector.h"
-#include "GuiBaseAPModule.h"
-#include "GuiCustomSplashScreen.h"
-#include "GuiGraphicsView.h"
-#include "GuiSignalGenerator.h"
-#include "GuiCustomValueEdit.h"
-#include "GuiCustomTextEdit.h"
-#include "GuiWorkspaceView.h"
+#include "../include/GuiCustomRowColumnView.h"
+#include "../include/GuiCustomTextLabel.h"
+#include "../include/GuiOptionMenuInputSelector.h"
+#include "../include/GuiBaseAPModule.h"
+#include "../include/GuiCustomSplashScreen.h"
+#include "../include/GuiGraphicsView.h"
+#include "../include/GuiSignalGenerator.h"
+#include "../include/GuiCustomValueEdit.h"
+#include "../include/GuiCustomTextEdit.h"
+#include "../include/GuiWorkspaceView.h"
 
-#include "ValueConversion.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/ValueConversion.h"
+#include "../include/ReverbNetworkDefines.h"
 
 namespace Steinberg {
 namespace Vst {
@@ -274,25 +274,25 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kRowStyle, CRowColumnView::kLeftTopEqualy, 0.0);
 
 	// Create preset GUI elements
-	CTextEdit* textEditPresetFilePath = new CTextEdit(CRect(CPoint(0, 0), CPoint(170, 20)), this, id_general_textEdit_presetFilePath, "Preset 1");
+	VSTGUI::CTextEdit* textEditPresetFilePath = new VSTGUI::CTextEdit(CRect(CPoint(0, 0), CPoint(170, 20)), this, id_general_textEdit_presetFilePath, "Preset 1");
 	addGuiElementPointer(textEditPresetFilePath, id_general_textEdit_presetFilePath);
 	textEditPresetFilePath->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	textEditPresetFilePath->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
 	textEditPresetFilePath->setFont(kNormalFontSmall);
-	CTextButton* buttonOpenPreset = new CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_general_button_openPreset, "Open Preset");
-	buttonOpenPreset->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonOpenPreset->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonOpenPreset->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonOpenPreset->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	VSTGUI::CTextButton* buttonOpenPreset = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_general_button_openPreset, "Open Preset");
+	//buttonOpenPreset->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonOpenPreset->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonOpenPreset->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonOpenPreset->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonOpenPreset->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonOpenPreset->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	addGuiElementPointer(buttonOpenPreset, id_general_button_openPreset);
 	buttonOpenPreset->setRoundRadius(1);
-	CTextButton* buttonSavePreset = new CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_general_button_savePreset, "Save Preset");
-	buttonSavePreset->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonSavePreset->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonSavePreset->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonSavePreset->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	VSTGUI::CTextButton* buttonSavePreset = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_general_button_savePreset, "Save Preset");
+	//buttonSavePreset->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonSavePreset->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonSavePreset->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonSavePreset->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonSavePreset->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonSavePreset->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	addGuiElementPointer(buttonSavePreset, id_general_button_savePreset);
@@ -347,16 +347,16 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	viewVstOutputSelect->addView(signalGenerator);
 
 	// Create About Button
-	CTextButton* buttonAbout = new CTextButton(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_general_button_about, "About");
+	VSTGUI::CTextButton* buttonAbout = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_general_button_about, "About");
 	addGuiElementPointer(buttonAbout, id_graphicsView_addModule);
-	buttonAbout->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonAbout->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonAbout->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonAbout->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonAbout->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonAbout->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonAbout->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonAbout->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonAbout->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonAbout->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonAbout->setRoundRadius(1);
-	CRowColumnView* viewAboutDummy = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 0.0, 5.0);
+	CRowColumnView* viewAboutDummy = new CRowColumnView(CRect(CPoint(0, 0), CPoint(0, 0)), CRowColumnView::kColumnStyle, CRowColumnView::kLeftTopEqualy, 0.0, CRect(5.0, 5.0, 5.0, 5.0));
 	viewAboutDummy->setBackgroundColor(CCOLOR_NOCOLOR);
 	viewAboutDummy->addView(buttonAbout);
 	viewAboutDummy->sizeToFit();
@@ -368,21 +368,21 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	graphicsView = new GuiGraphicsView(CRect(CPoint(0, 0), CPoint(splitView->getViewSize().getWidth() - 85, splitView->getViewSize().getHeight())), MAXMODULENUMBER, this);
 	graphicsView->setBackgroundColor(CCOLOR_GRAPHICSVIEW_BACKGROUND);
 	// Create toolbox for graphics view
-	CTextButton* buttonAddModule = new CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_graphicsView_addModule, "Add");
+	VSTGUI::CTextButton* buttonAddModule = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_graphicsView_addModule, "Add");
 	addGuiElementPointer(buttonAddModule, id_graphicsView_addModule);
-	buttonAddModule->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonAddModule->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonAddModule->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonAddModule->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonAddModule->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonAddModule->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonAddModule->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonAddModule->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonAddModule->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonAddModule->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonAddModule->setRoundRadius(1);
-	CTextButton* buttonRearrange = new CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_graphicsView_rearrangeModules, "Sort");
+	VSTGUI::CTextButton* buttonRearrange = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(85, 20)), this, id_graphicsView_rearrangeModules, "Sort");
 	addGuiElementPointer(buttonRearrange, id_graphicsView_rearrangeModules);
-	buttonRearrange->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonRearrange->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonRearrange->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonRearrange->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonRearrange->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonRearrange->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonRearrange->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonRearrange->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonRearrange->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonRearrange->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonRearrange->setRoundRadius(1);
@@ -442,21 +442,21 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 
 	// Create splash view
 	GuiCustomTextLabel* labelQueryMessage = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(200, 20)), "Override the current parameters?", kNormalFont, CHoriTxtAlign::kLeftText);
-	CTextButton* buttonOk = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewOk, "Yes");
+	VSTGUI::CTextButton* buttonOk = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewOk, "Yes");
 	addGuiElementPointer(buttonOk, id_general_button_splashViewOk);
-	buttonOk->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonOk->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonOk->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonOk->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonOk->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonOk->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonOk->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonOk->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonOk->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonOk->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonOk->setRoundRadius(1);
-	CTextButton* buttonCancel = new CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewCancel, "No");
+	VSTGUI::CTextButton* buttonCancel = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(50, 20)), this, id_general_button_splashViewCancel, "No");
 	addGuiElementPointer(buttonCancel, id_general_button_splashViewCancel);
-	buttonCancel->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonCancel->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonCancel->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonCancel->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonCancel->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonCancel->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonCancel->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonCancel->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonCancel->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonCancel->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonCancel->setRoundRadius(1);
@@ -485,12 +485,12 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 	title.append(pluginVersion);
 	GuiCustomTextLabel* labelVersion = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(500, 15)), title.c_str(), kNormalFont, CHoriTxtAlign::kLeftText);
 	GuiCustomTextLabel* labelCopyright = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(550, 15)), "Copyright (c) 2014-2015 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.", kNormalFont, CHoriTxtAlign::kLeftText);
-	CTextButton* buttonOkAbout = new CTextButton(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_general_button_splashViewOkAbout, "Okay");
+	VSTGUI::CTextButton* buttonOkAbout = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(80, 20)), this, id_general_button_splashViewOkAbout, "Okay");
 	addGuiElementPointer(buttonOkAbout, id_general_button_splashViewOkAbout);
-	buttonOkAbout->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonOkAbout->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonOkAbout->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonOkAbout->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonOkAbout->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonOkAbout->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonOkAbout->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonOkAbout->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonOkAbout->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonOkAbout->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonOkAbout->setRoundRadius(1);
@@ -561,10 +561,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			std::string temp = "APM";
 			temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
 			temp.append(" ");
-			/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-			fprintf(pFile, "y(n): %s\n", std::to_string(PARAM_MIXERGAIN_FIRST + tag - id_module_textEdit_titleFirst + ((i - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS) * MAXINPUTS).c_str());
-			fclose(pFile);*/
-			temp.append(dynamic_cast<CTextEdit*>(pControl)->getText()); // Get the text the user has entered
+			temp.append(dynamic_cast<VSTGUI::CTextEdit*>(pControl)->getText()); // Get the text the user has entered
 			// Update all option menus
 			double gainValue = ValueConversion::normToPlainInputGain(controller->getParamNormalized(PARAM_MIXERGAIN_FIRST + tag - id_module_textEdit_titleFirst + ((i - id_mixer_optionMenu_inputSelectFirst) / MAXMODULEINPUTS) * MAXINPUTS));
 			if (gainValue != 0.0) {
@@ -585,15 +582,15 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 			std::string temp = "APM";
 			temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
 			temp.append(" ");
-			temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
+			temp.append(dynamic_cast<VSTGUI::CTextEdit*>(pControl)->getText());
 			dynamic_cast<COptionMenu*>(guiElements[i])->getEntry(tag - id_module_textEdit_titleFirst + 1)->setTitle(temp.c_str());
 			guiElements[i]->setDirty();
 		} 
-		editorUserData.moduleNames[tag - id_module_textEdit_titleFirst] = dynamic_cast<CTextEdit*>(pControl)->getText(); // Save the names for later
+		editorUserData.moduleNames[tag - id_module_textEdit_titleFirst] = dynamic_cast<VSTGUI::CTextEdit*>(pControl)->getText(); // Save the names for later
 		std::string temp = "APM";
 		temp.append(std::to_string(tag - id_module_textEdit_titleFirst));
 		temp.append(" ");
-		temp.append(dynamic_cast<CTextEdit*>(pControl)->getText());
+		temp.append(dynamic_cast<VSTGUI::CTextEdit*>(pControl)->getText());
 		graphicsView->setModuleTitle(tag - id_module_textEdit_titleFirst, temp); // Update the titles in the graphics view
 		graphicsView->invalid();
 	}
@@ -715,9 +712,6 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	else if (tag >= id_mixer_textEdit_gainFirst && tag <= id_mixer_textEdit_gainLast)  {
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(888).c_str());
-		fclose(pFile);*/
 		int inputIndex = (int)(guiElements[id_mixer_optionMenu_inputSelectFirst + (tag - id_mixer_textEdit_gainFirst)]->getValue());
 		if (inputIndex != 0.0) {
 			uint16 moduleNumber = (tag - id_mixer_textEdit_gainFirst) / MAXMODULEINPUTS;	// Calculate the module number
@@ -987,7 +981,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 		}
 	}
 	else if (tag == id_general_textEdit_presetFilePath) {
-		editorUserData.presetName = dynamic_cast<CTextEdit*>(pControl)->getText();
+		editorUserData.presetName = dynamic_cast<VSTGUI::CTextEdit*>(pControl)->getText();
 	}
 	else if (tag == id_general_button_openPreset) {
 		if (pControl->getValue() == 1.0) {
@@ -1013,7 +1007,7 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				fileSelector->setTitle("Save Preset XML file");
 				fileSelector->setAllowMultiFileSelection(false);
 				fileSelectorStyle = CNewFileSelector::kSelectSaveFile;
-				fileSelector->setDefaultSaveName(dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->getText());
+				fileSelector->setDefaultSaveName(dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->getText());
 				fileSelector->run(this);
 				fileSelector->forget();
 				pControl->setDirty();
@@ -1079,51 +1073,51 @@ GuiBaseAPModule* ReverbNetworkEditor::createAPModule() {
 	handleView->setFrameColor(CCOLOR_MODULE_HANDLEFRAME);
 	handleView->setBackgroundColor(CCOLOR_MODULE_HANDLEBACKGROUND);
 
-	CTextButton* closeViewButton = new CTextButton(CRect(CPoint(0, 0), CPoint(16, 16)), this, id_module_button_hideFirst + moduleId, "X");
+	VSTGUI::CTextButton* closeViewButton = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(16, 16)), this, id_module_button_hideFirst + moduleId, "X");
 	addGuiElementPointer(closeViewButton, id_module_button_hideFirst + moduleId);
-	closeViewButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	closeViewButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	closeViewButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	closeViewButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//closeViewButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//closeViewButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//closeViewButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//closeViewButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	closeViewButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	closeViewButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	closeViewButton->setRoundRadius(1);
-	CTextButton* hideViewButton = new CTextButton(CRect(CPoint(0, 0), CPoint(16, 16)), this, id_module_button_collapseFirst + moduleId, "^");
+	VSTGUI::CTextButton* hideViewButton = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(16, 16)), this, id_module_button_collapseFirst + moduleId, "^");
 	addGuiElementPointer(hideViewButton, id_module_button_collapseFirst + moduleId);
-	hideViewButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	hideViewButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	hideViewButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	hideViewButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//hideViewButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//hideViewButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//hideViewButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//hideViewButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	hideViewButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	hideViewButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	hideViewButton->setRoundRadius(1);
-	hideViewButton->setStyle(CTextButton::kOnOffStyle);
-	CTextButton* defaultParametersButton = new CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_defaultParametersFirst + moduleId, "Default");
+	hideViewButton->setStyle(VSTGUI::CTextButton::kOnOffStyle);
+	VSTGUI::CTextButton* defaultParametersButton = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_defaultParametersFirst + moduleId, "Default");
 	addGuiElementPointer(defaultParametersButton, id_module_button_defaultParametersFirst + moduleId);
-	defaultParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	defaultParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	defaultParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	defaultParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//defaultParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//defaultParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//defaultParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//defaultParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	defaultParametersButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	defaultParametersButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	defaultParametersButton->setRoundRadius(1);
 	defaultParametersButton->setFont(kNormalFontSmall);
-	CTextButton* copyParametersButton = new CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_copyParametersFirst + moduleId, "Copy");
+	VSTGUI::CTextButton* copyParametersButton = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_copyParametersFirst + moduleId, "Copy");
 	addGuiElementPointer(copyParametersButton, id_module_button_copyParametersFirst + moduleId);
-	copyParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	copyParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	copyParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	copyParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//copyParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//copyParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//copyParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//copyParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	copyParametersButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	copyParametersButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	copyParametersButton->setRoundRadius(1);
 	copyParametersButton->setFont(kNormalFontSmall);
-	CTextButton* pasteParametersButton = new CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_pasteParametersFirst + moduleId, "Paste");
+	VSTGUI::CTextButton* pasteParametersButton = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(56, 16)), this, id_module_button_pasteParametersFirst + moduleId, "Paste");
 	addGuiElementPointer(pasteParametersButton, id_module_button_pasteParametersFirst + moduleId);
-	pasteParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	pasteParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	pasteParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	pasteParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//pasteParametersButton->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//pasteParametersButton->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//pasteParametersButton->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//pasteParametersButton->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	pasteParametersButton->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	pasteParametersButton->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	pasteParametersButton->setRoundRadius(1);
@@ -1251,12 +1245,12 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	paramFirstRow->sizeToFit();
 	CCheckBox* checkBoxEqualizerBypass = new CCheckBox(CRect(CPoint(50, 0), CPoint(60, 15)), this, id_equalizer_switch_bypassFirst + moduleId, "Bypass");
 	addGuiElementPointer(checkBoxEqualizerBypass, id_equalizer_switch_bypassFirst + moduleId);
-	CTextButton* buttonStability = new CTextButton(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth() / 2 - 10, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", CTextButton::kOnOffStyle);
+	VSTGUI::CTextButton* buttonStability = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth() / 2 - 10, 15)), this, id_equalizer_button_stabilityFirst + moduleId, "", VSTGUI::CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonStability, id_equalizer_button_stabilityFirst + moduleId);
-	buttonStability->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
-	buttonStability->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
-	buttonStability->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
-	buttonStability->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
+	//buttonStability->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
+	//buttonStability->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
+	//buttonStability->setGradientStartColorHighlighted(CCOLOR_BUTTON_STARTPRESSEDBACKGROUND);
+	//buttonStability->setGradientEndColorHighlighted(CCOLOR_BUTTON_ENDPRESSEDBACKGROUND);
 	buttonStability->setTextColor(CCOLOR_BUTTON_TEXTNORMAL);
 	buttonStability->setTextColorHighlighted(CCOLOR_BUTTON_TEXTPRESSED);
 	buttonStability->setRoundRadius(1);
@@ -1286,7 +1280,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	GuiCustomRowColumnView* a0View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
 	a0View->setBackgroundColor(CCOLOR_NOCOLOR);
 	GuiCustomTextLabel* labelA0 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a0:", kNormalFontSmall);
-	CTextEdit* editA0 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a0First + moduleId);
+	VSTGUI::CTextEdit* editA0 = new VSTGUI::CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a0First + moduleId);
 	addGuiElementPointer(editA0, id_equalizer_textEdit_a0First + moduleId);
 	editA0->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	editA0->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1304,7 +1298,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	GuiCustomRowColumnView* a1View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
 	a1View->setBackgroundColor(CCOLOR_NOCOLOR);
 	GuiCustomTextLabel* labelA1 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a1:", kNormalFontSmall);
-	CTextEdit* editA1 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a1First + moduleId);
+	VSTGUI::CTextEdit* editA1 = new VSTGUI::CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a1First + moduleId);
 	addGuiElementPointer(editA1, id_equalizer_textEdit_a1First + moduleId);
 	editA1->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	editA1->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1322,7 +1316,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	GuiCustomRowColumnView* a2View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
 	a2View->setBackgroundColor(CCOLOR_NOCOLOR);
 	GuiCustomTextLabel* labelA2 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "a2:", kNormalFontSmall);
-	CTextEdit* editA2 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a2First + moduleId);
+	VSTGUI::CTextEdit* editA2 = new VSTGUI::CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_a2First + moduleId);
 	addGuiElementPointer(editA2, id_equalizer_textEdit_a2First + moduleId);
 	editA2->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	editA2->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1340,7 +1334,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	GuiCustomRowColumnView* b1View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
 	b1View->setBackgroundColor(CCOLOR_NOCOLOR);
 	GuiCustomTextLabel* labelB1 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b1:", kNormalFontSmall);
-	CTextEdit* editB1 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b1First + moduleId);
+	VSTGUI::CTextEdit* editB1 = new VSTGUI::CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b1First + moduleId);
 	addGuiElementPointer(editB1, id_equalizer_textEdit_b1First + moduleId);
 	editB1->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	editB1->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1358,7 +1352,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createEqualizer(const CRect& parent
 	GuiCustomRowColumnView* b2View = new GuiCustomRowColumnView(CRect(CPoint(0, 0), CPoint(equalizerView->getWidth(), 20)), GuiCustomRowColumnView::kColumnStyle);
 	b2View->setBackgroundColor(CCOLOR_NOCOLOR);
 	GuiCustomTextLabel* labelB2 = new GuiCustomTextLabel(CRect(CPoint(0, 0), CPoint(20, 20)), "b2:", kNormalFontSmall);
-	CTextEdit* editB2 = new CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b2First + moduleId);
+	VSTGUI::CTextEdit* editB2 = new VSTGUI::CTextEdit(CRect(CPoint(0, 0), CPoint(100, 20)), this, id_equalizer_textEdit_b2First + moduleId);
 	addGuiElementPointer(editB2, id_equalizer_textEdit_b2First + moduleId);
 	editB2->setBackColor(CCOLOR_TEXTEDIT_BACKGROUND);
 	editB2->setFrameColor(CCOLOR_TEXTEDIT_FRAME);
@@ -1635,7 +1629,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	valueEdit->setMax(MAX_MIXERGAIN);
 	valueEdit->setFont(CFontRef(kNormalFontSmall));
 
-	CTextButton* buttonMute = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_muteFirst + idOffset, "M", CTextButton::kOnOffStyle);
+	VSTGUI::CTextButton* buttonMute = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_muteFirst + idOffset, "M", VSTGUI::CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonMute, id_mixer_button_muteFirst + idOffset);
 	buttonMute->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonMute->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
@@ -1646,7 +1640,7 @@ GuiCustomRowColumnView* ReverbNetworkEditor::createMixerRow(const VSTGUI::UTF8St
 	buttonMute->setGradientEndColorHighlighted(CColor(200, 0, 0, 255));
 	buttonMute->setRoundRadius(1);
 	
-	CTextButton* buttonSolo = new CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_soloFirst + idOffset, "S", CTextButton::kOnOffStyle);
+	VSTGUI::CTextButton* buttonSolo = new VSTGUI::CTextButton(CRect(CPoint(0, 0), CPoint(20, 20)), this, id_mixer_button_soloFirst + idOffset, "S", VSTGUI::CTextButton::kOnOffStyle);
 	addGuiElementPointer(buttonSolo, id_mixer_button_soloFirst + idOffset);
 	buttonSolo->setGradientStartColor(CCOLOR_BUTTON_STARTNORMALBACKGROUND);
 	buttonSolo->setGradientEndColor(CCOLOR_BUTTON_ENDNORMALBACKGROUND);
@@ -1867,9 +1861,6 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 		// If there is something in the ToDo-queue
 		if (eqStabilityValues.size() > 0) {
 			for (auto&& i : eqStabilityValues) {
-				/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-				fprintf(pFile, "y(n): %s\n", std::to_string(283574).c_str());
-				fclose(pFile);*/
 				if (guiElements[id_equalizer_button_stabilityFirst + i.moduleNumber]) {
 					updateEqStability(i.moduleNumber, i.isStable);
 				}
@@ -1904,9 +1895,6 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 	}
 	else if (message == GuiBaseAPModule::kModuleWantsFocus) {
 		// User has clicked on a module => bring the module to the top of the view
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", message);
-		fclose(pFile);*/
 		for (auto&& module : apGuiModules) {
 			if (module == dynamic_cast<GuiBaseAPModule*>(sender)) {
 				workspaceView->changeViewZOrder(dynamic_cast<GuiBaseAPModule*>(sender), workspaceView->getNbViews() - 1);
@@ -2102,11 +2090,6 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 	getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AUTOFIREENABLED, presetStruct.signalGenerator.autoFireEnabled);
 	getController()->performEdit(PARAM_SIGNALGENERATOR_AUTOFIREENABLED, presetStruct.signalGenerator.autoFireEnabled);
 
-	/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(getController()->setParamNormalized(PARAM_SIGNALGENERATOR_AMPLITUDE, ValueConversion::plainToNormSignalAmplitude(presetStruct.signalGenerator.gain))).c_str());
-	fprintf(pFile, "y(n): %s\n", std::to_string(PARAM_SIGNALGENERATOR_AMPLITUDE).c_str());
-	fclose(pFile);*/
-
 	// Graphics view
 	for (unsigned int i = 0; i < presetStruct.graphicsView.modules.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
@@ -2141,7 +2124,7 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 	XmlPresetReadWrite::Preset p = {}; // Initialize
 	
 	// build info...
-	p.name = dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->getText();
+	p.name = dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->getText();
 
 	p.buildVersion = pluginVersion;
 	p.maxModuleNumber = MAXMODULENUMBER;
@@ -2151,7 +2134,7 @@ const XmlPresetReadWrite::Preset ReverbNetworkEditor::getXmlPreset() {
 	// Build up the preset structure
 	for (unsigned int i = 0; i < apGuiModules.size(); ++i) {
 		XmlPresetReadWrite::Module m = {};
-		std::string temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText();
+		std::string temp = dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText();
 		std::string stringToErase = "APM";
 		stringToErase.append(std::to_string(i));
 		stringToErase.append(" ");
@@ -2299,9 +2282,6 @@ void ReverbNetworkEditor::copyModuleParameters(const unsigned int& sourceModuleI
 	q.quantization = ValueConversion::normToPlainQuantization(getController()->getParamNormalized(PARAM_QUANTIZERBITDEPTH_FIRST + sourceModuleId));
 	q.bypass = (getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId) != 0.0);
 	m.quantizerParameters = q;
-	/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-	fprintf(pFile, "y(n): %s\n", std::to_string(getController()->getParamNormalized(PARAM_QUANTIZERBYPASS_FIRST + sourceModuleId) != 0.0).c_str());
-	fclose(pFile);*/
 
 	XmlPresetReadWrite::Equalizer e = {};
 	e.filterTypeIndex = ValueConversion::normToPlainFilterTypeSelect(getController()->getParamNormalized(PARAM_EQFILTERTYPE_FIRST + sourceModuleId));
@@ -2430,17 +2410,17 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 
 void ReverbNetworkEditor::applyUserData() {
 	if (!editorUserData.presetName.empty()) {
-		dynamic_cast<CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(editorUserData.presetName.c_str());
+		dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_general_textEdit_presetFilePath])->setText(editorUserData.presetName.c_str());
 	}
 	for (unsigned int i = 0; i < editorUserData.moduleNames.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
-		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(editorUserData.moduleNames[i].c_str());
+		dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(editorUserData.moduleNames[i].c_str());
 		valueChanged(guiElements[id_module_textEdit_titleFirst + i]);
 		std::string temp = "APM";
 		temp.append(std::to_string(i));
 		temp.append(" ");
 		temp.append(editorUserData.moduleNames[i]);
-		dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
+		dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->setText(temp.c_str());
 	}
 	for (unsigned int i = 0; i < editorUserData.graphicsView.modules.size(); ++i) {
 		if (i >= MAXMODULENUMBER) break;
@@ -2473,7 +2453,7 @@ void ReverbNetworkEditor::initializeGraphicsView() {
 		graphicsView->createVstOutput();
 	}
 	for (int i = 0; i < MAXMODULENUMBER; ++i) {
-		graphicsView->createModule(dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
+		graphicsView->createModule(dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_module_textEdit_titleFirst + i])->getText(), i, MAXINPUTS);
 		graphicsView->setModuleInputNames(i, inputNames);
 	}
 	graphicsView->rearrangeModules();
@@ -2487,7 +2467,7 @@ void ReverbNetworkEditor::updateGraphicsViewModule(const int& moduleId, const in
 void ReverbNetworkEditor::updateGainValuesInOptionMenus(const int& moduleNumber, const int& input, const double& gainValue) {
 	std::string temp = "";
 	if (input < MAXMODULENUMBER) {
-		temp = dynamic_cast<CTextEdit*>(guiElements[id_module_textEdit_titleFirst + input])->getText();
+		temp = dynamic_cast<VSTGUI::CTextEdit*>(guiElements[id_module_textEdit_titleFirst + input])->getText();
 	}
 	else if (input - MAXMODULENUMBER < MAXVSTINPUTS) {
 		temp = "VST";
@@ -2515,16 +2495,16 @@ void ReverbNetworkEditor::updateGainValuesInOptionMenus(const int& moduleNumber,
 
 void ReverbNetworkEditor::updateEqStability(const int& moduleNumber, const bool& stable) {
 	if (stable) {
-		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setTitle("Stable");
-		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setGradientStartColor(CColor(0, 200, 0, 255));
+		dynamic_cast<VSTGUI::CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setTitle("Stable");
+		dynamic_cast<VSTGUI::CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setGradientStartColor(CColor(0, 200, 0, 255));
 	}
 	else {
-		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setTitle("Unstable");
-		dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setGradientStartColor(CColor(200, 0, 0, 255));
+		dynamic_cast<VSTGUI::CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setTitle("Unstable");
+		dynamic_cast<VSTGUI::CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setGradientStartColor(CColor(200, 0, 0, 255));
 		guiElements[id_equalizer_switch_bypassFirst + moduleNumber]->setValue(1.0);
 		valueChanged(guiElements[id_equalizer_switch_bypassFirst + moduleNumber]);
 	}
-	dynamic_cast<CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setDirty();
+	dynamic_cast<VSTGUI::CTextButton*>(guiElements[id_equalizer_button_stabilityFirst + moduleNumber])->setDirty();
 }
 
 void ReverbNetworkEditor::openModuleDetailView(const int& moduleNumber, const bool& open) {

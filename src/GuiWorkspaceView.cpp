@@ -18,21 +18,14 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "GuiWorkspaceView.h"
+#include "../include/GuiWorkspaceView.h"
 #include <string>
 
+GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor)
+	: CViewContainer(size), editor(editor) {
 
-namespace VSTGUI {
+}
 
-	GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor)
-		: CViewContainer(size), editor(editor) {
-
-	}
-
-	void GuiWorkspaceView::parentSizeChanged() {
-		/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(283574).c_str());
-		fclose(pFile);*/
-		editor->notify(this, "ViewSizeChanged");
-	}
+void GuiWorkspaceView::parentSizeChanged() {
+	editor->notify(this, "ViewSizeChanged");
 }

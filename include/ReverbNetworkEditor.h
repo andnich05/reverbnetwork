@@ -29,21 +29,19 @@
 #include "ReverbNetworkEnums.h"
 
 
-namespace VSTGUI {
-	class GuiBaseAPModule;
-	class GuiGraphicsView;
-	class GuiCustomSplashScreen;
-	class GuiCustomRowColumnView;
-	class GuiSignalGenerator;
-	class GuiWorkspaceView;
-}
+class GuiBaseAPModule;
+class GuiGraphicsView;
+class GuiCustomSplashScreen;
+class GuiCustomRowColumnView;
+class GuiSignalGenerator;
+class GuiWorkspaceView;
 
 namespace Steinberg {
 namespace Vst {
 
 class ReverbNetworkEditor :
 	public VSTGUIEditor,
-	public CControlListener
+	public IControlListener
 
 {
 public:

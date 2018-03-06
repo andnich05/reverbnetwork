@@ -18,8 +18,8 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "XmlPresetReadWrite.h"
-#include "ReverbNetworkDefines.h"
+#include "../include/XmlPresetReadWrite.h"
+#include "../include/ReverbNetworkDefines.h"
 #include "../pugixml-1.6/src/pugixml.hpp"
 #include <string>
 
@@ -168,10 +168,6 @@ const XmlPresetReadWrite::Preset XmlPresetReadWrite::loadPreset(const char* file
 			if (gV.vstOutputs.size() >= MAXVSTOUTPUTS) break;
 		}
 		loadedPreset.graphicsView = gV;
-
-		/*FILE* pFile = fopen("C:\\Users\\Andrej\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(tool.child("name").text().as_double()).c_str());
-		fclose(pFile);*/
 	}
 	else {
 		// Error

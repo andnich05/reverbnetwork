@@ -18,20 +18,20 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ReverbNetworkProcessor.h"
-#include "reverbnetworkids.h"
+#include "../include/ReverbNetworkProcessor.h"
+#include "../include/reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
 #include "pluginterfaces/vst/ivstparameterchanges.h"
 #include "pluginterfaces/vst/ivstevents.h"
 
-#include "ReverbNetworkDefines.h"
-#include "ReverbNetworkEnums.h"
+#include "../include/ReverbNetworkDefines.h"
+#include "../include/ReverbNetworkEnums.h"
 
-#include "BaseAPModule.h"
-#include "ConnectionMatrix.h"
-#include "ValueConversion.h"
-#include "PresetReadWrite.h"
-#include "SignalGenerator.h"
+#include "../include/BaseAPModule.h"
+#include "../include/ConnectionMatrix.h"
+#include "../include/ValueConversion.h"
+#include "../include/PresetReadWrite.h"
+#include "../include/SignalGenerator.h"
 
 
 
@@ -150,9 +150,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::setBusArrangements(SpeakerArrangement
 }
 
 //tresult PLUGIN_API ReverbNetworkProcessor::getBusArrangement(BusDirection dir, int32 index, SpeakerArrangement& arr) {
-//	//FILE* pFile = fopen("E:\\logVst.txt", "a");
-//	//fprintf(pFile, "y(n): %s\n", "Get Bus Arr"); // Should be always 1
-//	//fclose(pFile);
 //
 //	// Fallback solution: make every in- and output mono
 //	arr = SpeakerArr::kMono;
@@ -580,9 +577,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 							#ifdef LOGGING
 							Logging::addToLog("VST OUTPUT", "Connect Module " + std::to_string(index - 1) + " to VST Output " + std::to_string(pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST));
 							#endif
-							/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-							fprintf(pFile, "y(n): %s\n", std::to_string(index).c_str());
-							fclose(pFile);*/
 						}
 						else { // VST input as input source selected
 							connectionMatrix->setVstToVstConnection(index - 1 - MAXMODULENUMBER, pid - PARAM_GENERALVSTOUTPUTSELECT_FIRST);
@@ -711,12 +705,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 					if (paramQueue) {
 						int32 index2 = 0;
 						paramQueue->addPoint(0, ppmValues[i], index2);
-						/*FILE* pFile = fopen("E:\\logVst.txt", "a");
-						fprintf(pFile, "%s\n", std::to_string(i).c_str());
-						fprintf(pFile, "%s\n", std::to_string(ppmValues[i]).c_str());
-						fprintf(pFile, "%s\n", std::to_string(ppmOldValues[i]).c_str());
-						fprintf(pFile, "%s\n", std::to_string(888888888).c_str());
-						fclose(pFile);*/
 						ppmOldValues[i] = ppmValues[i];
 						
 					}
@@ -724,13 +712,6 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 			}
 		}
 	}
-	
-	//auto t00 = std::chrono::duration_cast<std::chrono::nanoseconds>(t0.time_since_epoch()).count();
-	//auto t11 = std::chrono::duration_cast<std::chrono::nanoseconds>(t1.time_since_epoch()).count();
-	//FILE* pFile = fopen("E:\\logVst.txt", "a");
-	//fprintf(pFile, "%s\n", std::to_string(t11 - t00).c_str());
-	////fprintf(pFile, "Samples: %s\n", std::to_string(data.numSamples).c_str());
-	//fclose(pFile);
 
 	return kResultTrue;
 }

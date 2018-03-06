@@ -18,13 +18,13 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ReverbNetworkController.h"
-#include "reverbnetworkids.h"
+#include "../include/ReverbNetworkController.h"
+#include "../include/reverbnetworkids.h"
 #include "pluginterfaces/base/ustring.h"
 #include "pluginterfaces/vst/ivstmidicontrollers.h"
 
-#include "ReverbNetworkDefines.h"
-#include "PresetReadWrite.h"
+#include "../include/ReverbNetworkDefines.h"
+#include "../include/PresetReadWrite.h"
 
 
 #if TARGET_OS_IPHONE
@@ -438,17 +438,27 @@ IPlugView* PLUGIN_API ReverbNetworkController::createView(const char* name)
 //------------------------------------------------------------------------
 void ReverbNetworkController::addDependentView(ReverbNetworkEditor* view)
 {
-	viewsArray.add(view);
+	//viewsArray.add(view);
+	viewsArray.push_back(view);
 }
 
 //------------------------------------------------------------------------
 void ReverbNetworkController::removeDependentView(ReverbNetworkEditor* view)
 {
-	for (int32 i = 0; i < viewsArray.total(); i++)
+	//for (int32 i = 0; i < viewsArray.total(); i++)
+	//{
+	//	if (viewsArray.at(i) == view)
+	//	{
+	//		viewsArray.removeAt(i);
+	//		break;
+	//	}
+	//}
+
+	for (std::vector<ReverbNetworkEditor*>::iterator it = viewsArray.begin(); it != viewsArray.end(); it++)
 	{
-		if (viewsArray.at(i) == view)
+		if (*it== view)
 		{
-			viewsArray.removeAt(i);
+			viewsArray.erase(it);
 			break;
 		}
 	}
@@ -492,7 +502,7 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 			setParamNormalized(i, preset.getNormValueByParamId(i));
 		}
 		// Update the GUI with the loaded parameters
-		for (int32 i = 0; i < viewsArray.total(); i++)
+		for (int32 i = 0; i < viewsArray.size(); i++)
 		{
 			if (viewsArray.at(i))
 			{
@@ -525,18 +535,13 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 
 	// Update the GUI with values coming from Processor (e.g. EQ stability or automated parameters)
-	for (int32 i = 0; i < viewsArray.total(); i++)
+	for (int32 i = 0; i < viewsArray.size(); i++)
 	{
 		if (viewsArray.at(i))
 		{
 			viewsArray.at(i)->updateEditorFromController(tag, value);
 		}
 	}
-	/*if (tag == PARAM_ALLPASSDECAY_FIRST) {
-		FILE* pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(value).c_str());
-		fclose(pFile);
-	}*/
 
 	return result;
 }
@@ -555,7 +560,7 @@ tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
 		else {
 			return kMessageUnknown;
 		}
-		for (int i = 0; i < viewsArray.total(); ++i) {
+		for (int i = 0; i < viewsArray.size(); ++i) {
 			if (viewsArray.at(i)) {
 				viewsArray.at(i)->updateEditorFromController(PARAM_EQSTABILITY_FIRST + eqStability.moduleNumber, eqStability.isStable);
 			}
