@@ -399,7 +399,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 		p2->appendString(USTRING("False"));
 		p2->appendString(USTRING("True"));
 		EditControllerEx1::parameters.addParameter(p2);
-		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Fire!"), PARAM_SIGNALGENERATOR_FIRE, 0, MIN_SIGNALGENERATOR_FIRE, MAX_SIGNALGENERATOR_FIRE, DEF_SIGNALGENERATOR_FIRE, 1, ParameterInfo::kIsReadOnly | ParameterInfo::kCanAutomate));
+		EditControllerEx1::parameters.addParameter(new RangeParameter(USTRING("SIGNALGEN-Fire!"), PARAM_SIGNALGENERATOR_FIRE, 0, MIN_SIGNALGENERATOR_FIRE, MAX_SIGNALGENERATOR_FIRE, DEF_SIGNALGENERATOR_FIRE, 1, ParameterInfo::kCanAutomate));
 
 		for (uint32 i = 0; i < MAXMODULENUMBER; ++i) {
 			std::string temp = "APM";
@@ -412,7 +412,7 @@ tresult PLUGIN_API ReverbNetworkController::initialize(FUnknown* context)
 			std::string temp = "APM";
 			temp.append(std::to_string(i));
 			temp.append("-EQ-Stability");
-			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_PPMUPDATE_FIRST + i, USTRING(""), 0.0, 1.0, 0.0, 1, ParameterInfo::kIsReadOnly);
+			RangeParameter* parameter = new RangeParameter(USTRING(temp.c_str()), PARAM_EQSTABILITY_FIRST + i, USTRING(""), 0.0, 1.0, 0.0, 1, ParameterInfo::kIsReadOnly);
 			EditControllerEx1::parameters.addParameter(parameter);
 		}
 
@@ -502,7 +502,7 @@ tresult PLUGIN_API ReverbNetworkController::setComponentState(IBStream* state)
 			setParamNormalized(i, preset.getNormValueByParamId(i));
 		}
 		// Update the GUI with the loaded parameters
-		for (int32 i = 0; i < viewsArray.size(); i++)
+		for (size_t i = 0; i < viewsArray.size(); i++)
 		{
 			if (viewsArray.at(i))
 			{
@@ -535,7 +535,7 @@ tresult PLUGIN_API ReverbNetworkController::setParamNormalized(ParamID tag, Para
 	tresult result = EditControllerEx1::setParamNormalized (tag, value);
 
 	// Update the GUI with values coming from Processor (e.g. EQ stability or automated parameters)
-	for (int32 i = 0; i < viewsArray.size(); i++)
+	for (size_t i = 0; i < viewsArray.size(); i++)
 	{
 		if (viewsArray.at(i))
 		{
@@ -560,7 +560,7 @@ tresult PLUGIN_API ReverbNetworkController::notify(IMessage* message) {
 		else {
 			return kMessageUnknown;
 		}
-		for (int i = 0; i < viewsArray.size(); ++i) {
+		for (size_t i = 0; i < viewsArray.size(); ++i) {
 			if (viewsArray.at(i)) {
 				viewsArray.at(i)->updateEditorFromController(PARAM_EQSTABILITY_FIRST + eqStability.moduleNumber, eqStability.isStable);
 			}

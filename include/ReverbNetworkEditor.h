@@ -49,7 +49,7 @@ public:
 	~ReverbNetworkEditor();
 
 	// Data to save when the editor is closed (closed means destroyed!)
-	typedef struct EditorUserData{
+	struct EditorUserData{
 		std::string presetName;
 		std::vector<std::string> moduleNames;
 		XmlPresetReadWrite::GraphicsView graphicsView;

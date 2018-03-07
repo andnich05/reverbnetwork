@@ -28,7 +28,7 @@ class GuiWorkspaceView : public CViewContainer {
 public:
 	GuiWorkspaceView::GuiWorkspaceView(const CRect& size, Steinberg::Vst::VSTGUIEditor* editor);
 
-protected:
+public:
 	virtual void parentSizeChanged() override;
 
 private:

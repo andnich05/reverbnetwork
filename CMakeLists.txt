@@ -31,6 +31,8 @@ set(plug_sources
 	include/ValueConversion.h
 	include/version.h
 	include/XmlPresetReadWrite.h
+	pugixml/src/pugiconfig.hpp
+	pugixml/src/pugixml.hpp
 	src/BaseAPModule.cpp
 	src/ConnectionMatrix.cpp
 	src/EqualizerModule.cpp
@@ -60,7 +62,8 @@ set(plug_sources
 	src/ValueConversion.cpp
 	src/VST2EntryPoint.cpp
 	src/XmlPresetReadWrite.cpp
-	#../../VST3_SDK/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
+	pugixml/src/pugixml.cpp
+	../../VST3_SDK/public.sdk/source/vst/vst2wrapper/vst2wrapper.sdk.cpp
 )
 
 #--- HERE change the target Name for your plug-in (for ex. set(target myDelay))-------

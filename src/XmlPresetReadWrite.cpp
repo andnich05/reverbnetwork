@@ -20,7 +20,7 @@
 
 #include "../include/XmlPresetReadWrite.h"
 #include "../include/ReverbNetworkDefines.h"
-#include "../pugixml-1.6/src/pugixml.hpp"
+#include "../pugixml/src/pugixml.hpp"
 #include <string>
 
 XmlPresetReadWrite::XmlPresetReadWrite() {
