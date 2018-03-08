@@ -82,14 +82,6 @@ GuiGraphicsModule::GuiGraphicsModule(const std::string& title, const int& number
 }
 
 GuiGraphicsModule::~GuiGraphicsModule() {
-	for (auto& gain : textEditsGainValues)
-	{
-		gain->forget();
-	}
-	for (auto& name : inputNames)
-	{
-		name->forget();
-	}
 }
 
 void GuiGraphicsModule::setInputNames(const std::vector<std::string>& inputNames) {
