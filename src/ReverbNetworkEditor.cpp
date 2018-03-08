@@ -531,6 +531,11 @@ bool PLUGIN_API ReverbNetworkEditor::open(void* parent, const PlatformType& plat
 		copyModuleParameters(0, defaultModuleParameters);
 	}
 
+	IPlatformFrameConfig* config = nullptr;
+
+	// Open the UI
+	getFrame()->open(parent, platformType, config);
+
 	return true;
 }
 
