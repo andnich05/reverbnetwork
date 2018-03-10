@@ -23,45 +23,47 @@
 
 #include "ReverbNetworkEnums.h"
 
-enum FilterCoefficients {
-	a0,
-	a1,
-	a2,
-	b1,
-	b2,
-	numberOfCofficients
-};
-
 class EqualizerModule {
 public:
 	EqualizerModule(FilterType filterType, double centerFrequency, double qFactor, double gain);
 	~EqualizerModule();
 
+public:
+	enum class FilterCoefficients {
+		a0,
+		a1,
+		a2,
+		b1,
+		b2,
+		numberOfCofficients
+	};
+
+public:
 	// Set the sample rate of the host; Returns true if the filter is stable
-	inline const bool& setSamplingFreq(const double& fs) { samplingFreq = fs; return calculateCoefficients(); }
+	inline bool setSamplingFreq(double fs) { samplingFreq = fs; return calculateCoefficients(); }
 	// Set the center or cut-off frequency of the equalizer; Returns true if the filter is stable
-	const bool& setCenterFreq(const double& f0);
+	bool setCenterFreq(double f0);
 	// Set the Q factor of the equalizer; Returns true if the filter is stable
-	inline const bool& setQFactor(const double& q) { qFactor = q; oneDividedByQ = 1 / qFactor; return calculateCoefficients(); }
+	inline bool setQFactor(double q) { qFactor = q; oneDividedByQ = 1 / qFactor; return calculateCoefficients(); }
 	// Set the gain of the equalizer (has no effect when Filter Type is Low-pass or High-pass); Returns true if the filter is stable
-	inline const bool& setGain(const double& g) { gain = g; return calculateCoefficients(); };
+	inline bool setGain(double g) { gain = g; return calculateCoefficients(); };
 	// Set the filter type of the equalizer; Returns true if the filter is stable
-	inline const bool& setFilterType(const FilterType& type) { filterType = type; return calculateCoefficients(); }
+	inline bool setFilterType(FilterType type) { filterType = type; return calculateCoefficients(); }
 	// Set one of the filter coefficients; works only in raw mode!
 	// Returns true if the stability condition is met
-	const bool& setFilterCoefficient(const FilterCoefficients coefficient, const double& value);
+    bool setFilterCoefficient(FilterCoefficients coefficient, double value);
 	// Process the sample by reference
 	void processSample(double& sample);
 	// Check whether the current filter is stable or not
-	inline const bool& isStable() { return stable; }
+	inline bool isStable() { return stable; }
 	// Enable or disable limiter
-	inline const bool& enableLimiter(const bool& enable) { this->limit = enable; return calculateCoefficients(); }
+	inline bool enableLimiter(bool enable) { this->limit = enable; return calculateCoefficients(); }
 
 private:
 	// Calculate the filter coefficients
-	const bool& calculateCoefficients();
+	bool calculateCoefficients();
 	// Check the stability condition for the biquad filter after the new coefficients have been calculated
-	const bool& checkStability();
+	bool checkStability();
 
 	// Sampling frequency
 	double samplingFreq;

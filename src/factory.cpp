@@ -97,4 +97,3 @@ END_FACTORY
 
 bool InitModule () { return true; }
 bool DeinitModule () { return true; }
-

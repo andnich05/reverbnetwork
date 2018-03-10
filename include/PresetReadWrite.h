@@ -39,12 +39,12 @@ public:
 	Steinberg::tresult getParamterState(Steinberg::IBStream* state) const;
 
 	// Set a parameter (has to be done in Processor process function (input parameter changes))
-	inline void setNormValueByParamId(const double& normalizeValue, const unsigned long& parameterId) { 
+	inline void setNormValueByParamId(double normalizeValue, unsigned long parameterId) { 
 		if (parameterId < parameterValues.size()) parameterValues[parameterId] = normalizeValue; 
 	}
 
 	// Get a parameter (has to be done in Controller)
-	inline double getNormValueByParamId(const unsigned long& parameterId) const {
+	inline double getNormValueByParamId(unsigned long parameterId) const {
 		if (parameterId < parameterValues.size()) return parameterValues[parameterId]; else return 0.0;
 	}
 

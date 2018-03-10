@@ -28,11 +28,11 @@ public:
 	~GainModule();
 
 	// Set output gain as a factor
-	inline void setGain(const double& g) { gain = g; }
+	inline void setGain(double g) { gain = g; }
 	// Process sample by reference
 	void processSample (double& sample) const;
 	// Enable or disable Limiter
-	void enableLimiter(const bool& enable) { this->limit = enable; }
+	void enableLimiter(bool enable) { this->limit = enable; }
 
 private:
 	// Gain as a factor

@@ -26,17 +26,12 @@
 const double max32bitValueSigned = pow(2, 32) / 2 - 1;
 const double min32bitValueSigned = pow(2, 32) / 2;
 
-// Quantization methods in order to correct the signal asymmetry, each has it's benefits and drawbacks
-enum BitCorrectionMethod {
-	withBitShifting, // Fast, many operations, complex, scales the signal to full range
-	withoutBitShifting, // Slow, only a few operations, simple, scales the signal to full range
-	withoutScaling // Very fast, few operations, simple, doesn't scale the signal to full range
-};
-
-#define BITCORRECTIONMETHOD withoutScaling
-
 QuantizerModule::QuantizerModule(unsigned int quantization) 
-	: mask(-1), factor(0.0) {
+	: bitsToReset(0)
+	, mask(-1)
+	, factor(0.0)
+	, bitCorretionMethod(BitCorrectionMethod::withoutScaling)
+{
 	setQuantization(quantization);
 }
 
@@ -44,7 +39,7 @@ QuantizerModule::~QuantizerModule() {
 
 }
 
-void QuantizerModule::setQuantization(const double& q) {
+void QuantizerModule::setQuantization(double q) {
 	bitsToReset = 32 - (unsigned int)(std::round(q));
 	calculateFactor();
 }
@@ -62,7 +57,7 @@ void QuantizerModule::processSample(double& sample) const {
 		temp = (long int)(sample * max32bitValueSigned);
 	}
 
-	if (BITCORRECTIONMETHOD == withBitShifting) {
+	if (bitCorretionMethod == BitCorrectionMethod::withBitShifting) {
 		// Method 1: with bit shifting
 		//--------------------------------
 		// Convert signed to unsigned
@@ -82,7 +77,7 @@ void QuantizerModule::processSample(double& sample) const {
 		temp = tu - (unsigned long)min32bitValueSigned;
 		//------------------------------------
 	}
-	else if (BITCORRECTIONMETHOD == withoutBitShifting) {
+	else if (bitCorretionMethod == BitCorrectionMethod::withoutBitShifting) {
 		// Method 2: Without bit shifting
 		//------------------------------------
 		if (bitsToReset < 32) {
@@ -97,7 +92,7 @@ void QuantizerModule::processSample(double& sample) const {
 		}
 		//-----------------------------------
 	}
-	else if (BITCORRECTIONMETHOD == withoutScaling) {
+	else if (bitCorretionMethod == BitCorrectionMethod::withoutScaling) {
 		// Method 3: with bit shifting, without scaling
 		//--------------------------------
 		// Clear the bits of the sample
@@ -105,6 +100,10 @@ void QuantizerModule::processSample(double& sample) const {
 		// Shift the sample relative to 0.0 (remove DC offset)
 		temp += (long int)factor;
 		//------------------------------------
+	}
+	else
+	{
+		// ?
 	}
 
 	// Convert the integer back to double
@@ -117,25 +116,22 @@ void QuantizerModule::processSample(double& sample) const {
 	else {
 		sample = (double)temp / (double)max32bitValueSigned;
 	}
-
-		/*pFile = fopen("E:\\logVst.txt", "a");
-		fprintf(pFile, "y(n): %s\n", std::to_string(sample).c_str());
-		fclose(pFile);*/
 }
 
 void QuantizerModule::calculateFactor() {
-	switch (BITCORRECTIONMETHOD) {
-	case withBitShifting: 
+	switch (bitCorretionMethod) {
+	case BitCorrectionMethod::withBitShifting: 
 		// Reset bits
 		mask = -1; // ...111111
 		mask <<= bitsToReset; // ...111000
 		// Calculate "spread factor"
 		factor = (pow(2.0, (double)bitsToReset) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1.0);
 		break;
-	case withoutBitShifting: 
+	case BitCorrectionMethod::withoutBitShifting:
 		factor = (pow(2.0, 32.0) - 1.0) / (pow(2.0, 32.0 - (double)bitsToReset) - 1.0);
 		break;
-	case withoutScaling:
+	case BitCorrectionMethod::withoutScaling:
+	{
 		// Set the mask back to default
 		mask = -1; // ...111111
 		// Shift the mask
@@ -144,6 +140,9 @@ void QuantizerModule::calculateFactor() {
 		unsigned long maxValue = (unsigned long)mask;
 		// Calculate the value wich has to be added to every sample in order to correct the asymmetry
 		factor = (pow(2, 32) - maxValue) / 2;
+		break;
+	}
+	default:
 		break;
 	}
 }

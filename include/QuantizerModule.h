@@ -30,7 +30,15 @@ public:
 	// Process sample by reference
 	void processSample(double& sample) const;
 	// Set the quantization in bits
-	void setQuantization(const double& q);
+	void setQuantization(double q);
+
+private:
+	// Quantization methods in order to correct the signal asymmetry, each has it's benefits and drawbacks
+	enum class BitCorrectionMethod {
+		withBitShifting, // Fast, many operations, complex, scales the signal to full range
+		withoutBitShifting, // Slow, only a few operations, simple, scales the signal to full range
+		withoutScaling // Very fast, few operations, simple, doesn't scale the signal to full range
+	};
 
 private:
 	// Calculate the appropriate factor depending on the quantization method
@@ -39,6 +47,7 @@ private:
 	unsigned int bitsToReset; // MAXQUANTIZATION - quantization
 	long int mask; // (min.)32 bit mask
 	double factor; // Right factor for the right quantization method
+	BitCorrectionMethod bitCorretionMethod;
 
 };
 

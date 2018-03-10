@@ -776,13 +776,13 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 				if (layeredView) {
 					if (layeredView->getNbViews() >= 2) {
 						// Set the right view visible (either the normal one with the knobs or the other one with the coefficients)
-						layeredView->getView(0)->setVisible((int)value != FilterType::rawBiquad);
-						layeredView->getView(1)->setVisible((int)value == FilterType::rawBiquad);
+						layeredView->getView(0)->setVisible((FilterType)(int)value != FilterType::rawBiquad);
+						layeredView->getView(1)->setVisible((FilterType)(int)value == FilterType::rawBiquad);
 					}
 				}
 			}
 		}
-		if ((int)value == FilterType::rawBiquad) {
+		if ((FilterType)(int)value == FilterType::rawBiquad) {
 			// Update the coefficients when Raw Biquad
 			controller->performEdit(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA0_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));
 			controller->performEdit(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst), controller->getParamNormalized(PARAM_EQCOEFFICIENTA1_FIRST + (tag - id_equalizer_optionMenu_filterTypeFirst)));

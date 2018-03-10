@@ -39,24 +39,13 @@ EqualizerModule::EqualizerModule(FilterType filterType, double centerFrequency, 
 	, qFactor(qFactor)
 	, gain(gain)
 	, filterType(filterType)
+	, xn0(0.0), xn1(0.0), xn2(0.0)
+	, yn1(0.0), yn2(0.0)
+	, a0(0.0), a1(0.0), a2(0.0), b1(0.0), b2(0.0)
+	, K(0.0), oneDividedByQ(1/qFactor)
 	, stable(false)
 	, limit(true)
 {
-	// Initialize everything
-	xn0 = 0.0;
-	xn1 = 0.0;
-	xn2 = 0.0;
-	yn1 = 0.0;
-	yn2 = 0.0;
-
-	a0 = 0.0;
-	a1 = 0.0;
-	a2 = 0.0;
-	b1 = 0.0;
-	b2 = 0.0;
-	
-	K = 0.0;
-	oneDividedByQ = 1 / qFactor;
 	calculateCoefficients();
 }
 
@@ -66,7 +55,7 @@ EqualizerModule::~EqualizerModule()
 
 // Source: Zölzer book p.136+137
 // All sqrt(2) terms are being replaced by 1/qFactor!
-const bool& EqualizerModule::calculateCoefficients() {
+bool EqualizerModule::calculateCoefficients() {
 	// tan() has a discontinuity at 0.5*PI
 	// Should not happen because the maximum center frequncy depends on the sampling frequency, but just in case...
 	if ((centerFreq / samplingFreq) < 0.5) {
@@ -185,7 +174,7 @@ const bool& EqualizerModule::calculateCoefficients() {
 	return checkStability();
 }
 
-const bool& EqualizerModule::setCenterFreq(const double& f0) {
+bool EqualizerModule::setCenterFreq(double f0) {
 	// Once again check if f0 is not to big
 	if (f0 <= ValueConversion::getMaxEqFrequency()) {
 		centerFreq = f0;
@@ -196,7 +185,7 @@ const bool& EqualizerModule::setCenterFreq(const double& f0) {
 	return calculateCoefficients();
 }
 
-const bool& EqualizerModule::setFilterCoefficient(const FilterCoefficients coefficient, const double& value) {
+bool EqualizerModule::setFilterCoefficient(FilterCoefficients coefficient, double value) {
 	// Only change the coefficients if the raw filter is selected in the GUI
 	if (filterType == FilterType::rawBiquad) {
 		switch (coefficient) {
@@ -222,7 +211,7 @@ const bool& EqualizerModule::setFilterCoefficient(const FilterCoefficients coeff
 	return checkStability();
 }
 
-const bool& EqualizerModule::checkStability() {
+bool EqualizerModule::checkStability() {
 	// Check if the current coefficients lead to a stable filter
 	// Source: Kammeyer book p.77 / 78
 	stable = false;

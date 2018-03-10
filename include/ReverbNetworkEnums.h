@@ -24,7 +24,7 @@
 #include <string>
 
 // Possible equalizer filter types
-enum FilterType {
+enum class FilterType {
 	lowPass,
 	highPass,
 	bandPassStop,
@@ -35,14 +35,14 @@ enum FilterType {
 };
 
 // Possible modulation signal types
-enum ModulationSignalType {
+enum class ModulationSignalType {
 	sine,
 	triangle,
 	numberOfSignalTypes
 };
 
 // Possible signal generator types
-enum SignalGeneratorType {
+enum class SignalGeneratorType {
 	dirac,
 	numberOfSignalGeneratorTypes
 };

@@ -304,10 +304,9 @@ void XmlPresetReadWrite::savePreset(const char* filePath, const Preset& p) const
 	const char* filenameExtensionXML = strstr(filePath, ".XML");
 	if (!filenameExtensionXml && !filenameExtensionXML) {
 		// No file extension specified => add one
-		char tempFilepath[4096];
-		strncpy(tempFilepath, filePath, 4094);
-		strncat(tempFilepath, ".xml", 6);
-		result = doc.save_file(tempFilepath, "\t", pugi::format_no_declaration | pugi::format_indent);
+		std::string tempFilePath(filePath);
+		tempFilePath.append(".xml");
+		result = doc.save_file(tempFilePath.c_str(), "\t", pugi::format_no_declaration | pugi::format_indent);
 	}
 	else {
 		result = doc.save_file(filePath, "\t", pugi::format_no_declaration | pugi::format_indent);

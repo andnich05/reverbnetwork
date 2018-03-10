@@ -147,7 +147,7 @@ void GuiGraphicsModule::updateShape() {
 
 void GuiGraphicsModule::redraw(VSTGUI::CDrawContext* pContext) {
 	if (isVisible()) {
-		pContext->setFrameColor(VSTGUI::CColor(0, 0, 0, 0));
+		pContext->setFrameColor(CCOLOR_GRAPHICSVIEW_MODULEBACKGROUND);
 		pContext->setFillColor(CCOLOR_GRAPHICSVIEW_MODULEHANDLE);
 		pContext->setLineWidth(1);
 		pContext->setFont(VSTGUI::kNormalFontSmaller);

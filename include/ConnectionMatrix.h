@@ -38,28 +38,28 @@ public:
 	inline const std::vector<short>& getVstOutputConnections() { return vstOutputConnections; };
 
 	// Establish a connection between an output of a module and the specified input of another module
-	void setModuleToModuleConnection(const unsigned short& sourceModule, const unsigned short& destModule, const unsigned short& destModuleInput);
+	void setModuleToModuleConnection(unsigned short sourceModule, unsigned short destModule, unsigned short destModuleInput);
 
 	// Establish a connection between a VST input and the specified input of another module
-	void setVstToModuleConnection(const unsigned short& vstInput, const unsigned short& destModule, const unsigned short& destModuleInput);
+	void setVstToModuleConnection(unsigned short vstInput, unsigned short destModule, unsigned short destModuleInput);
 
 	// Establish a connection between the output of a module and a VST output
-	void setModuleToVstConnection(const unsigned short& sourceModule, const unsigned short& vstOutput);
+	void setModuleToVstConnection(unsigned short sourceModule, unsigned short vstOutput);
 
 	// Establish a connection between a VST input and a VST output
-	void setVstToVstConnection(const unsigned short& vstInput, const unsigned short& vstOutput);
+	void setVstToVstConnection(unsigned short vstInput, unsigned short vstOutput);
 
 	// Disconnect a module input
-	void disconnectModuleInput(const unsigned short& moduleNumber, const unsigned short& moduleInput);
+	void disconnectModuleInput(unsigned short moduleNumber, unsigned short moduleInput);
 
 	// Disconnect a VST output
-	void disconnectVstOutput(const unsigned short& vstOutput);
+	void disconnectVstOutput(unsigned short vstOutput);
 
 	// Reset all connections, all vector elements are set to -1
 	void resetAllConnections();
 
 	// Map VST input
-	inline short& unmapVstInput(short& mappedVstInput) { mappedVstInput = vstInputMapFromMapped[mappedVstInput]; return mappedVstInput; }
+	inline short unmapVstInput(short mappedVstInput) { mappedVstInput = vstInputMapFromMapped[mappedVstInput]; return mappedVstInput; }
 
 private:
 	// First array dimension holds the modules, second holds the inputs of that module

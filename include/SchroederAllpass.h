@@ -37,25 +37,25 @@ public:
 	void freeBuffers();
 
 	// Change current sample rate
-	inline void setSampleRate(const double& s) { sampleRate = s; freeBuffers(); createBuffers(); }; // Recreate buffers when sample rate changes
+	inline void setSampleRate(double s) { sampleRate = s; freeBuffers(); createBuffers(); }; // Recreate buffers when sample rate changes
 	// Set delay time
-	void setDelayTimeSec(const double& sec);
+	void setDelayTimeSec(double sec);
 	// Set decay time
-	void setDecayTimeSec (const double& sec);
+	void setDecayTimeSec (double sec);
 	// Set Allpass gain (unused because the gain is set by setting delay and decay)
 	//inline void setGain(const double& g) { gain = g; };
 	// Set the sign of the gain
-	inline void setGainSign(const bool& isNegative) { this->gainSignIsNegative = isNegative; calculateGain(); }
+	inline void setGainSign(bool isNegative) { this->gainSignIsNegative = isNegative; calculateGain(); }
 
 	// ---Modulation setter functions
 	// Enable or disable modulation
-	void setModulationEnabled(const bool& enabled);
+	void setModulationEnabled(bool enabled);
 	// Set the signal type to use for modulation
-	void setModulationSignalType(const ModulationSignalType& signalType);
+	void setModulationSignalType(ModulationSignalType signalType);
 	// Set the time range which is modulated (e.g. delay = 20 ms, excursion = 5 ms => Range: from 15 ms to 25 ms)
-	void setModulationExcursion(const double& excursion);
+	void setModulationExcursion(double excursion);
 	// Set the modulation speed in Hertz (frequency of the modulation signal e.g. sine)
-	void setModulationRateMs(const double& rate);
+	void setModulationRateMs(double rate);
 
 private:
 	//double* inputBuffer; // Circular buffer for input samples x(n)
@@ -79,11 +79,6 @@ private:
 	double modulationExcursion;
 	double modulationRate;
 
-	// Temp values for processing
-	//double xn; // = sample
-	/*double yn;
-	double xnD;
-	double ynD;*/
 	double nodeLeft; // Left node value in the signal flow diagram
 	double nodeRight; // Right node value in the signal flow diagram
 

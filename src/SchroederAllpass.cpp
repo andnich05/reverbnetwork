@@ -28,34 +28,28 @@
 
 SchroederAllpass::SchroederAllpass(double delaySec, double decaySec)
 	: buffer(nullptr)
+	, bufferSize(0)
 	, readPointer(0)
 	, writePointer(0)
-	, sampleRate(192000.0) // Set the maximum possible sample rate (is being changed as soon as the plugin gets the right sample rate from the host)
+	, sampleRate(192000.0)
 	, delaySamples(sampleRate * delaySec)
+	, fractDelaySamples(0.0)
 	, delayTimeSec(delaySec)
-	, decayTimeSec(decaySec)
+	, decayTimeSec(delaySec)
+	, gain(0.7)
+	, gainSignIsNegative(false)
+	, modulationEnabled(DEF_ALLPASSMODENABLED)
+	, modSignalType((ModulationSignalType)((int)DEF_ALLPASSMODSIGNALTYPE))
+	, modulationExcursion(DEF_ALLPASSMODEXCURSION / 1000.0)
+	, modulationRate(DEF_ALLPASSMODRATE)
+	, nodeLeft(0.0)
+	, nodeRight(0.0)
+	, nodeRightMinusOne(0.0)
+	, nodeRightNewMinusOne(0.0)
+	, sampleCounter(1)
 {
-	/*yn = 0;
-	xnD = 0;
-	ynD = 0;*/
-
-	modulationEnabled = DEF_ALLPASSMODENABLED;
-	modSignalType = (ModulationSignalType)((int)DEF_ALLPASSMODSIGNALTYPE);
-	modulationExcursion = DEF_ALLPASSMODEXCURSION / 1000.0;
-	modulationRate = DEF_ALLPASSMODRATE;
-
-	sampleCounter = 1;
-	bufferSize = 0;
-	gain = 0.7;
-	fractDelaySamples = 0.0;
-	gainSignIsNegative = false;
-	nodeLeft = 0.0;
-	nodeRight = 0.0;
 	setDecayTimeSec(decaySec);
 	createBuffers();
-
-	nodeRightMinusOne = 0.0;
-	nodeRightNewMinusOne = 0.0;
 }
 
 SchroederAllpass::~SchroederAllpass() {
@@ -192,11 +186,12 @@ void SchroederAllpass::createBuffers() {
 void SchroederAllpass::freeBuffers() {
 	if (buffer) {
 		delete[] buffer;
-		buffer = nullptr; // !!! Otherwise crash when checking if (inputBuffer)
+		buffer = nullptr;
+		bufferSize = 0;
 	}
 }
 
-void SchroederAllpass::setDelayTimeSec(const double& sec) {
+void SchroederAllpass::setDelayTimeSec(double sec) {
 	delayTimeSec = sec; 
 
 	delaySamples = std::round(sec * sampleRate);
@@ -213,7 +208,7 @@ void SchroederAllpass::setDelayTimeSec(const double& sec) {
 	calculateGain();
 }
 
-void SchroederAllpass::setDecayTimeSec(const double& sec) {
+void SchroederAllpass::setDecayTimeSec(double sec) {
 	decayTimeSec = sec;
 	calculateGain();
 }
@@ -235,7 +230,7 @@ void SchroederAllpass::calculateGain() {
 	}
 }
 
-void SchroederAllpass::setModulationEnabled(const bool& enabled) {
+void SchroederAllpass::setModulationEnabled(bool enabled) {
 	this->modulationEnabled = enabled;
 	if (!enabled) {
 		// Set the delay time back to the normal value when modulation is being disabled
@@ -243,15 +238,15 @@ void SchroederAllpass::setModulationEnabled(const bool& enabled) {
 	}
 }
 
-void SchroederAllpass::setModulationSignalType(const ModulationSignalType& signalType) {
+void SchroederAllpass::setModulationSignalType(ModulationSignalType signalType) {
 	this->modSignalType = signalType;
 }
 
-void SchroederAllpass::setModulationExcursion(const double& excursion) {
+void SchroederAllpass::setModulationExcursion(double excursion) {
 	this->modulationExcursion = excursion / 1000.0;
 }
 
-void SchroederAllpass::setModulationRateMs(const double& rate) {
+void SchroederAllpass::setModulationRateMs(double rate) {
 	this->modulationRate = rate;
 }
 

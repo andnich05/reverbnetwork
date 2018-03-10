@@ -169,5 +169,3 @@ Steinberg::tresult PresetReadWrite::getParamterState(Steinberg::IBStream* state)
 
 	return Steinberg::kResultTrue;
 }
-
-

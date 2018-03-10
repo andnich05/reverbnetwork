@@ -201,7 +201,6 @@ void GuiGraphicsView::rearrangeModules() {
 
 	int moduleCounter = 1;
 	int rowCounter = 0;
-	int lastUnusedModule = -1;
 	double rowMaxYCoordinate = 0.0;
 	double lastRowMaxYCoordinate = 0.0;
 

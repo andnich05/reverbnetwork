@@ -47,30 +47,9 @@ BaseAPModule::BaseAPModule()
 }
 
 BaseAPModule::~BaseAPModule() {
-	// Delete all components
-	if (mixer) {
-		delete mixer;
-		mixer = nullptr;
-	}
-	if (quantizer) {
-		delete quantizer;
-		quantizer = nullptr;
-	}
-	if (equalizer) {
-		delete equalizer;
-		equalizer = nullptr;
-	}
-	if (allpass) {
-		delete allpass;
-		allpass = nullptr;
-	}
-	if (gainOutput) {
-		delete gainOutput;
-		gainOutput = nullptr;
-	}
 }
 
-void BaseAPModule::setSampleRate(const double& sampleRate) {
+void BaseAPModule::setSampleRate(double sampleRate) {
 	equalizer->setSamplingFreq(sampleRate);
 	allpass->setSampleRate(sampleRate);
 }
@@ -107,89 +86,89 @@ double BaseAPModule::processSamples(double* moduleInputBuffer, double* vstInputB
 	return outputSample;
 }
 
-void BaseAPModule::updateMixerGain(const int& inputNumber, const double& gain) {
+void BaseAPModule::updateMixerGain(int inputNumber, double gain) {
 	mixer->setInputGain(inputNumber, gain);
 }
 
-void BaseAPModule::updateMixerMute(const int& inputNumber, const double& mute) { 
+void BaseAPModule::updateMixerMute(int inputNumber, double mute) { 
 	mixer->setInputMuted(inputNumber, mute != 0.0);
 }
 
-void BaseAPModule::updateMixerSolo(const int& inputNumber, const double& solo) {
+void BaseAPModule::updateMixerSolo(int inputNumber, double solo) {
 	mixer->setInputSoloed(inputNumber, solo != 0.0); 
 }
 
-void BaseAPModule::updateQuantizerQuantization(const double& quantization) {
+void BaseAPModule::updateQuantizerQuantization(double quantization) {
 	quantizer->setQuantization(quantization);
 }
 
-const bool& BaseAPModule::updateEqualizerFilterType(const double& filterType) {
+bool BaseAPModule::updateEqualizerFilterType(double filterType) {
 	return equalizer->setFilterType((FilterType)((int)(filterType)));
 }
-const bool& BaseAPModule::updateEqualizerCenterFrequency(const double& freq) {
+bool BaseAPModule::updateEqualizerCenterFrequency(double freq) {
 	return equalizer->setCenterFreq(freq);
 }
-const bool& BaseAPModule::updateEqualizerQFactor(const double& qFactor) {
+bool BaseAPModule::updateEqualizerQFactor(double qFactor) {
 	return equalizer->setQFactor(qFactor);
 }
-const bool& BaseAPModule::updateEqualizerGain(const double& gain) {
+bool BaseAPModule::updateEqualizerGain(double gain) {
 	return equalizer->setGain(ValueConversion::logToLinear(gain));
 }
 
-const bool& BaseAPModule::updateEqualizerCoefficients(const double& value, const long int& paramId) {
+bool BaseAPModule::updateEqualizerCoefficients(double value, long int paramId) {
 	if (paramId >= PARAM_EQCOEFFICIENTA0_FIRST && paramId <= PARAM_EQCOEFFICIENTA0_LAST) {
-		equalizer->setFilterCoefficient(FilterCoefficients::a0, value);
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a0, value);
 	}
 	else if (paramId >= PARAM_EQCOEFFICIENTA1_FIRST && paramId <= PARAM_EQCOEFFICIENTA1_LAST) {
-		equalizer->setFilterCoefficient(FilterCoefficients::a1, value);
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a1, value);
 	}
 	else if (paramId >= PARAM_EQCOEFFICIENTA2_FIRST && paramId <= PARAM_EQCOEFFICIENTA2_LAST) {
-		equalizer->setFilterCoefficient(FilterCoefficients::a2, value);
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::a2, value);
 	}
 	else if (paramId >= PARAM_EQCOEFFICIENTB1_FIRST && paramId <= PARAM_EQCOEFFICIENTB1_LAST) {
-		equalizer->setFilterCoefficient(FilterCoefficients::b1, value);
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::b1, value);
 	}
 	else if (paramId >= PARAM_EQCOEFFICIENTB2_FIRST && paramId <= PARAM_EQCOEFFICIENTB2_LAST) {
-		equalizer->setFilterCoefficient(FilterCoefficients::b2, value);
+		equalizer->setFilterCoefficient(EqualizerModule::FilterCoefficients::b2, value);
 	}
 	return equalizer->isStable();
 }
 
-const bool& BaseAPModule::updateEqualizerLimiter(const double& limit) {
+bool BaseAPModule::updateEqualizerLimiter(double limit) {
 	return equalizer->enableLimiter(limit != 0.0);
 }
 
-void BaseAPModule::updateAllpassDelay(const double& delay) {
+void BaseAPModule::updateAllpassDelay(double delay) {
 	allpass->setDelayTimeSec(delay / 1000.0);
 }
-void BaseAPModule::updateAllpassDecay(const double& decay) {
+void BaseAPModule::updateAllpassDecay(double decay) {
 	allpass->setDecayTimeSec(decay / 1000.0);
 }
 
-void BaseAPModule::updateAllpassDiffKSign(const bool& isNegative) {
+void BaseAPModule::updateAllpassDiffKSign(bool isNegative) {
 	allpass->setGainSign(isNegative);
 }
 
-void BaseAPModule::updateAllpassModulationEnabled(const bool& enabled) {
+void BaseAPModule::updateAllpassModulationEnabled(bool enabled) {
 	allpass->setModulationEnabled(enabled);
 }
 
-void BaseAPModule::updateAllpassModulationSignalType(const double& signalType) {
+void BaseAPModule::updateAllpassModulationSignalType(double signalType) {
 	allpass->setModulationSignalType((ModulationSignalType)((int)(signalType)));
 }
 
-void BaseAPModule::updateAllpassModulationExcursion(const double& excursion) {
+void BaseAPModule::updateAllpassModulationExcursion(double excursion) {
 	allpass->setModulationExcursion(excursion);
 }
 
-void BaseAPModule::updateAllpassModulationRate(const double& rate) {
+void BaseAPModule::updateAllpassModulationRate(double rate) {
 	allpass->setModulationRateMs(rate);
 }
 
-void BaseAPModule::updateOutputGain(const double& gain) {
+void BaseAPModule::updateOutputGain(double gain) {
 	gainOutput->setGain(ValueConversion::logToLinear(gain));
 }
 
-void BaseAPModule::updateOutputLimiter(const double& limit) {
+void BaseAPModule::updateOutputLimiter(double limit) {
 	gainOutput->enableLimiter(limit != 0.0);
 }

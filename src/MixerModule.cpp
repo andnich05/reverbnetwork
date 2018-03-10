@@ -22,12 +22,12 @@
 #include "../include/ReverbNetworkDefines.h"
 #include <string>
 
-MixerModule::MixerModule(const double& defaultGain) {
-	// Initialization
-	inputGain.resize(MAXINPUTS, defaultGain);
-	inputMuted.resize(MAXINPUTS, false);
-	inputSoloed.resize(MAXINPUTS, false);
-	isAnyInputSoloed = false;
+MixerModule::MixerModule(const double& defaultGain) 
+	: inputGain(MAXINPUTS, defaultGain)
+	, inputMuted(MAXINPUTS, false)
+	, inputSoloed(MAXINPUTS, false)
+	, isAnyInputSoloed(false)
+{
 }
 
 MixerModule::~MixerModule() {
@@ -35,7 +35,7 @@ MixerModule::~MixerModule() {
 
 double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const {
 	// Return if the pointers are empy
-	if (moduleInputBuffer == nullptr || vstInputBuffer == nullptr) {
+	if (!moduleInputBuffer || !vstInputBuffer) {
 		return 0.0;
 	}
 
@@ -59,7 +59,7 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer,
 				}
 				else {
 					// If the input is not soloed process the sample only if no other input is soloed
-					if (isAnyInputSoloed == false) {
+					if (!isAnyInputSoloed == false) {
 						if (i < MAXMODULENUMBER) {
 							output += moduleInputBuffer[i] * inputGain[i];
 						}
@@ -77,7 +77,7 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer,
 	return output;
 }
 
-void MixerModule::setInputSoloed(const int& input, const bool& solo) {
+void MixerModule::setInputSoloed(int input, bool solo) {
 	inputSoloed[input] = solo;
 	// Check if any other input is soloed when the current input is being been unsoloed
 	if (solo) {

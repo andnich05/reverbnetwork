@@ -160,9 +160,6 @@ public:
 	const Preset loadPreset(const char* filePath) const;
 	// Save a XML preset to disc
 	void savePreset(const char* filePath, const Preset& p) const;
-
-private:
-	
 };
 
 #endif // XMLPRESETREADWRITE_H

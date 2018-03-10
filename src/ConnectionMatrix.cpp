@@ -55,11 +55,11 @@ ConnectionMatrix::~ConnectionMatrix() {
 
 // E.g. [AP0][I2] = AP1 => means the output of AP1 is connected to the second input (mapped value) of AP0
 
-void ConnectionMatrix::setModuleToModuleConnection(const unsigned short& sourceModule, const unsigned short& destModule, const unsigned short& destModuleInput) {
+void ConnectionMatrix::setModuleToModuleConnection(unsigned short sourceModule, unsigned short destModule, unsigned short destModuleInput) {
 	moduleInputConnections[destModule][destModuleInput] = sourceModule;
 }
 
-void ConnectionMatrix::setVstToModuleConnection(const unsigned short& vstInput, const unsigned short& destModule, const unsigned short& destModuleInput) {
+void ConnectionMatrix::setVstToModuleConnection(unsigned short vstInput, unsigned short destModule, unsigned short destModuleInput) {
 	// Check if the input is already connected to a module output; if so then disconnect it first
 	/*if (moduleToModuleConnections[destModule][destModuleInput] != -1) {
 		moduleToModuleConnections[destModule][destModuleInput] = -1;
@@ -68,7 +68,7 @@ void ConnectionMatrix::setVstToModuleConnection(const unsigned short& vstInput, 
 	moduleInputConnections[destModule][destModuleInput] = vstInputMapToMapped[vstInput];
 }
 
-void ConnectionMatrix::setModuleToVstConnection(const unsigned short& sourceModule, const unsigned short& vstOutput) {
+void ConnectionMatrix::setModuleToVstConnection(unsigned short sourceModule, unsigned short vstOutput) {
 	// Check if the VST output is already connected to a VST input; if so then disconnect it first
 	/*if (vstToVstConnections[vstOutput] != -1) {
 		vstToVstConnections[vstOutput] = -1;
@@ -77,7 +77,7 @@ void ConnectionMatrix::setModuleToVstConnection(const unsigned short& sourceModu
 	vstOutputConnections[vstOutput] = sourceModule;
 }
 
-void ConnectionMatrix::setVstToVstConnection(const unsigned short& vstInput, const unsigned short& vstOutput) {
+void ConnectionMatrix::setVstToVstConnection(unsigned short vstInput, unsigned short vstOutput) {
 	// Check if the VST output is already connected to a module output; if so then disconnect it first
 	/*if (moduleToVstConnections[vstOutput] != -1) {
 		moduleToVstConnections[vstOutput] = -1;
@@ -86,11 +86,11 @@ void ConnectionMatrix::setVstToVstConnection(const unsigned short& vstInput, con
 	vstOutputConnections[vstOutput] = vstInputMapToMapped[vstInput];
 }
 
-void ConnectionMatrix::disconnectModuleInput(const unsigned short& moduleNumber, const unsigned short& moduleInput) {
+void ConnectionMatrix::disconnectModuleInput(unsigned short moduleNumber, unsigned short moduleInput) {
 	moduleInputConnections[moduleNumber][moduleInput] = -1;
 }
 
-void ConnectionMatrix::disconnectVstOutput(const unsigned short& vstOutput) {
+void ConnectionMatrix::disconnectVstOutput(unsigned short vstOutput) {
 	vstOutputConnections[vstOutput] = -1;
 }
 

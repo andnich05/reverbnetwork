@@ -25,8 +25,8 @@ const double maxValue = 1.0e100;
 const double minValue = -1.0e100;
 
 GainModule::GainModule(double gain) 
-	: gain(gain),
-	limit(true) {
+	: gain(gain)
+	, limit(true) {
 
 }
 

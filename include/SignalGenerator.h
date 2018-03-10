@@ -26,23 +26,23 @@
 
 class SignalGenerator {
 public:
-	SignalGenerator(const SignalGeneratorType& signalType);
+	SignalGenerator(SignalGeneratorType signalType);
 	
 	// Set the signal type (only dirac impulse for now)
-	inline void setSignalType(const SignalGeneratorType& signalType) { this->signalType = signalType; }
+	inline void setSignalType(SignalGeneratorType signalType) { this->signalType = signalType; }
 	// Set the gain of the dirac (from 0 dB to e.g. -60 dB)
-	void setGain(const double& gainInDB);
+	void setGain(double gainInDB);
 	// Set width of the pulse in samples
-	inline void setWidth(const long int& widthInSamples) { this->width = widthInSamples; }
+	inline void setWidth(long int widthInSamples) { this->width = widthInSamples; }
 	// Enable or disable the automatic generation
-	inline void setAutoFireEnabled(const bool& enabled) { this->autoFireEnabled = enabled; }
+	inline void setAutoFireEnabled(bool enabled) { this->autoFireEnabled = enabled; }
 	// Set the period of the automatic generation
-	void setAutoTime(const double& autoTimeInSec);
+	void setAutoTime(double autoTimeInSec);
 	// Generate a single impulse now
-	inline void setFire(const bool& fire) { if (fire) fireCounter = width; else fireCounter = 0; }
+	inline void setFire(bool fire) { if (fire) fireCounter = width; else fireCounter = 0; }
 	
 	// Returns a generated sample
-	double& generateSample();
+	double generateSample();
 
 private:
 	SignalGeneratorType signalType;
@@ -51,8 +51,6 @@ private:
 	bool autoFireEnabled;
 	long int autoTimeInSamples;
 	//bool fire;
-
-	double sample; // Generated sample
 
 	long unsigned int autoFireCounter;
 	long unsigned int fireCounter;

@@ -21,6 +21,7 @@
 #ifndef BASEAPMODULE_H
 #define BASEAPMODULE_H
 
+#include <memory>
 #include <vector>
 
 class MixerModule;
@@ -36,7 +37,7 @@ public:
 	~BaseAPModule();
 
 	// Set the sample rate of the host (important for the equalizer and the allpass)
-	void setSampleRate(const double& sampleRate);
+	void setSampleRate(double sampleRate);
 
 	// Process all input channels of a module, all vst inputs and the signal generator, returns output sample which is a mix of the input samples
 	double processSamples(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const;
@@ -44,49 +45,49 @@ public:
 	//---
 	// Update functions; all passed values plain values (already de-normalized by the Processor)
 	// Mixer update functions
-	void updateMixerGain(const int& inputNumber, const double& gain);
-	void updateMixerMute(const int& inputNumber, const double& mute);
-	void updateMixerSolo(const int& inputNumber, const double& solo);
-	inline void switchMixerBypass(const double& bypass) { bypassMixer = (bypass != 0.0); }
+	void updateMixerGain(int inputNumber, double gain);
+	void updateMixerMute(int inputNumber, double mute);
+	void updateMixerSolo(int inputNumber, double solo);
+	inline void switchMixerBypass(double bypass) { bypassMixer = (bypass != 0.0); }
 	
 	// Quantizer update functions
-	void updateQuantizerQuantization(const double& quantization);
-	inline void switchQuantizerBypass(const double& bypass) { bypassQuantizer = (bypass != 0.0); }
+	void updateQuantizerQuantization(double quantization);
+	inline void switchQuantizerBypass(double bypass) { bypassQuantizer = (bypass != 0.0); }
 
 	// Equalizer update functions; return true if the filter is stable
-	const bool& updateEqualizerFilterType(const double& filterType);
-	const bool& updateEqualizerCenterFrequency(const double& freq);
-	const bool& updateEqualizerQFactor(const double& qFactor);
-	const bool& updateEqualizerGain(const double& gain);
-	const bool& updateEqualizerCoefficients(const double& value, const long int& paramId);
-	const bool& updateEqualizerLimiter(const double& limit);
-	inline void switchEqualizerBypass(const double& bypass) { bypassEqualizer = (bypass != 0.0); }
+	bool updateEqualizerFilterType(double filterType);
+	bool updateEqualizerCenterFrequency(double freq);
+	bool updateEqualizerQFactor(double qFactor);
+	bool updateEqualizerGain(double gain);
+	bool updateEqualizerCoefficients(double value, long int paramId);
+	bool updateEqualizerLimiter(double limit);
+	inline void switchEqualizerBypass(double bypass) { bypassEqualizer = (bypass != 0.0); }
 
 	// Allpass update functions
-	void updateAllpassDelay(const double& delay);
-	void updateAllpassDecay(const double& decay);
-	void updateAllpassDiffKSign(const bool& isNegative);
-	void updateAllpassModulationEnabled(const bool& enabled);
-	void updateAllpassModulationSignalType(const double& signalType);
-	void updateAllpassModulationExcursion(const double& excursion);
-	void updateAllpassModulationRate(const double& rate);
-	inline void switchAllpassBypass(const double& bypass) { bypassAllpass = (bypass != 0.0); }
+	void updateAllpassDelay(double delay);
+	void updateAllpassDecay(double decay);
+	void updateAllpassDiffKSign(bool isNegative);
+	void updateAllpassModulationEnabled(bool enabled);
+	void updateAllpassModulationSignalType(double signalType);
+	void updateAllpassModulationExcursion(double excursion);
+	void updateAllpassModulationRate(double rate);
+	inline void switchAllpassBypass(double bypass) { bypassAllpass = (bypass != 0.0); }
 
 	// Output update functions
-	void updateOutputGain(const double& gain);
-	void updateOutputLimiter(const double& limit);
-	inline void switchOutputBypass(const double& bypass) { bypassGain = (bypass != 0.0); }
+	void updateOutputGain(double gain);
+	void updateOutputLimiter(double limit);
+	inline void switchOutputBypass(double bypass) { bypassGain = (bypass != 0.0); }
 
 	//---
 
 private:
 
 	// Component objects
-	MixerModule* mixer;
-	QuantizerModule* quantizer;
-	EqualizerModule* equalizer;
-	SchroederAllpass* allpass;
-	GainModule* gainOutput;
+	std::unique_ptr< MixerModule > mixer;
+	std::unique_ptr< QuantizerModule > quantizer;
+	std::unique_ptr< EqualizerModule > equalizer;
+	std::unique_ptr< SchroederAllpass > allpass;
+	std::unique_ptr< GainModule > gainOutput;
 
 	// Bypass variables
 	bool bypassMixer;

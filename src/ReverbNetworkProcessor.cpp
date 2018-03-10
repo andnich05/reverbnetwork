@@ -513,7 +513,7 @@ tresult PLUGIN_API ReverbNetworkProcessor::process(ProcessData& data)
 				}
 				else if (pid == PARAM_SIGNALGENERATOR_SIGNALTYPE) {
 					if (queue->getPoint(valueChangeCount - 1, sampleOffset, value) == kResultTrue) {
-						if ((int)ValueConversion::normToPlainSignalType(value) < SignalGeneratorType::numberOfSignalGeneratorTypes) {
+						if ((int)ValueConversion::normToPlainSignalType(value) < (int)SignalGeneratorType::numberOfSignalGeneratorTypes) {
 							signalGenerator->setSignalType(static_cast<SignalGeneratorType>((int)ValueConversion::normToPlainSignalType(value)));
 							#ifdef LOGGING
 							Logging::addToLog("SIGNALGEN", "Signal Type set to " + std::to_string((int)ValueConversion::normToPlainSignalType(value)));

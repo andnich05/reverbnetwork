@@ -32,11 +32,11 @@ public:
 	// Mix samples of each channels, return the new sample value
 	double mixInputs(double* moduleInputBuffer, double* vstInputBuffer, double& signalGeneratorSample) const;
 	// Set gain of an input
-	inline void setInputGain(const int& input, const double& gain) { inputGain[input] = gain; }
+	inline void setInputGain(int input, double gain) { inputGain[input] = gain; }
 	// Mute or unmute an input
-	inline void setInputMuted(const int& input, const bool& mute) { inputMuted[input] = mute; }
+	inline void setInputMuted(int input, bool mute) { inputMuted[input] = mute; }
 	// Solo or unsolo an input
-	void setInputSoloed(const int& input, const bool& solo);
+	void setInputSoloed(int input, bool solo);
 
 private:
 	std::vector<double> inputGain; // Gain values for each input

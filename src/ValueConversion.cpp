@@ -33,91 +33,91 @@ ValueConversion::ValueConversion() {
 	
 }
 
-double ValueConversion::normToPlainMixerInputSelect(const double& normValue) {
+double ValueConversion::normToPlainMixerInputSelect(double normValue) {
 	// Round!
 	return std::round(normValue * ((double)MAXINPUTS)); // incl. index 0
 }
 
-double ValueConversion::plainToNormMixerInputSelect(const double& plainValue) {
+double ValueConversion::plainToNormMixerInputSelect(double plainValue) {
 	return plainValue * (1 / ((double)MAXINPUTS)); // incl. index 0
 }
 
-double ValueConversion::normToPlainInputGain(const double& normValue) {
+double ValueConversion::normToPlainInputGain(double normValue) {
 	return (MAX_MIXERGAIN - MIN_MIXERGAIN) * normValue + MIN_MIXERGAIN;
 }
 
-double ValueConversion::plainToNormInputGain(const double& plainValue) {
+double ValueConversion::plainToNormInputGain(double plainValue) {
 	return (plainValue - MIN_MIXERGAIN) / (MAX_MIXERGAIN - MIN_MIXERGAIN);
 }
 
-double ValueConversion::normToPlainFilterTypeSelect(const double& normValue) {
-	return std::round(normValue * ((double)(FilterType::numberOfFilterTypes - 1)));
+double ValueConversion::normToPlainFilterTypeSelect(double normValue) {
+	return std::round(normValue * ((double)(FilterType::numberOfFilterTypes) - 1.0));
 }
 
-double ValueConversion::plainToNormFilterTypeSelect(const double& plainValue) {
-	return plainValue * (1 / ((double)(FilterType::numberOfFilterTypes - 1)));
+double ValueConversion::plainToNormFilterTypeSelect(double plainValue) {
+	return plainValue * (1 / ((double)(FilterType::numberOfFilterTypes) - 1.0));
 }
 
-double ValueConversion::normToPlainQuantization(const double& normValue) {
+double ValueConversion::normToPlainQuantization(double normValue) {
 	return std::round(((double)MAX_QUANTIZERBITDEPTH - (double)MIN_QUANTIZERBITDEPTH) * normValue + (double)MIN_QUANTIZERBITDEPTH);
 }
 
-double ValueConversion::plainToNormQuantization(const double& plainValue) {
+double ValueConversion::plainToNormQuantization(double plainValue) {
 	return ((double)plainValue - (double)MIN_QUANTIZERBITDEPTH) / ((double)MAX_QUANTIZERBITDEPTH - (double)MIN_QUANTIZERBITDEPTH);
 }
 
-double ValueConversion::normToPlainProcCenterFreq(const double& normValue) {
+double ValueConversion::normToPlainProcCenterFreq(double normValue) {
 	return (getMaxEqFrequency() - MIN_EQCENTERFREQ) * normValue + MIN_EQCENTERFREQ;
 }
 
-double ValueConversion::plainToNormProcCenterFreq(const double& plainValue) {
+double ValueConversion::plainToNormProcCenterFreq(double plainValue) {
 	return (plainValue - MIN_EQCENTERFREQ) / (getMaxEqFrequency() - MIN_EQCENTERFREQ);
 }
 
-double ValueConversion::normToPlainQFactor(const double& normValue) {
+double ValueConversion::normToPlainQFactor(double normValue) {
 	return (MAX_EQQFACTOR - MIN_EQQFACTOR) * normValue + MIN_EQQFACTOR;
 }
 
-double ValueConversion::plainToNormQFactor(const double& plainValue) {
+double ValueConversion::plainToNormQFactor(double plainValue) {
 	return (plainValue - MIN_EQQFACTOR) / (MAX_EQQFACTOR - MIN_EQQFACTOR);
 }
 
-double ValueConversion::normToPlainEqGain(const double& normValue) {
+double ValueConversion::normToPlainEqGain(double normValue) {
 	return (MAX_EQGAIN - MIN_EQGAIN) * normValue + MIN_EQGAIN;
 }
 
-double ValueConversion::plainToNormEqGain(const double& plainValue) {
+double ValueConversion::plainToNormEqGain(double plainValue) {
 	return (plainValue - MIN_EQGAIN) / (MAX_EQGAIN - MIN_EQGAIN);
 }
 
-double ValueConversion::normToPlainEqCoefficients(const double& normValue) {
+double ValueConversion::normToPlainEqCoefficients(double normValue) {
 	return (MAX_EQCOEFFICIENTS - MIN_EQCOEFFICIENTS) * normValue + MIN_EQCOEFFICIENTS;
 }
 
-double ValueConversion::plainToNormEqCoefficients(const double& plainValue) {
+double ValueConversion::plainToNormEqCoefficients(double plainValue) {
 	return (plainValue - MIN_EQCOEFFICIENTS) / (MAX_EQCOEFFICIENTS - MIN_EQCOEFFICIENTS);
 }
 
-double ValueConversion::normToPlainDelay(const double& normValue) {
+double ValueConversion::normToPlainDelay(double normValue) {
 	return (MAX_ALLPASSDELAY - MIN_ALLPASSDELAY) * normValue + MIN_ALLPASSDELAY;
 }
 
-double ValueConversion::plainToNormDelay(const double& plainValue) {
+double ValueConversion::plainToNormDelay(double plainValue) {
 	return (plainValue - MIN_ALLPASSDELAY) / (MAX_ALLPASSDELAY - MIN_ALLPASSDELAY);
 }
 
-double ValueConversion::delayMillisecondsToSamples(const double& delayMilliseconds) {
+double ValueConversion::delayMillisecondsToSamples(double delayMilliseconds) {
 	return delayMilliseconds * sampleRate / 1000;
 }
 
-double ValueConversion::delaySamplesToMilliseconds(const double& delaySamples) {
+double ValueConversion::delaySamplesToMilliseconds(double delaySamples) {
 	if (sampleRate == 0.0) {
 		return 0.0;
 	}
 	return delaySamples / sampleRate * 1000;
 }
 
-double ValueConversion::calculateDiffK(const double& delayInMs, const double& decayInMs) {
+double ValueConversion::calculateDiffK(double delayInMs, double decayInMs) {
 	if (decayInMs == 0.0) return 0.0;
 	if (delayInMs == 0.0) return 1.0;
 	if (decayInMs > 0.0) {
@@ -128,7 +128,7 @@ double ValueConversion::calculateDiffK(const double& delayInMs, const double& de
 	}
 }
 
-double ValueConversion::diffKToDecay(const double& diffK, const double& delayInMs) {
+double ValueConversion::diffKToDecay(double diffK, double delayInMs) {
 	double absDiffK = std::abs(diffK);
 	if (absDiffK == 1.0) return MAX_ALLPASSDECAY;
 	if (absDiffK == 0.0) return 0.0;
@@ -141,82 +141,82 @@ double ValueConversion::diffKToDecay(const double& diffK, const double& delayInM
 	}
 }
 
-double ValueConversion::normToPlainDecay(const double& normValue) {
+double ValueConversion::normToPlainDecay(double normValue) {
 	return (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY) * normValue + MIN_ALLPASSDECAY;
 }
 
-double ValueConversion::plainToNormDecay(const double& plainValue) {
+double ValueConversion::plainToNormDecay(double plainValue) {
 	return (plainValue - MIN_ALLPASSDECAY) / (MAX_ALLPASSDECAY - MIN_ALLPASSDECAY);
 }
 
-double ValueConversion::normToPlainModSignalType(const double& normValue) {
+double ValueConversion::normToPlainModSignalType(double normValue) {
 	return std::round((MAX_ALLPASSMODSIGNALTYPE - MIN_ALLPASSMODSIGNALTYPE) * normValue + MIN_ALLPASSMODSIGNALTYPE);
 }
 
-double ValueConversion::plainToNormModSignalType(const double& plainValue) {
+double ValueConversion::plainToNormModSignalType(double plainValue) {
 	return (plainValue - MIN_ALLPASSMODSIGNALTYPE) / (MAX_ALLPASSMODSIGNALTYPE - MIN_ALLPASSMODSIGNALTYPE);
 }
 
-double ValueConversion::normToPlainModExcursion(const double& normValue) {
+double ValueConversion::normToPlainModExcursion(double normValue) {
 	return (MAX_ALLPASSMODEXCURSION - MIN_ALLPASSMODEXCURSION) * normValue + MIN_ALLPASSMODEXCURSION;
 }
 
-double ValueConversion::plainToNormModExcursion(const double& plainValue) {
+double ValueConversion::plainToNormModExcursion(double plainValue) {
 	return (plainValue - MIN_ALLPASSMODEXCURSION) / (MAX_ALLPASSMODEXCURSION - MIN_ALLPASSMODEXCURSION);
 }
 
-double ValueConversion::normToPlainModRate(const double& normValue) {
+double ValueConversion::normToPlainModRate(double normValue) {
 	return (MAX_ALLPASSMODRATE - MIN_ALLPASSMODRATE) * normValue + MIN_ALLPASSMODRATE;
 }
 
-double ValueConversion::plainToNormModRate(const double& plainValue) {
+double ValueConversion::plainToNormModRate(double plainValue) {
 	return (plainValue - MIN_ALLPASSMODRATE) / (MAX_ALLPASSMODRATE - MIN_ALLPASSMODRATE);
 }
 
-double ValueConversion::normToPlainOutputGain(const double& normValue) {
+double ValueConversion::normToPlainOutputGain(double normValue) {
 	return (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN) * normValue + MIN_OUTPUTGAIN;
 }
 
-double ValueConversion::plainToNormOutputGain(const double& plainValue) {
+double ValueConversion::plainToNormOutputGain(double plainValue) {
 	return (plainValue - MIN_OUTPUTGAIN) / (MAX_OUTPUTGAIN - MIN_OUTPUTGAIN);
 }
 
-double ValueConversion::normToPlainSignalType(const double& normValue) {
+double ValueConversion::normToPlainSignalType(double normValue) {
 	//return std::round((MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE) * normValue + MIN_SIGNALGENERATOR_SIGNALTYPE);
 	return 0.0;
 }
 
-double ValueConversion::plainToNormSignalType(const double& plainValue) {
+double ValueConversion::plainToNormSignalType(double plainValue) {
 	//return (plainValue - MIN_SIGNALGENERATOR_SIGNALTYPE) / (MAX_SIGNALGENERATOR_SIGNALTYPE - MIN_SIGNALGENERATOR_SIGNALTYPE);
 	// Only one entry in the menu so always return 0.0
 	return 0.0;
 }
 
-double ValueConversion::normToPlainSignalAmplitude(const double& normValue) {
+double ValueConversion::normToPlainSignalAmplitude(double normValue) {
 	return (MAX_SIGNALGENERATOR_AMPLITUDE - MIN_SIGNALGENERATOR_AMPLITUDE) * normValue + MIN_SIGNALGENERATOR_AMPLITUDE;
 }
 
-double ValueConversion::plainToNormSignalAmplitude(const double& plainValue) {
+double ValueConversion::plainToNormSignalAmplitude(double plainValue) {
 	return (plainValue - MIN_SIGNALGENERATOR_AMPLITUDE) / (MAX_SIGNALGENERATOR_AMPLITUDE - MIN_SIGNALGENERATOR_AMPLITUDE);
 }
 
-double ValueConversion::normToPlainSignalWidth(const double& normValue) {
+double ValueConversion::normToPlainSignalWidth(double normValue) {
 	return std::round((MAX_SIGNALGENERATOR_WIDTH - MIN_SIGNALGENERATOR_WIDTH) * normValue + MIN_SIGNALGENERATOR_WIDTH);
 }
 
-double ValueConversion::plainToNormSignalWidth(const double& plainValue) {
+double ValueConversion::plainToNormSignalWidth(double plainValue) {
 	return (plainValue - MIN_SIGNALGENERATOR_WIDTH) / (MAX_SIGNALGENERATOR_WIDTH - MIN_SIGNALGENERATOR_WIDTH);
 }
 
-double ValueConversion::normToPlainSignalTime(const double& normValue) {
+double ValueConversion::normToPlainSignalTime(double normValue) {
 	return (MAX_SIGNALGENERATOR_TIME - MIN_SIGNALGENERATOR_TIME) * normValue + MIN_SIGNALGENERATOR_TIME;
 }
 
-double ValueConversion::plainToNormSignalTime(const double& plainValue) {
+double ValueConversion::plainToNormSignalTime(double plainValue) {
 	return (plainValue - MIN_SIGNALGENERATOR_TIME) / (MAX_SIGNALGENERATOR_TIME - MIN_SIGNALGENERATOR_TIME);
 }
 
-double ValueConversion::linearToLog(const double& linearValue) {
+double ValueConversion::linearToLog(double linearValue) {
 	if (linearValue > 0.0) {
 		return 20 * log10(linearValue);
 	}
@@ -225,7 +225,7 @@ double ValueConversion::linearToLog(const double& linearValue) {
 	}
 }
 
-double ValueConversion::logToLinear(const double& logValue) {
+double ValueConversion::logToLinear(double logValue) {
 	return pow(10, (logValue / 20));
 }
 
@@ -238,35 +238,35 @@ bool ValueConversion::textEditValueToStringConversion(float value, char utf8Stri
 	GuiCustomValueEdit * valueEdit = dynamic_cast<GuiCustomValueEdit *>(display);
 
 	if (!valueEdit) {
-		sprintf(utf8String, "%1.2f", value);
+		sprintf_s(utf8String, 255, "%1.2f", value);
 		return true;
 	}
 
 	switch (valueEdit->getValueToStringUserData ().precision) {
 	case 0:
-		sprintf(utf8String, "%1.0f", value);
+		sprintf_s(utf8String, 255, "%1.0f", value);
 		break;
 	case 1:
-		sprintf(utf8String, "%1.1f", value);
+		sprintf_s(utf8String, 255, "%1.1f", value);
 		break;
 	case 2:
-		sprintf(utf8String, "%1.2f", value);
+		sprintf_s(utf8String, 255, "%1.2f", value);
 		break;
 	case 3:
-		sprintf(utf8String, "%1.3f", value);
+		sprintf_s(utf8String, 255, "%1.3f", value);
 		break;
 	case 4:
-		sprintf(utf8String, "%1.4f", value);
+		sprintf_s(utf8String, 255, "%1.4f", value);
 		break;
 	case 5:
-		sprintf(utf8String, "%1.5f", value);
+		sprintf_s(utf8String, 255, "%1.5f", value);
 		break;
 	default:
-		sprintf(utf8String, "%1.2f", value);
+		sprintf_s(utf8String, 255, "%1.2f", value);
 		break;
 	}
-	sprintf(utf8String + strlen(utf8String), " ");
-	sprintf(utf8String + strlen(utf8String), valueEdit->getValueToStringUserData().unit.c_str());
+	sprintf_s(utf8String + strlen(utf8String), 255 - strlen(utf8String), " ");
+	sprintf_s(utf8String + strlen(utf8String), 255 - strlen(utf8String), valueEdit->getValueToStringUserData().unit.c_str());
 	return true;
 }
 
@@ -321,7 +321,7 @@ double ValueConversion::getMaxEqFrequency() {
 	return maxFreq;
 }
 
-bool ValueConversion::checkEqStability(const double& b1, const double& b2) {
+bool ValueConversion::checkEqStability(double b1, double b2) {
 	// Source: Kammeyer p.77 / 78
 	bool stable = false;
 	if (b2 > (pow(b1, 2.0) / 4.0)) {

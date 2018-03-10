@@ -149,7 +149,7 @@ private:
 	void addGuiElementPointer(CControl* guiElement, const int32_t& guiId);
 
 	// Conversion function, can be a nullptr if no conversion is needed
-	typedef double(*ConversionFunction)(const double&);
+	typedef double(*ConversionFunction)(double);
 	void updateGuiParameter(uint32 firstParamId, uint32 lastParamId, uint32 firstGuiId, ConversionFunction functPtr);
 	
 	// Messages to Editor

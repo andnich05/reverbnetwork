@@ -22,30 +22,27 @@
 #include "../include/ValueConversion.h"
 #include "../include/ReverbNetworkDefines.h"
 
-SignalGenerator::SignalGenerator(const SignalGeneratorType& signalType) 
-	: signalType(signalType) {
-
-	gainFactor = ValueConversion::logToLinear(DEF_SIGNALGENERATOR_AMPLITUDE);
-	width = (long)DEF_SIGNALGENERATOR_WIDTH;
-	autoFireEnabled = DEF_SIGNALGENERATOR_AUTOFIREENABLED;
-	autoTimeInSamples = (long)(DEF_SIGNALGENERATOR_TIME * ValueConversion::getSampleRate());
-	//fire = DEF_SIGNALGENERATOR_FIRE;
-
-	autoFireCounter = 0;
-	fireCounter = 0;
-	sample = 0.0;
+SignalGenerator::SignalGenerator(SignalGeneratorType signalType) 
+	: signalType(signalType)
+	, gainFactor(ValueConversion::logToLinear(DEF_SIGNALGENERATOR_AMPLITUDE))
+	, width((long)DEF_SIGNALGENERATOR_WIDTH)
+	, autoFireEnabled(DEF_SIGNALGENERATOR_AUTOFIREENABLED)
+	, autoTimeInSamples((long)(DEF_SIGNALGENERATOR_TIME * ValueConversion::getSampleRate()))
+	, autoFireCounter(0)
+	, fireCounter(0)
+{
 }
 
-void SignalGenerator::setGain(const double& gainInDB) {
+void SignalGenerator::setGain(double gainInDB) {
 	this->gainFactor = ValueConversion::logToLinear(gainInDB);
 }
 
-void SignalGenerator::setAutoTime(const double& autoTimeInSec) {
+void SignalGenerator::setAutoTime(double autoTimeInSec) {
 	this->autoTimeInSamples = (long)(std::round(autoTimeInSec * ValueConversion::getSampleRate()));
 }
 
-double& SignalGenerator::generateSample() {
-	sample = 0.0;
+double SignalGenerator::generateSample() {
+	double sample = 0.0;
 
 	// Auto fire generation
 	if (autoFireEnabled) {

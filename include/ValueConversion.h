@@ -29,66 +29,66 @@ public:
 	ValueConversion();
 
 	// Sample rate of the host
-	inline static void setSampleRate(const double s) { sampleRate = s; }
+	inline static void setSampleRate(double s) { sampleRate = s; }
 	inline static double getSampleRate() { return sampleRate; }
 
 	//---Value conversion functions, convert between normalized values (0.0 to 1.0) and plain values
 
 	// Mixer
-	static double normToPlainMixerInputSelect(const double& normValue);
-	static double plainToNormMixerInputSelect(const double& plainValue);
-	static double normToPlainInputGain(const double& normValue);
-	static double plainToNormInputGain(const double& plainValue);
+	static double normToPlainMixerInputSelect(double normValue);
+	static double plainToNormMixerInputSelect(double plainValue);
+	static double normToPlainInputGain(double normValue);
+	static double plainToNormInputGain(double plainValue);
 
 	// Quantizer
-	static double normToPlainQuantization(const double& normValue);
-	static double plainToNormQuantization(const double& plainValue);
+	static double normToPlainQuantization(double normValue);
+	static double plainToNormQuantization(double plainValue);
 
 	// Equalizer
-	static double normToPlainFilterTypeSelect(const double& normValue);
-	static double plainToNormFilterTypeSelect(const double& plainValue);
-	static double normToPlainProcCenterFreq(const double& normValue);
-	static double plainToNormProcCenterFreq(const double& plainValue);
-	static double normToPlainQFactor(const double& normValue);
-	static double plainToNormQFactor(const double& plainValue);
-	static double normToPlainEqGain(const double& normValue);
-	static double plainToNormEqGain(const double& plainValue);
-	static double normToPlainEqCoefficients(const double& normValue);
-	static double plainToNormEqCoefficients(const double& plainValue);
+	static double normToPlainFilterTypeSelect(double normValue);
+	static double plainToNormFilterTypeSelect(double plainValue);
+	static double normToPlainProcCenterFreq(double normValue);
+	static double plainToNormProcCenterFreq(double plainValue);
+	static double normToPlainQFactor(double normValue);
+	static double plainToNormQFactor(double plainValue);
+	static double normToPlainEqGain(double normValue);
+	static double plainToNormEqGain(double plainValue);
+	static double normToPlainEqCoefficients(double normValue);
+	static double plainToNormEqCoefficients(double plainValue);
 
 	// Allpass
-	static double normToPlainDelay(const double& normValue);
-	static double plainToNormDelay(const double& plainValue);
-	static double delayMillisecondsToSamples(const double& delaySeconds);
-	static double delaySamplesToMilliseconds(const double& delaySamples);
-	static double calculateDiffK(const double& delayInMs, const double& decayInMs);
-	static double diffKToDecay(const double& diffK, const double& delayInMs);
-	static double normToPlainDecay(const double& normValue);
-	static double plainToNormDecay(const double& plainValue);
-	static double normToPlainModSignalType(const double& normValue);
-	static double plainToNormModSignalType(const double& plainValue);
-	static double normToPlainModExcursion(const double& normValue);
-	static double plainToNormModExcursion(const double& plainValue);
-	static double normToPlainModRate(const double& normValue);
-	static double plainToNormModRate(const double& plainValue);
+	static double normToPlainDelay(double normValue);
+	static double plainToNormDelay(double plainValue);
+	static double delayMillisecondsToSamples(double delaySeconds);
+	static double delaySamplesToMilliseconds(double delaySamples);
+	static double calculateDiffK(double delayInMs, double decayInMs);
+	static double diffKToDecay(double diffK, double delayInMs);
+	static double normToPlainDecay(double normValue);
+	static double plainToNormDecay(double plainValue);
+	static double normToPlainModSignalType(double normValue);
+	static double plainToNormModSignalType(double plainValue);
+	static double normToPlainModExcursion(double normValue);
+	static double plainToNormModExcursion(double plainValue);
+	static double normToPlainModRate(double normValue);
+	static double plainToNormModRate(double plainValue);
 
 	// Output
-	static double normToPlainOutputGain(const double& normValue);
-	static double plainToNormOutputGain(const double& plainValue);
+	static double normToPlainOutputGain(double normValue);
+	static double plainToNormOutputGain(double plainValue);
 
 	// Signal generator
-	static double normToPlainSignalType(const double& normValue);
-	static double plainToNormSignalType(const double& plainValue);
-	static double normToPlainSignalAmplitude(const double& normValue);
-	static double plainToNormSignalAmplitude(const double& plainValue);
-	static double normToPlainSignalWidth(const double& normValue);
-	static double plainToNormSignalWidth(const double& plainValue);
-	static double normToPlainSignalTime(const double& normValue);
-	static double plainToNormSignalTime(const double& plainValue);
+	static double normToPlainSignalType(double normValue);
+	static double plainToNormSignalType(double plainValue);
+	static double normToPlainSignalAmplitude(double normValue);
+	static double plainToNormSignalAmplitude(double plainValue);
+	static double normToPlainSignalWidth(double normValue);
+	static double plainToNormSignalWidth(double plainValue);
+	static double normToPlainSignalTime(double normValue);
+	static double plainToNormSignalTime(double plainValue);
 
 	// Log conversion
-	static double linearToLog(const double& linearValue);
-	static double logToLinear(const double& logValue);
+	static double linearToLog(double linearValue);
+	static double logToLinear(double logValue);
 
 	// This conversion is performed when getValue() is called on a textEdit; converts to float with atof()
 	static bool textEditStringToValueConversion(const char* txt, float& result, void* userData);
@@ -100,7 +100,7 @@ public:
 	static double getMaxEqFrequency();
 
 	// Check equalizer stability
-	static bool checkEqStability(const double& b1, const double& b2);
+	static bool checkEqStability(double b1, double b2);
 
 private:
 	static double sampleRate;

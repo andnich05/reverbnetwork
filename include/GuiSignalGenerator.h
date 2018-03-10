@@ -62,4 +62,4 @@ private:
 	Steinberg::Vst::VSTGUIEditor* editor; // Pointer to ReverbNetworkEditor
 };
 
-#endif GUISIGNALGENERATOR_H // GUISIGNALGENERATOR_H
+#endif // GUISIGNALGENERATOR_H
