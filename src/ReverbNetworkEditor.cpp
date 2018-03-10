@@ -964,18 +964,16 @@ void ReverbNetworkEditor::valueChanged(CControl* pControl) {
 	}
 	// General
 	else if (tag >= id_general_checkBox_moduleVisibleFirst && tag <= id_general_checkBox_moduleVisibleLast) {
-		if (pControl->isDirty()) {
-			controller->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
-			controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
-			apGuiModules[tag - id_general_checkBox_moduleVisibleFirst]->setVisible(value != 0.0);
-			if (value == 1.0) {
-				// Bring the current visible view to the top
-				workspaceView->changeViewZOrder(apGuiModules[tag - id_general_checkBox_moduleVisibleFirst], workspaceView->getNbViews() - 1);
-				// Update the graphics view
-				graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
-			}
-			workspaceView->invalid();
+		controller->setParamNormalized(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
+		controller->performEdit(PARAM_MODULEVISIBLE_FIRST + (tag - id_general_checkBox_moduleVisibleFirst), value);
+		apGuiModules[tag - id_general_checkBox_moduleVisibleFirst]->setVisible(value != 0.0);
+		if (value == 1.0) {
+			// Bring the current visible view to the top
+			workspaceView->changeViewZOrder(apGuiModules[tag - id_general_checkBox_moduleVisibleFirst], workspaceView->getNbViews() - 1);
+			// Update the graphics view
+			graphicsView->makeModuleVisible(tag - id_general_checkBox_moduleVisibleFirst, true);
 		}
+		workspaceView->invalid();
 	}
 	else if (tag >= id_general_optionMenu_vstOutputFirst && tag <= id_general_optionMenu_vstOutputLast) {
 		controller->setParamNormalized(PARAM_GENERALVSTOUTPUTSELECT_FIRST + (tag - id_general_optionMenu_vstOutputFirst), ValueConversion::plainToNormMixerInputSelect(value));
