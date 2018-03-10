@@ -1937,13 +1937,6 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 			}
 		}
 	}
-	else if (sender == workspaceView) {
-		if (message == "ViewSizeChanged") {
-			if (viewModuleScrollList->getHeight() != workspaceView->getVisibleViewSize().getHeight()) {
-				viewModuleScrollList->setViewSize(CRect(CPoint(viewModuleScrollList->getViewSize().getTopLeft()), CPoint(viewModuleScrollList->getWidth(), workspaceView->getVisibleViewSize().getHeight())));
-			}
-		}
-	}
 	else if (sender == graphicsView) {
 		if (message == "ConnectionToModule") {
 			// User has drawn a new connection
