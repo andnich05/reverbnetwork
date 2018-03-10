@@ -29,8 +29,6 @@ GuiCustomValueEdit::GuiCustomValueEdit (const VSTGUI::CRect& size, VSTGUI::ICont
 
 void GuiCustomValueEdit::takeFocus()
 {
-	CTextEdit::takeFocus();
-
 	if (!stringToTruncate.empty())
 	{
 		// When user clicks in the text field
@@ -42,12 +40,15 @@ void GuiCustomValueEdit::takeFocus()
 		if (pos != std::string::npos) {
 			currentString.erase(pos, stringToTruncate.length());
 
+			// We might need this later in looseFocus
+			stringBeforeTakeFocusTruncated = currentString;
+
 			// Set the new text without the string
 			CTextLabel::setText(VSTGUI::UTF8String(currentString));
-			if (platformControl)
-				platformControl->setText(getText());
 		}
 	}
+
+	CTextEdit::takeFocus();
 }
 
 void GuiCustomValueEdit::looseFocus()
@@ -55,11 +56,9 @@ void GuiCustomValueEdit::looseFocus()
 	CTextEdit::looseFocus();
 
 	// When user leaves the text field
-	// Get the old text before the user started typing
-	std::string currentString = platformControl->getText().getString();
 	// This makes sure the conversion is made even if the user didn't type anything (non-standard behaviour of VstGui)
-	if (currentString == getText().getString()) {
-		setText(VSTGUI::UTF8String(currentString));
+	if (stringBeforeTakeFocusTruncated == getText().getString()) {
+		setText(VSTGUI::UTF8String(stringBeforeTakeFocusTruncated + " " + stringToTruncate));
 	}
 }
 	

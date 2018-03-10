@@ -39,6 +39,7 @@ public:
 
 private:
 	std::string stringToTruncate;
+	std::string stringBeforeTakeFocusTruncated;
 	valueToStringUserData userData;
 };
 
