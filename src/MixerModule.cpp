@@ -59,7 +59,7 @@ double MixerModule::mixInputs(double* moduleInputBuffer, double* vstInputBuffer,
 				}
 				else {
 					// If the input is not soloed process the sample only if no other input is soloed
-					if (!isAnyInputSoloed == false) {
+					if (isAnyInputSoloed == false) {
 						if (i < MAXMODULENUMBER) {
 							output += moduleInputBuffer[i] * inputGain[i];
 						}
