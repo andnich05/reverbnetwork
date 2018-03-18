@@ -1,11 +1,11 @@
 # Reverb Network VST Audio Plug-in
-Copyright (c) 2014-2015 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.
+Copyright (c) 2014-2018 by Andrej Nichelmann and Klaus Michael Indlekofer. All rights reserved.
 Note: Special restrictions apply. See disclaimers below and within the distribution.
 
 ## Summary
 Reverb Network is an audio plug-in which is based on Steinberg's VST Technology. Its main purpose is the creation of reverb algorithms by connecting all-pass filter modules to a fully configurable modular network in its build-in user interface. Currently only Windows is supported (since Windows 7).
 
- ![image](https://github.com/andnich05/reverbnetwork/raw/master/img/ReverbNetworkGuiOverview.png)
+ ![image](https://user-images.githubusercontent.com/14234092/37571711-7e99da16-2b00-11e8-8fa2-99d179f60786.png)
 
 This project is currently hosted on:
 * GitHub: https://github.com/andnich05/reverbnetwork
@@ -15,30 +15,36 @@ This software is OPEN SOURCE and is published under the GNU GENERAL PUBLIC LICEN
 
 This project uses:
 * Steinberg VST3 - https://www.steinberg.net/en/company/technologies/vst3.html
-* Steinberg VSTGUI - http://sourceforge.net/projects/vstgui/ (possibly outdated)
+* Steinberg VSTGUI - https://github.com/steinbergmedia/vstgui (possibly outdated)
 * pugixml - http://pugixml.org/
 
 
 ## Compiling
 To build the plug-in by yourself you will need the following:
 
-* Microsoft Visual Studio 2013 or newer (Express version should be fine, although has not been tested yet)
-* Steinberg VST3 3.6.0 or newer SDK (+ VSTGUI 4.2 or newer):https://www.steinberg.net/de/company/developer.html
+* Microsoft Visual Studio or newer (Community/Express version should be fine, tested with Community 2017)
+* Steinberg VST3 3.6.9 (exact tested version: vstsdk369_01_03_2018_build_132) or newer SDK: https://www.steinberg.net/de/company/developer.html
+* CMake: https://cmake.org/
 
-Keep in mind that Steinberg is constantly changing stuff in the SDK so it is possible that the code will need some changes if a newer SDK version than 3.6.0 is used.
+Keep in mind that Steinberg is constantly changing stuff in the SDK so it is possible that the code will need some changes if a newer SDK version than 3.6.9 is used.
 
-Put the folder "reverbnetwork" into the folder "public.sdk" of the VST3 SDK. Start the "ReverbNetwork.sln" (the structure should be: "public.sdk/reverbnetwork/ReverbNetwork.sln") and build the solution. You can build both the x86 and the x64 version of the plug-in. Make sure you build the plug-in as Release, the Debug build is VERY slow. You can customize the plug-in in the file "ReverbNetworkDefines.h".
+* Extract the vstsdk369_01_03_2018_build_132.zip file
+* Create a folder 'reverbnetwork' under VST_SDK/my_plugins
+* Put all the cloned ReverbNetwork stuff into the created folder (you can of course clone directly into the my_plugins directory if you like)
+* Run the VST_SDK/copy_vst2_to_vst3_sdk.bat script; this will alow you to build the VST2 version of the plug-in
+* Run CMake: Source directory should be VST_SDK/VST3_SDK, enable SMTG_CREATE_VST2_VERSION and disable SMTG_RUN_VST_VALIDATOR if you do not want to validate the plug-in every time you build it, also you might need to change the SMTG_VST3_TARGET_PATH to a directory which is not only accesable by the administrator
+* You can build both, the 32 bit and the 64 bit version of the plug-in
 
 
 ## Installation
 
-You will need the appropriate Visual C++ Redistributable Package 2013 (x86 or x64):
-https://www.microsoft.com/de-de/download/details.aspx?id=40784
+You might need the appropriate Visual C++ Redistributable Package (x86 or x64):
+https://www.visualstudio.com/downloads/
 
-The plug-in's name should be "ReverbNetwork.vst3" (32 bit) or "ReverbNetworkX64.vst3" (64 bit). Just put it in a folder where your VST3 compatible host can find it. If you want to use it in a VST2 host then simply rename the file extension from "vst3" to "dll".
+Just put the .vst3 file in a folder where your VST3 compatible host can find it (standard path is C:/Program Files/Common Files/VST3 or C:/Program Files (x86)/Common Files/VST3). If you want to use it in a VST2 host then simply rename the file extension from "vst3" to "dll".
 
 
-## Tested VST Hosts
+## Tested VST Hosts (deprecated)
 
 Adobe Audition CS6 5.0.2.7:
 VST2: incompatible (wrong parameters)
@@ -115,5 +121,4 @@ and permission to use materials/information from this distribution.
 Some programs/data files are released under the terms of the GNU General Public License
 as published by the Free Software Foundation. (Address: Free Software Foundation, Inc.,
 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. Internet: GNU General Public
-License (GPL) from The GNU Project) 
----
+License (GPL) from The GNU Project).
