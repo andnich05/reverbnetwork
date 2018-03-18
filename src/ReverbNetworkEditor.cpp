@@ -1922,7 +1922,7 @@ CMessageResult ReverbNetworkEditor::notify(CBaseObject* sender, const char* mess
 	else if (message == CNewFileSelector::kSelectEndMessage) {
 		// User has selected a file in the file selector
 		CNewFileSelector* selector = dynamic_cast<CNewFileSelector*>(sender);
-		if (selector) {
+		if (selector && selector->getSelectedFile(0)) {
 			// Open or save?
 			if (fileSelectorStyle == CNewFileSelector::kSelectFile) {
 				setXmlPreset(xmlPreset->loadPreset(selector->getSelectedFile(0)));
@@ -2008,19 +2008,19 @@ void ReverbNetworkEditor::setXmlPreset(const XmlPresetReadWrite::Preset& presetS
 		// Then the Vst inputs
 		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParameters.vstInputs.size(); ++k) {
 			if (k >= MAXVSTINPUTS) break;
-			getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.vstInputs[k].gainFactor));
-			getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.vstInputs[k].gainFactor));
-			getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].muted);
-			getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].muted);
-			getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].soloed);
-			getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size(), presetStruct.modules[i].mixerParameters.vstInputs[k].soloed);
+			getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size()), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.vstInputs[k].gainFactor));
+			getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size()), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.vstInputs[k].gainFactor));
+			getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size()), presetStruct.modules[i].mixerParameters.vstInputs[k].muted);
+			getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size()), presetStruct.modules[i].mixerParameters.vstInputs[k].muted);
+			getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size()), presetStruct.modules[i].mixerParameters.vstInputs[k].soloed);
+			getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + k + presetStruct.modules[i].mixerParameters.moduleOutputs.size()), presetStruct.modules[i].mixerParameters.vstInputs[k].soloed);
 		}
-		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.signalGeneratorInput.gainFactor));
-		getController()->performEdit(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.signalGeneratorInput.gainFactor));
-		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.muted);
-		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.muted);
-		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.soloed);
-		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size(), presetStruct.modules[i].mixerParameters.signalGeneratorInput.soloed);
+		getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size()), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.signalGeneratorInput.gainFactor));
+		getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size()), ValueConversion::plainToNormInputGain(presetStruct.modules[i].mixerParameters.signalGeneratorInput.gainFactor));
+		getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size()), presetStruct.modules[i].mixerParameters.signalGeneratorInput.muted);
+		getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size()), presetStruct.modules[i].mixerParameters.signalGeneratorInput.muted);
+		getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size()), presetStruct.modules[i].mixerParameters.signalGeneratorInput.soloed);
+		getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + i * MAXINPUTS + presetStruct.modules[i].mixerParameters.moduleOutputs.size() + presetStruct.modules[i].mixerParameters.vstInputs.size()), presetStruct.modules[i].mixerParameters.signalGeneratorInput.soloed);
 		// Finally the input slots
 		for (unsigned int k = 0; k < presetStruct.modules[i].mixerParameters.inputSlots.size(); ++k) {
 			if (k >= MAXMODULEINPUTS) break;
@@ -2337,19 +2337,19 @@ void ReverbNetworkEditor::pasteModuleParameters(const unsigned int& destModuleId
 	}
 	// Then the Vst inputs
 	for (unsigned int k = 0; k < m.mixerParameters.vstInputs.size(); ++k) {
-		getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.vstInputs[k].gainFactor));
-		getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.vstInputs[k].gainFactor));
-		getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].muted);
-		getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].muted);
-		getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].soloed);
-		getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size(), m.mixerParameters.vstInputs[k].soloed);
+		getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size()), ValueConversion::plainToNormInputGain(m.mixerParameters.vstInputs[k].gainFactor));
+		getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size()), ValueConversion::plainToNormInputGain(m.mixerParameters.vstInputs[k].gainFactor));
+		getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size()), m.mixerParameters.vstInputs[k].muted);
+		getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size()), m.mixerParameters.vstInputs[k].muted);
+		getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size()), m.mixerParameters.vstInputs[k].soloed);
+		getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + k + m.mixerParameters.moduleOutputs.size()), m.mixerParameters.vstInputs[k].soloed);
 	}
-	getController()->setParamNormalized(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.signalGeneratorInput.gainFactor));
-	getController()->performEdit(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), ValueConversion::plainToNormInputGain(m.mixerParameters.signalGeneratorInput.gainFactor));
-	getController()->setParamNormalized(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.muted);
-	getController()->performEdit(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.muted);
-	getController()->setParamNormalized(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.soloed);
-	getController()->performEdit(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size(), m.mixerParameters.signalGeneratorInput.soloed);
+	getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size()), ValueConversion::plainToNormInputGain(m.mixerParameters.signalGeneratorInput.gainFactor));
+	getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERGAIN_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size()), ValueConversion::plainToNormInputGain(m.mixerParameters.signalGeneratorInput.gainFactor));
+	getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size()), m.mixerParameters.signalGeneratorInput.muted);
+	getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTMUTED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size()), m.mixerParameters.signalGeneratorInput.muted);
+	getController()->setParamNormalized(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size()), m.mixerParameters.signalGeneratorInput.soloed);
+	getController()->performEdit(static_cast<Steinberg::Vst::ParamID>(PARAM_MIXERINPUTSOLOED_FIRST + destModuleId * MAXINPUTS + m.mixerParameters.moduleOutputs.size() + m.mixerParameters.vstInputs.size()), m.mixerParameters.signalGeneratorInput.soloed);
 	// Finally the input slots
 	for (unsigned int k = 0; k < m.mixerParameters.inputSlots.size(); ++k) {
 		getController()->setParamNormalized(PARAM_MIXERINPUTSELECT_FIRST + destModuleId * MAXMODULEINPUTS + k, ValueConversion::plainToNormMixerInputSelect(m.mixerParameters.inputSlots[k]));

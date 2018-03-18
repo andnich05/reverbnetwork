@@ -32,11 +32,11 @@ public:
 	virtual void drawBackgroundRect(VSTGUI::CDrawContext* pContext, const VSTGUI::CRect& _updateRect) override;
 
 	// Set the width of the frame to paint around the view (frame is painted inside the view so beware of collisions with content! In such a case: Increase the margin)
-	virtual inline void setFrameWidth(const int& width = 0) { frameWidth = width; }
+	virtual inline void setFrameWidth(int width = 0) { frameWidth = width; }
 	// Set the rounding of the frame to paint around the view (ToDo...)
 	//virtual inline void setFrameRounding(const int& rounding = 0) { frameRounding = rounding; }
 	// Set the color of the frame to paint around the view
-	virtual inline void setFrameColor(const VSTGUI::CColor& color = VSTGUI::CColor(0, 0, 0, 0)) { frameColor = color; }
+	virtual inline void setFrameColor(VSTGUI::CColor color = VSTGUI::CColor(0, 0, 0, 0)) { frameColor = color; }
 
 private:
 	int frameWidth;
