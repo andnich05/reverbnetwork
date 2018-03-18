@@ -194,7 +194,7 @@ void GuiGraphicsView::rearrangeModules() {
 
 	counter = 0;
 	for (unsigned int i = 0; i < vstOutputs.size(); ++i) {
-		vstOutputs[i]->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(this->getVisibleViewSize().getWidth() - vstOutputs[i]->getWidth(), (vstOutputs[i]->getHeight() + 5) * counter), VSTGUI::CPoint(vstOutputs[i]->getWidth(), vstOutputs[i]->getHeight())));
+		vstOutputs[i]->setViewSize(VSTGUI::CRect(VSTGUI::CPoint(this->getViewSize().getWidth() - vstOutputs[i]->getWidth(), (vstOutputs[i]->getHeight() + 5) * counter), VSTGUI::CPoint(vstOutputs[i]->getWidth(), vstOutputs[i]->getHeight())));
 		vstOutputs[i]->setMouseableArea(vstOutputs[i]->getViewSize());
 		++counter;
 	}
@@ -207,7 +207,7 @@ void GuiGraphicsView::rearrangeModules() {
 	for (unsigned int m = 0; m < modules.size(); ++m) {
 		if (modules[m]) {
 			if (modules[m]->getNumberOfUsedInputs() != 0) {
-				if ((modules[m]->getWidth() + 10) * moduleCounter > this->getVisibleViewSize().getWidth() - modules[m]->getWidth() - 8) {
+				if ((modules[m]->getWidth() + 10) * moduleCounter > this->getViewSize().getWidth() - modules[m]->getWidth() - 8) {
 					++rowCounter;
 					moduleCounter = 1;
 					lastRowMaxYCoordinate = rowMaxYCoordinate;
